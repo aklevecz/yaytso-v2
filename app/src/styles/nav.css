@@ -1,0 +1,40 @@
+.nav {
+  display: flex;
+  justify-content: space-between;
+  background-color: white;
+  text-align: center;
+}
+
+.nav a {
+  color: #ffffff;
+  text-decoration: none;
+  /* padding: 8px; */
+  transition: color 1s, background 1s, border-bottom 1s;
+  /* font-size: 1.1rem; */
+  /* font-weight: bold; */
+  /* width: 100px; */
+  flex-grow: 1;
+  background-color: black;
+}
+
+a.active {
+  color: black;
+  background-color: white;
+}
+
+a div {
+  background-color: white;
+  margin: 20px auto;
+}
+
+a.active div {
+  background-color: black;
+}
+
+.nav__container {
+  grid-area: lbottom / lbottom / rbottom / rbottom;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  pointer-events: all;
+}

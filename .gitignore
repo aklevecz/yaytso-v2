@@ -1,0 +1,16 @@
+node_modules
+
+#Hardhat files
+testa
+cache
+artifacts
+
+.env
+
+**/**/firebase-debug.log
+**/**/firestore-debug.log
+**/**/ui-debug.log
+**/**/firebase-admin.json
+.vscode
+
+.firebase

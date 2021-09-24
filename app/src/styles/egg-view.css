@@ -1,0 +1,40 @@
+.egg-view__container {
+  height: 100%;
+  position: relative;
+  max-width: 700px;
+  width: 100%;
+}
+
+.egg-view__canvas__container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+
+.egg-view__name {
+  position: absolute;
+  top: 23px;
+  font-size: 2rem;
+  width: 100%;
+  text-align: center;
+  font-weight: bold;
+}
+
+.egg-view__description {
+  position: absolute;
+}
+
+.egg-view__mint-button-container {
+  position: absolute;
+  bottom: 0;
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  align-items: center;
+  height: 150px;
+}
+
+.egg-view__mint-button-container button {
+  flex: 0 0 42%;
+}

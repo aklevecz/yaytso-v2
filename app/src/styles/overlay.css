@@ -1,0 +1,31 @@
+.overlay__root {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  background: none;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.overlay__container {
+  display: grid;
+  grid-template-columns: 10% 80% 10%;
+  grid-template-rows: 100px 1fr 100px;
+  grid-template-areas:
+    "ltop mtop rtop"
+    "lside middle rside"
+    "lbottom mbottom rbottom";
+  height: 100%;
+  align-items: center;
+  justify-items: center;
+}
+
+.overlay__container div {
+  /* border: 2px dotted black; */
+}
+
+.overlay__right {
+  pointer-events: all;
+  grid-area: rside;
+}

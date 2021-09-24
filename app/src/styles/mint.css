@@ -1,0 +1,54 @@
+.mint__receipt {
+  display: grid;
+  grid-template-columns: 50% 50%;
+  grid-auto-flow: auto;
+  width: 100%;
+  font-size: 1rem;
+  grid-row-gap: 1rem;
+  align-items: center;
+  justify-content: center;
+  margin: 30px;
+}
+
+.mint__receipt div {
+  overflow-wrap: break-word;
+  /* width: 100px; */
+}
+
+.mint__receipt * {
+  grid-column: 2;
+}
+
+.mint__receipt__img {
+  grid-column: 1;
+  grid-row: 2/4;
+  width: 100%;
+}
+
+.mint__receipt__id {
+  grid-column: 1;
+  text-align: center;
+  font-size: 4rem;
+  font-weight: bold;
+}
+
+.mint__receipt a {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: red;
+}
+
+.mint__receipt__block-number {
+  letter-spacing: 1px;
+  font-weight: 500;
+}
+
+.mint__icon-container {
+  padding: 10px 30px;
+  display: flex;
+  justify-content: center;
+}
+
+.mint__icon-container svg {
+  max-width: 130px;
+}
