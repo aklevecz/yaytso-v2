@@ -1,0 +1,9 @@
+.message__container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 2rem;
+  font-weight: bold;
+  padding: 60px;
+  text-align: center;
+}

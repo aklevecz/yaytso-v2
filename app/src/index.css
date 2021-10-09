@@ -6,6 +6,7 @@
   --grey: rgb(143, 143, 143);
   --pink: #e4cbcf;
   --red: #ff4c38;
+  --pale-red: #ffb6b6;
 }
 
 body {
@@ -68,12 +69,13 @@ input[type="tel"] {
   width: 90%;
   height: 40px;
   display: block;
+  margin: auto;
   border: 2px solid;
   border-radius: 10px;
   font-size: 18px;
   padding: 0px 10px;
   max-width: 320px;
-  border: 4px solid;
+  border: 2px solid;
   border-radius: 0px;
 }
 

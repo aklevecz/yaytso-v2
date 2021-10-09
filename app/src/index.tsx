@@ -6,28 +6,29 @@ import "./styles/modal.css";
 import "./styles/overlay.css";
 import "./styles/nav.css";
 import "./styles/wallet.css";
+import "./styles/map.css";
 
 import App from "./App";
-import { MapProvider } from "./contexts/MapContext";
 import { ModalProvider } from "./contexts/ModalContext";
 import { CartonProvider } from "./contexts/CartonContext";
 import { UserProvider } from "./contexts/UserContext";
 import { ContractProvider } from "./contexts/ContractContext";
 import { WalletProvider } from "./contexts/WalletContext";
+import { MapProvider } from "./contexts/MapContext";
 
 ReactDOM.render(
-  <ModalProvider>
-    <CartonProvider>
-      <MapProvider>
-        <UserProvider>
-          <ContractProvider>
-            <WalletProvider>
+  <CartonProvider>
+    <UserProvider>
+      <ContractProvider>
+        <WalletProvider>
+          <MapProvider>
+            <ModalProvider>
               <App />
-            </WalletProvider>
-          </ContractProvider>
-        </UserProvider>
-      </MapProvider>
-    </CartonProvider>
-  </ModalProvider>,
+            </ModalProvider>
+          </MapProvider>
+        </WalletProvider>
+      </ContractProvider>
+    </UserProvider>
+  </CartonProvider>,
   document.getElementById("root")
 );

@@ -3,7 +3,6 @@ import {
   useCallback,
   useContext,
   useEffect,
-  useMemo,
   useReducer,
   useRef,
   useState,
@@ -14,7 +13,6 @@ import cartonSVG from "../assets/carton.svg";
 import cartonEmptySVG from "../assets/carton-empty.svg";
 import smilerSVG from "../assets/smiler.svg";
 import { Carton, Marker, MarkerType, ModalTypes, Position } from "./types";
-import { useCartons } from "./CartonContext";
 import { useOpenModal } from "./ModalContext";
 import { delay, getMarker } from "./utils";
 
@@ -23,11 +21,12 @@ type Action =
   | { type: "initMap"; map: google.maps.Map }
   | { type: "updateUserPosition"; userLocation: Position }
   | { type: "updateMarkers"; markerType: MarkerType; markers: Array<Marker> }
+  | { type: "deleteMarker"; markerType: MarkerType; id: string }
   | {
-    type: "collectIconSelectors";
-    iconType: string;
-    icons: Array<HTMLElement>;
-  };
+      type: "collectIconSelectors";
+      iconType: string;
+      icons: Array<HTMLElement>;
+    };
 
 type Dispatch = (action: Action) => void;
 
@@ -42,7 +41,7 @@ type State = {
 
 const initialState = {
   loading: true,
-  markers: { cartons: [], users: [] },
+  markers: { cartons: [], users: [], create: [] },
   icons: { cartons: [], user: undefined },
   map: undefined,
   mapContainer: undefined,
@@ -60,6 +59,16 @@ const reducer = (state: State, action: Action) => {
         ...state,
         markers: { ...state.markers, [action.markerType]: action.markers },
       };
+    case "deleteMarker":
+      // Refactor name and type need to be reconciled
+      const newTypeMarkers = state.markers[action.markerType].filter(
+        (marker) => marker.type !== action.id
+      );
+      // return state
+      return {
+        ...state,
+        markers: { ...state.markers, [action.markerType]: newTypeMarkers },
+      };
     case "initMap":
       return { ...state, map: action.map, loading: false };
     case "updateUserPosition":
@@ -76,8 +85,8 @@ const loader = new Loader({
 
 const LA_COORDS = {
   lat: 34.04944448684695,
-  lng: -118.24629715232342
-}
+  lng: -118.24629715232342,
+};
 
 const DEFAULT_COORDS = LA_COORDS;
 
@@ -97,7 +106,7 @@ export { MapContext, MapProvider };
 export const useMap = () => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const context = useContext(MapContext);
-  const cartons = useCartons();
+  // const cartons = useCartons();
 
   if (context === undefined) {
     throw new Error("must be within its provider: User");
@@ -105,6 +114,7 @@ export const useMap = () => {
 
   const { dispatch, state } = context;
   const initMap = useCallback(() => {
+    console.log("init map");
     loader.load().then(() => {
       if (!mapContainer.current) {
         return console.error("map container missing");
@@ -128,58 +138,79 @@ export const useMap = () => {
   // MAYBE MOVE THIS
   // const { isLocked, getCartonsYaytsoMeta } = useCartonInfo();
   const openModal = useOpenModal();
-  useEffect(() => {
-    if (cartons.length > 0 && state.map) {
-      const cartonMarkers = cartons.map((carton: Carton) => {
-        const cartonMarker = new google.maps.Marker({
-          position: {
-            lat: parseFloat(carton.lat),
-            lng: parseFloat(carton.lng),
-          },
-          icon: !carton.locked
-            ? `${cartonEmptySVG}#cartonId=${carton.id}`
-            : `${cartonSVG}#cartonId=${carton.id}`,
-          map: state.map,
-          optimized: false,
-        });
-        cartonMarker.addListener("click", async () => {
-          openModal(ModalTypes.CartonContent, { cartonId: carton.id });
-        });
-        return { marker: cartonMarker, type: "carton" };
-      });
 
-      dispatch({
-        type: "updateMarkers",
-        markerType: "cartons",
-        markers: cartonMarkers,
+  const fetchAvailableCartons = (cartons: Carton[]) => {
+    const cartonMarkers = cartons.map((carton: Carton) => {
+      const icon = {
+        url: !carton.locked
+          ? `${cartonEmptySVG}#cartonId=${carton.id}`
+          : `${cartonSVG}#cartonId=${carton.id}`,
+        scaledSize: new google.maps.Size(35, 35),
+      };
+      const cartonMarker = new google.maps.Marker({
+        position: {
+          lat: parseFloat(carton.lat),
+          lng: parseFloat(carton.lng),
+        },
+        icon,
+        map: state.map,
+        optimized: false,
       });
-    }
-  }, [cartons, state.map]);
+      cartonMarker.addListener("click", async () => {
+        if (carton.locked) {
+          openModal(ModalTypes.CartonContent, { cartonId: carton.id });
+        } else {
+          openModal(ModalTypes.FillCarton, { cartonId: carton.id });
+        }
+      });
+      return { marker: cartonMarker, type: "carton" };
+    });
+    console.log("updating", cartonMarkers);
+    dispatch({
+      type: "updateMarkers",
+      markerType: "cartons",
+      markers: cartonMarkers,
+    });
+  };
 
   // Shitty marker collection for cartons
-  useEffect(() => {
-    if (cartons) {
-      setTimeout(() => {
-        const cartonIcons: Array<HTMLImageElement> = [];
-        cartons.forEach((carton: Carton) => {
-          const cartonDom = document.querySelector(
-            `img[src='${cartonSVG}#cartonId=${carton.id}']`
-          ) as HTMLImageElement;
-          if (cartonDom) {
-            cartonIcons.push(cartonDom);
-          }
-        });
+  // useEffect(() => {
+  //   if (cartons) {
+  //     setTimeout(() => {
+  //       const cartonIcons: Array<HTMLImageElement> = [];
+  //       cartons.forEach((carton: Carton) => {
+  //         const cartonDom = document.querySelector(
+  //           `img[src='${cartonSVG}#cartonId=${carton.id}']`
+  //         ) as HTMLImageElement;
+  //         if (cartonDom) {
+  //           cartonIcons.push(cartonDom);
+  //         }
+  //       });
 
-        dispatch({
-          type: "collectIconSelectors",
-          iconType: "carton",
-          icons: cartonIcons,
-        });
-      }, 5000);
+  //       dispatch({
+  //         type: "collectIconSelectors",
+  //         iconType: "carton",
+  //         icons: cartonIcons,
+  //       });
+  //     }, 5000);
+  //   }
+  // }, [cartons]);
+
+  const hideMarkers = () => {
+    for (const marker of state.markers.cartons) {
+      marker.marker.setMap(null);
     }
-  }, [cartons]);
+  };
 
-  return { mapContainer, initMap, loading: state.loading, map: state.map };
+  return {
+    mapContainer,
+    fetchAvailableCartons,
+    hideMarkers,
+    initMap,
+    loading: state.loading,
+    map: state.map,
+    markers: state.markers,
+  };
 };
 
 export const useUserLocation = () => {
@@ -256,4 +287,52 @@ export const useUserLocation = () => {
     createUserMarker,
     recenter,
   };
+};
+
+export const useCreateCartonMarker = () => {
+  const context = useContext(MapContext);
+  const [position, setPosition] = useState({ lat: 0, lng: 0 });
+
+  if (context === undefined) {
+    throw new Error("Map Context error in CreateCartonMarker hook");
+  }
+
+  const { dispatch, state } = context;
+
+  const createCartonMarker = () => {
+    const icon = {
+      url: cartonSVG,
+      scaledSize: new google.maps.Size(35, 35),
+    };
+    const marker = new google.maps.Marker({
+      position: { lat: DEFAULT_COORDS.lat, lng: DEFAULT_COORDS.lng },
+      icon,
+      map: state.map,
+      draggable: true,
+    });
+    dispatch({
+      type: "updateMarkers",
+      markerType: "create",
+      markers: [{ marker, type: "create" }],
+    });
+
+    marker.addListener("drag", (e: google.maps.MapMouseEvent) => {
+      const lat = e.latLng?.lat();
+      const lng = e.latLng?.lng();
+      if (lat && lng) setPosition({ lat, lng });
+    });
+  };
+
+  const removeCreateMarker = () => {
+    dispatch({ type: "deleteMarker", markerType: "create", id: "create" });
+
+    // change type to id
+    const createMarker = state.markers.create.find(
+      (marker) => marker.type === "create"
+    );
+    createMarker && createMarker.marker.setMap(null);
+    // marker.setMap(null);
+  };
+
+  return { createCartonMarker, removeCreateMarker, position };
 };

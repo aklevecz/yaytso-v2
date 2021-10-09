@@ -3,6 +3,17 @@
   height: 100%;
 }
 
+.eggvatar__container {
+  display: flex;
+  justify-content: center;
+  background-color: black;
+  max-height: 100px;
+}
+
+.eggvatar__container img {
+  width: 100px;
+}
+
 .wallet__container {
   height: 100%;
   min-height: 90vh;
@@ -15,8 +26,8 @@
   justify-content: space-evenly;
   align-items: center;
   margin: 20px 10px;
-  border-bottom: 1px solid;
-  padding-bottom: 20px;
+  /* border-bottom: 1px solid; */
+  /* padding-bottom: 20px; */
 }
 
 .wallet__address {
@@ -73,10 +84,11 @@
 
 .wallet__egg-wrapper {
   position: relative;
-  border-radius: 30px;
+  /* border-radius: 30px; */
   padding: 20px 0px 40px 0px;
-  box-shadow: rgb(0 0 0) 0px 0px 31px;
+  /* box-shadow: rgb(0 0 0) 0px 0px 31px; */
   margin: 40px;
+  background-color: black;
 }
 
 .wallet__nft-tag {

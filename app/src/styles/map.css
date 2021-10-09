@@ -1,0 +1,29 @@
+.prompt__container {
+  font-size: 2rem;
+  font-weight: bold;
+  position: absolute;
+  max-width: 500px;
+  padding: 10px 30px;
+  color: white;
+  opacity: 0.8;
+  background-color: rgb(228, 93, 93);
+  top: 20%;
+  display: flex;
+  justify-content: center;
+  text-align: center;
+}
+
+.lat-lng__container {
+  position: absolute;
+  bottom: 20%;
+  background: black;
+  width: 300px;
+  max-width: 360px;
+  font-size: 1.6rem;
+  padding: 5px;
+  display: flex;
+  justify-content: space-around;
+  font-weight: bold;
+  color: white;
+  border-radius: 11px;
+}

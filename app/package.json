@@ -18,6 +18,7 @@
     "ethers": "^5.4.0",
     "firebase": "^8.6.8",
     "framer-motion": "^4.1.17",
+    "qr-code-styling": "^1.6.0-rc.1",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-lottie": "^1.2.3",
@@ -34,6 +35,7 @@
     "build:deploy": "yarn build && firebase deploy --only hosting",
     "start": "react-scripts start",
     "build": "react-scripts build",
+    "postbuild": "node copyTemplate",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },

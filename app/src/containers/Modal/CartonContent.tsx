@@ -3,7 +3,13 @@ import Lottie from "react-lottie";
 import loadingAnimation from "../../assets/loading-anim.json";
 import Button from "../../components/Button";
 import { useCartonInfo } from "../../contexts/CartonContext";
-import { useModalData, useModalToggle } from "../../contexts/ModalContext";
+import {
+  useModalData,
+  useModalToggle,
+  useOpenModal,
+} from "../../contexts/ModalContext";
+import { updateCarton } from "../../contexts/services";
+import { ModalTypes } from "../../contexts/types";
 import { fadeIn } from "../../contexts/utils";
 
 const defaultOptions = {
@@ -18,9 +24,11 @@ const defaultOptions = {
 export default function CartonContent() {
   const [img, setImg] = useState("");
   const viewRef = useRef<HTMLDivElement>(null);
-  const { toggleModal } = useModalToggle();
+  const { toggleModal, closeModal } = useModalToggle();
   const { data } = useModalData();
-  const { isLocked, yaytso, getYaytsoImage } = useCartonInfo(data);
+  const { isLocked, yaytso, getYaytsoImage, isOwner } = useCartonInfo(data);
+
+  const openModal = useOpenModal();
 
   const fetchYaytsoImg = async () => {
     const yaytosImg = await getYaytsoImage();
@@ -35,6 +43,13 @@ export default function CartonContent() {
       return console.log("loading...");
     }
     fetchYaytsoImg();
+    // Should be server side or something
+    isLocked(data.cartonId).then((locked) => {
+      if (!locked) {
+        updateCarton(data.cartonId, { locked, yaytsoId: 0 });
+        closeModal();
+      }
+    });
 
     if (yaytso && viewRef.current) {
       const view = viewRef.current as HTMLDivElement;
@@ -63,8 +78,11 @@ export default function CartonContent() {
       <div className={"yaytso-view"} ref={viewRef}>
         {!loading && (
           <>
-            <div className="modal__title">
-              <div>{yaytso && yaytso.name}</div>
+            <div
+              className="modal__title"
+              style={{ overflow: "hidden", textOverflow: "ellipsis" }}
+            >
+              {yaytso && yaytso.name}
             </div>
             <div className="modal__block">
               {img && (
@@ -73,12 +91,24 @@ export default function CartonContent() {
                   dangerouslySetInnerHTML={{ __html: img }}
                 />
               )}
-              <div className="modal__description">
+              {/* <div className="modal__description">
                 {yaytso && yaytso.description}
-              </div>
+              </div> */}
             </div>
             <div className="modal__button-container">
               <Button name="Ok" onClick={toggleModal} />
+              {isOwner && (
+                <Button
+                  name="Make QR"
+                  onClick={() =>
+                    openModal(ModalTypes.FillCarton, {
+                      cartonId: data.cartonId,
+                      yaytso,
+                      skip: "SIGNATURE",
+                    })
+                  }
+                />
+              )}
             </div>
           </>
         )}

@@ -68,6 +68,7 @@ const db = admin.firestore();
       "__HASH__",
       gltfCID
     );
+    metadata.external_url = metadata.external_url.replace("__HASH__", svgCID);
     metadata.name = name;
     metadata.description = desc;
 
@@ -88,18 +89,21 @@ const db = admin.firestore();
     }
     const patternHash = ethers.utils.hexlify(arr);
 
-    if (uid) {
-      db.collection("YAYTSOS").doc(metaCID).set({
-        name,
-        description: desc,
-        patternHash,
-        metaCID,
-        svgCID,
-        gltfCID,
-        uid,
-        nft: false,
-      });
-    }
+    // if (uid) {
+    //   db.collection("YAYTSOS")
+    //     .doc(metaCID)
+    //     .set({
+    //       name,
+    //       description: desc,
+    //       patternHash,
+    //       metaCID,
+    //       svgCID,
+    //       gltfCID,
+    //       uid,
+    //       nft: false,
+    //       isEggvatar: name === uid,
+    //     });
+    // }
 
     return res.send({
       uid,

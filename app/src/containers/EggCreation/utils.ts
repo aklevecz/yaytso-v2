@@ -46,6 +46,7 @@ export const saveYaytso = async (
       svgCID,
       gltfCID,
       nft: false,
+      isEggvatar: uid === name,
     })
     .then(() => true)
     .catch(() => false);

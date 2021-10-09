@@ -72,9 +72,20 @@ export const createCanvas = (
         return null;
       }
       const { width, height } = img;
-      ctx.canvas.width = width;
-      ctx.canvas.height = height;
-      ctx.drawImage(img, 0, 0);
+      const aspect = width / height;
+      const canvasDim = { width: 1080, height: 1080 };
+      console.log(width, height, aspect);
+      if (aspect > 1) {
+        canvasDim.width = width > 1080 ? 1080 : width;
+        canvasDim.height = width / aspect;
+      } else if (aspect < 1) {
+        canvasDim.height = height > 1080 ? 1080 : height;
+        canvasDim.width = height * aspect;
+      }
+      ctx.canvas.width = canvasDim.width;
+      ctx.canvas.height = canvasDim.height;
+      console.log(canvasDim);
+      ctx.drawImage(img, 0, 0, canvasDim.width, canvasDim.height);
       resolve({ canvas, img });
     };
   });
@@ -97,12 +108,14 @@ export const createCanvasCropped = (
 
       ctx.canvas.width = width;
       ctx.canvas.height = height;
+
       const imgSize = Math.min(img.width, img.height);
       const left = (img.width - imgSize) / 2;
       const top = (img.height - imgSize) / 2;
       ctx.fillStyle = "white";
       ctx.fillRect(0, 0, width, height);
       ctx.drawImage(img, left, top, imgSize, imgSize, 0, 0, width, height);
+      ctx.drawImage(img, 0, 0, img.width, img.height);
       resolve({ canvas, img });
     };
   });

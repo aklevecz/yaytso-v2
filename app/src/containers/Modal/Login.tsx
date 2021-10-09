@@ -2,12 +2,7 @@ import Button from "../../components/Button";
 import { useModalToggle } from "../../contexts/ModalContext";
 import "react-phone-number-input/style.css";
 import PhoneInput from "react-phone-number-input";
-import React, {
-  Dispatch,
-  SetStateAction,
-  useEffect,
-  useState,
-} from "react";
+import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
 import firebase from "firebase";
 import { BiAnim } from "./Transitions";
 import { useLogin } from "../../contexts/UserContext";
@@ -16,7 +11,7 @@ import ChevronLeft from "../../components/icons/ChevronLeft";
 
 type PhoneProps = {
   phone: string;
-  setPhone: Dispatch<SetStateAction<string>>;
+  setPhone: Dispatch<SetStateAction<any>>;
   submitPhone: () => void;
   loading: boolean;
 };
@@ -25,7 +20,7 @@ const PhoneNumber = ({ phone, setPhone, submitPhone, loading }: PhoneProps) => {
   return (
     <div>
       <div className="modal__description">
-        Enter your phone number and you will be texted a sign in code
+        Enter your phone number and you will be texted a code to sign in
       </div>
       <div className="modal__input-container">
         <PhoneInput
@@ -39,7 +34,12 @@ const PhoneNumber = ({ phone, setPhone, submitPhone, loading }: PhoneProps) => {
       </div>
       <div className="modal__button-container">
         {!loading ? (
-          <Button disabled={!phone} name="Submit" size="s" onClick={submitPhone} />
+          <Button
+            disabled={!phone}
+            name="Submit"
+            size="s"
+            onClick={submitPhone}
+          />
         ) : (
           <LoadingButton color="white" size="s" />
         )}
@@ -53,11 +53,18 @@ type ConfirmProps = {
   confirmCode: () => void;
   retry: () => void;
   loading: boolean;
-  code: string,
-  error: string,
+  code: string;
+  error: string;
 };
 
-const Confirm = ({ onCodeChange, confirmCode, retry, loading, code, error }: ConfirmProps) => {
+const Confirm = ({
+  onCodeChange,
+  confirmCode,
+  retry,
+  loading,
+  code,
+  error,
+}: ConfirmProps) => {
   return (
     <div>
       <div className="modal__description">
@@ -74,7 +81,12 @@ const Confirm = ({ onCodeChange, confirmCode, retry, loading, code, error }: Con
       <div style={{ display: "flex", justifyContent: "center" }}>
         {!loading ? (
           <div className="modal__button-container--stacked">
-            <Button disabled={code.length < 6} size="s" name="Confirm" onClick={confirmCode} />
+            <Button
+              disabled={code.length < 6}
+              size="s"
+              name="Confirm"
+              onClick={confirmCode}
+            />
             {error && <Button name="Resend Code" onClick={retry} />}
           </div>
         ) : (
@@ -122,14 +134,14 @@ export default function Login() {
   }, []);
 
   useEffect(() => {
-    setError("")
-  }, [state])
+    setError("");
+  }, [state]);
 
   const errorMessageMap: { [key: string]: string } = {
-    "TOO_SHORT": "Your phone number is too short-- are you missing a number or two?",
-    "Invalid format.": "Your phone number looks weird-- maybe try again?"
-  }
-
+    TOO_SHORT:
+      "Your phone number is too short-- are you missing a number or two?",
+    "Invalid format.": "Your phone number looks weird-- maybe try again?",
+  };
 
   const submitPhone = () => {
     if (!phone) return;
@@ -146,12 +158,13 @@ export default function Login() {
       .catch((err) => {
         try {
           setError(errorMessageMap[err.message]);
-        } catch (e) {
-        }
+        } catch (e) {}
         setLoading(false);
-        (window as any).recaptchaVerifier.render().then(function (widgetId: any) {
-          (window as any).grecaptcha.reset(widgetId);
-        })
+        (window as any).recaptchaVerifier
+          .render()
+          .then(function (widgetId: any) {
+            (window as any).grecaptcha.reset(widgetId);
+          });
       });
   };
 
@@ -166,31 +179,32 @@ export default function Login() {
       return;
     }
     setLoading(true);
-    confirmationResult.confirm(code).then((result) => {
-      if (!result.user) {
-        return console.error("user is missing");
-      }
-      setLoading(false);
-      login(result.user);
-      toggleModal();
-    }).catch(err => {
-      if (err.code === "auth/invalid-verification-code") {
-        setError("Hmm that isn't the right code-- try again?")
-      }
-      setLoading(false)
-    });
+    confirmationResult
+      .confirm(code)
+      .then((result) => {
+        if (!result.user) {
+          return console.error("user is missing");
+        }
+        setLoading(false);
+        // login(result.user);
+        toggleModal();
+      })
+      .catch((err) => {
+        if (err.code === "auth/invalid-verification-code") {
+          setError("Hmm that isn't the right code-- try again?");
+        }
+        setLoading(false);
+      });
   };
 
   return (
-    <div>        {step > Step.Phone && (
-      <div onClick={() => setState(state - 1)} className="modal__back">
-        <ChevronLeft />
-      </div>
-    )}
-      <div className="modal__title">
-
-        Login
-      </div>
+    <div>
+      {step > Step.Phone && (
+        <div onClick={() => setState(state - 1)} className="modal__back">
+          <ChevronLeft />
+        </div>
+      )}
+      <div className="modal__title">Login</div>
       <BiAnim state={state} changeView={() => setStep(state)}>
         <div className="">
           <React.Fragment>

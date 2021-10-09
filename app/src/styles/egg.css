@@ -14,11 +14,16 @@
 }
 
 .egg__pen-wrapper {
-  width: 150px;
   margin: 20px;
   display: flex;
   justify-content: center;
   cursor: pointer;
+  background: var(--pale-red);
+  border-radius: 60px;
+  width: 80px;
+  height: 80px;
+  padding: 16px;
+  box-sizing: border-box;
 }
 
 .egg__details {

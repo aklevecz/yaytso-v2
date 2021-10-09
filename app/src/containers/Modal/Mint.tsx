@@ -6,10 +6,10 @@ import {
   useModalData,
   useModalOpen,
   useModalToggle,
+  useOpenModal,
 } from "../../contexts/ModalContext";
 import { BiAnim } from "./Transitions";
 
-import smiler from "../../assets/smiler.svg";
 import Pen from "../../components/icons/Signature";
 import Gear from "../../components/icons/Gear";
 import Fire from "../../components/icons/Fire";
@@ -18,6 +18,8 @@ import "../../styles/mint.css";
 import { ipfsLink } from "../../utils";
 import { useUpdateYaytsos } from "../../contexts/WalletContext";
 import { motion } from "framer-motion";
+import { ModalTypes } from "../../contexts/types";
+import TransactionProcessing from "../../components/TransactionProcessing";
 
 const Recipient = () => {
   return (
@@ -74,7 +76,9 @@ const Minting = ({ state }: { state: TxStates }) => {
   const animation = txAnimations[state];
   return (
     <div>
-      <div style={{ textAlign: "center" }}>{status}</div>
+      <div className="modal__title" style={{ textAlign: "center" }}>
+        {status}
+      </div>
       <div className="modal__description">{description}</div>
       <motion.div
         className="mint__icon-container"
@@ -93,41 +97,6 @@ const Minting = ({ state }: { state: TxStates }) => {
   );
 };
 
-const Bold = ({ children }: { children: JSX.Element | string }) => (
-  <span style={{ fontWeight: "bold" }}>{children}</span>
-);
-
-const RINKEBY_ETHERSCAN = "https://rinkeby.etherscan.io/tx";
-const Receipt = (receipt: any) => {
-  const { metaCID, svgCID, transactionHash, blockNumber, tokenId } =
-    receipt.receipt;
-  return (
-    <div className="mint__receipt">
-      <div className="mint__receipt__id">{tokenId}</div>
-      <div>
-        <Bold>Metadata</Bold>{" "}
-        <a className="mint__receipt__meta-cid" href={ipfsLink(metaCID)}>
-          ipfs://{metaCID}
-        </a>
-      </div>
-      <div>
-        <Bold>Tx</Bold>
-        <a
-          className="mint__receipt__tx-hash"
-          href={`${RINKEBY_ETHERSCAN}/${transactionHash}`}
-        >
-          {transactionHash}
-        </a>
-      </div>
-      <div>
-        <Bold>Block#</Bold>
-        <div className="mint__receipt__block-number">{blockNumber}</div>
-      </div>
-      <img className="mint__receipt__img" src={ipfsLink(svgCID)}></img>
-    </div>
-  );
-};
-
 const Error = ({ message }: { message: string }) => (
   <div className="modal__description">{message}</div>
 );
@@ -142,8 +111,15 @@ enum Step {
 
 // TODO: Consolidate Step and TxStates because they overlap a lot
 export default function Mint() {
-  const { modalState, toggleModal } = useModalToggle();
+  const {
+    modalState,
+    toggleModal,
+    onModalNext,
+    reset: resetModalState,
+    lockModalState,
+  } = useModalToggle();
   const open = useModalOpen();
+  const openModal = useOpenModal();
   const { layYaytso, reset, txState, checkYaytsoDupe, receipt } =
     useYaytsoContract();
   const { updateYaytsos } = useUpdateYaytsos();
@@ -168,15 +144,17 @@ export default function Mint() {
 
   useEffect(() => {
     if (txState === TxStates.Completed) {
-      setStep(Step.Completed);
+      openModal(ModalTypes.Receipt, { ...receipt });
+      resetModalState();
+      // setStep(Step.Completed);
     }
   }, [txState]);
 
   const lay = async () => {
-    setStep(Step.Minting);
-    console.log(metadata);
+    // setStep(Step.Minting);
+    lockModalState();
+    onModalNext();
     const response = await layYaytso(metadata);
-    console.log(response);
     if (response.error) {
       setStep(Step.Error);
       setError(response.message);
@@ -188,12 +166,11 @@ export default function Mint() {
   return (
     <div>
       {/* <div className="modal__title">Mint</div> */}
-      <BiAnim state={modalState} changeView={() => setStep(modalState)}>
+      <BiAnim state={modalState} changeView={() => setStep(modalState + 1)}>
         <div className="modal__block">
           {step === Step.Recipient && <Recipient />}
           {step === Step.Confirmation && <Confirmation />}
           {step === Step.Minting && txState && <Minting state={txState} />}
-          {step === Step.Completed && <Receipt receipt={receipt} />}
           {step === Step.Error && <Error message={error} />}
         </div>
       </BiAnim>

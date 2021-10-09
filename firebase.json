@@ -11,6 +11,7 @@
     "public": "app/build",
     "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
     "rewrites": [
+      { "source": "/egg/**", "function": "egg" },
       {
         "source": "**",
         "destination": "/index.html"

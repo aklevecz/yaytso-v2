@@ -13,7 +13,9 @@ type Action =
   | { type: "TOGGLE_MODAL" }
   | { type: "CLEAR_DATA" }
   | { type: "SET_MODAL_STATE"; modalState: number }
-  | { type: "SET_MAX_STATE"; maxState: number };
+  | { type: "SET_MAX_STATE"; maxState: number }
+  | { type: "LOCK_MODAL_STATE" }
+  | { type: "UNLOCK_MODAL_STATE" };
 
 type Dispatch = (action: Action) => void;
 
@@ -21,6 +23,7 @@ export type State = {
   open: boolean;
   modalType: ModalTypes | undefined;
   data: any;
+  stateLocked: boolean;
   modalState: number;
   maxState: number;
 };
@@ -29,6 +32,7 @@ const initialState = {
   open: false,
   modalType: undefined,
   data: undefined,
+  stateLocked: false,
   modalState: 0,
   maxState: 0,
 };
@@ -60,6 +64,10 @@ const reducer = (state: State, action: Action) => {
       return { ...state, modalState: action.modalState };
     case "SET_MAX_STATE":
       return { ...state, maxState: action.maxState };
+    case "LOCK_MODAL_STATE":
+      return { ...state, stateLocked: true };
+    case "UNLOCK_MODAL_STATE":
+      return { ...state, stateLocked: false };
     default:
       return state;
   }
@@ -103,7 +111,9 @@ export const useModalToggle = () => {
 
   const toggleModal = () => dispatch({ type: "TOGGLE_MODAL" });
 
-  const { maxState, modalState, open } = state;
+  const closeModal = () => dispatch({ type: "CLOSE_MODAL" });
+
+  const { maxState, modalState, open, stateLocked } = state;
 
   const onModalBack = () => {
     const newState = modalState - 1;
@@ -122,10 +132,18 @@ export const useModalToggle = () => {
     [dispatch]
   );
 
-  const reset = () => dispatch({ type: "SET_MODAL_STATE", modalState: 0 });
+  const lockModalState = () => dispatch({ type: "LOCK_MODAL_STATE" });
+
+  const unlockModalState = () => dispatch({ type: "UNLOCK_MODAL_STATE" });
+
+  const reset = () => {
+    dispatch({ type: "SET_MODAL_STATE", modalState: 0 });
+    dispatch({ type: "UNLOCK_MODAL_STATE" });
+  };
 
   return {
     toggleModal,
+    closeModal,
     onModalBack,
     onModalNext,
     maxState,
@@ -133,6 +151,9 @@ export const useModalToggle = () => {
     setMaxModalState,
     reset,
     open,
+    lockModalState,
+    unlockModalState,
+    stateLocked,
   };
 };
 

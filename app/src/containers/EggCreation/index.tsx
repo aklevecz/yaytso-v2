@@ -7,14 +7,8 @@ import {
   useThreeScene,
 } from "../../contexts/ThreeContext";
 import { useCustomEgg, useUser } from "../../contexts/UserContext";
-import {
-  EGGVG,
-  EGG_MASK,
-  PREVIEW_CANVAS_ID,
-  REPEAT_CANVAS_ID,
-  ViewStates,
-} from "./constants";
-import { exportYaytso, exportVanilla } from "./services";
+import { EGGVG, EGG_MASK, PREVIEW_CANVAS_ID, ViewStates } from "./constants";
+import { exportYaytso } from "./services";
 import Buttons from "./Buttons";
 
 import "../../styles/egg.css";
@@ -22,6 +16,7 @@ import { ModalTypes } from "../../contexts/types";
 import LayoutFullHeight from "../../components/Layout/FullHeight";
 import Button from "../../components/Button";
 import Pen from "../../components/icons/Pen";
+import { onCreateEggvatar } from "../../firebase";
 
 export default function Egg() {
   const [viewState, setViewState] = useState<ViewStates>(ViewStates.Blank);
@@ -57,7 +52,10 @@ export default function Egg() {
   }, [initScene]);
 
   useEffect(() => {
-    if (pattern && customEgg.name && customEgg.description) {
+    if (
+      (pattern && customEgg.name && customEgg.description) ||
+      (pattern && !user.hasEggvatar)
+    ) {
       return setViewState(ViewStates.Customized);
     }
     if (pattern) {
@@ -72,6 +70,12 @@ export default function Egg() {
   useEffect(() => {
     return () => clearEgg();
   }, []);
+
+  useEffect(() => {
+    if (user.uid && !user.hasEggvatar) {
+      openModal(ModalTypes.Welcome);
+    }
+  }, [user, user.hasEggvatar]);
 
   const reset = () => {
     clearPattern();
@@ -94,6 +98,28 @@ export default function Egg() {
         repetitions,
       });
     });
+  };
+
+  const onEggvatar = () => {
+    setViewState(ViewStates.Creating);
+    exportYaytso(
+      scene,
+      { name: user.uid, description: `An eggvatar` },
+      user.uid,
+      (metaCID, svgCID, gltfCID) => {
+        setViewState(ViewStates.Success);
+        onCreateEggvatar({ metaCID, svgCID, gltfCID });
+        openModal(ModalTypes.ExportReceipt, {
+          metaCID,
+          svgCID,
+          gltfCID,
+          name: "Your eggvatar!",
+          description,
+          canvas,
+          repetitions,
+        });
+      }
+    );
   };
 
   return (
@@ -158,6 +184,7 @@ export default function Egg() {
             inputRef={inputRef}
             reset={reset}
             onExport={onExport}
+            onEggvatar={onEggvatar}
             uploadPattern={uploadPattern}
             updating={updating}
           />

@@ -8,7 +8,14 @@ import {
   useState,
 } from "react";
 import { IPFS_URL } from "../constants";
-import { Eth, WalletState, WalletTypes, YaytsoCID, YaytsoMeta, YaytsoMetaWeb2 } from "./types";
+import {
+  Eth,
+  WalletState,
+  WalletTypes,
+  YaytsoCID,
+  YaytsoMeta,
+  YaytsoMetaWeb2,
+} from "./types";
 import { useUser } from "./UserContext";
 import { Web3WindowApi } from "./Web3WindowApi";
 import WalletConnectProvider from "@walletconnect/web3-provider";
@@ -25,17 +32,18 @@ declare global {
 
 type Action =
   | {
-    type: "INIT_WALLET";
-    provider: ethers.providers.Web3Provider | ethers.providers.BaseProvider;
-    signer: ethers.Signer;
-    address: string;
-    chainId: number;
-    walletType: WalletTypes;
-  }
+      type: "INIT_WALLET";
+      provider: ethers.providers.Web3Provider | ethers.providers.BaseProvider;
+      signer: ethers.Signer;
+      address: string;
+      chainId: number;
+      walletType: WalletTypes;
+    }
   | { type: "DISCONNECT" }
   // | { type: "createWallet"; wallet: ethers.Wallet }
   | { type: "SET_CIDS"; yaytsoCIDS: YaytsoCID[] }
   | { type: "SET_META"; yaytsoMeta: YaytsoMetaWeb2[] }
+  | { type: "SET_EGGVATAR"; eggvatar: YaytsoMetaWeb2 }
   | { type: "SET_SVGs"; yaytsoSVGs: string[] };
 
 type Dispatch = (action: Action) => void;
@@ -64,12 +72,12 @@ const initialState = {
 
 const WalletContext = createContext<
   | {
-    state: State;
-    dispatch: Dispatch;
-    initWallet({ provider, signer, address, chainId, walletType }: Eth): void;
-    disconnect(): void;
-    updateYaytsos: () => void;
-  }
+      state: State;
+      dispatch: Dispatch;
+      initWallet({ provider, signer, address, chainId, walletType }: Eth): void;
+      disconnect(): void;
+      updateYaytsos: () => void;
+    }
   | undefined
 >(undefined);
 
@@ -96,6 +104,8 @@ const reducer = (state: State, action: Action) => {
       return { ...state, yaytsoCIDS: action.yaytsoCIDS };
     case "SET_META":
       return { ...state, yaytsoMeta: action.yaytsoMeta, metaFetched: true };
+    case "SET_EGGVATAR":
+      return { ...state, eggvatar: action.eggvatar };
     case "SET_SVGs":
       return { ...state, yaytsoSVGs: action.yaytsoSVGs };
     case "DISCONNECT":
@@ -153,6 +163,7 @@ const WalletProvider = ({
     fetchUserYaytsos(user.uid).then((snapshot) => {
       let yaytsoCIDS: YaytsoCID[] = [];
       let yaytsoMeta: YaytsoMetaWeb2[] = [];
+      let eggvatar: YaytsoMetaWeb2;
       snapshot.forEach((data) => {
         const {
           metaCID,
@@ -162,9 +173,36 @@ const WalletProvider = ({
           description,
           patternHash,
           nft,
+          isEggvatar,
         } = data.data();
+        if (isEggvatar) {
+          dispatch({
+            type: "SET_EGGVATAR",
+            eggvatar: {
+              uid: user.uid,
+              metaCID,
+              svgCID,
+              gltfCID,
+              name,
+              description,
+              patternHash,
+              nft,
+              isEggvatar,
+            },
+          });
+        }
         yaytsoCIDS.push({ metaCID, svgCID, gltfCID });
-        yaytsoMeta.push({ name, description, patternHash, nft, svgCID, gltfCID, metaCID, uid: user.uid });
+        yaytsoMeta.push({
+          name,
+          description,
+          patternHash,
+          nft,
+          svgCID,
+          gltfCID,
+          metaCID,
+          uid: user.uid,
+          isEggvatar,
+        });
       });
       dispatch({ type: "SET_META", yaytsoMeta });
       dispatch({ type: "SET_CIDS", yaytsoCIDS });
@@ -175,7 +213,6 @@ const WalletProvider = ({
   //     updateYaytsos();
   //   }
   // }, [user]);
-
   const value = { state, dispatch, initWallet, disconnect, updateYaytsos };
   return (
     <WalletContext.Provider value={value}>{children}</WalletContext.Provider>
@@ -243,7 +280,13 @@ export const useYaytsoSVGs = () => {
     });
   }, [yaytsoCIDS]);
 
-  return { svgs: state.yaytsoSVGs, fetching, svgToNFT, yaytsoMeta, metaFetched };
+  return {
+    svgs: state.yaytsoSVGs,
+    fetching,
+    svgToNFT,
+    yaytsoMeta,
+    metaFetched,
+  };
 };
 
 export const useMetaMask = () => {
@@ -370,5 +413,5 @@ export const useUpdateYaytsos = () => {
     throw new Error("Wallet Context error in YaytsoSVGs hook");
   }
   const { updateYaytsos } = context;
-  return { updateYaytsos }
-}
+  return { updateYaytsos };
+};

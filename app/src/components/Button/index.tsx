@@ -1,4 +1,4 @@
-export type Sizes = "xs" | "s" | "md" | "lg" | "flex" | "flex2";
+export type Sizes = "xs" | "s" | "md" | "lg" | "flex" | "flex2" | "";
 
 type Props = {
   name: string;
@@ -27,7 +27,7 @@ export default function Button({
   margin,
   padding,
   display,
-  disabled
+  disabled,
 }: Props) {
   return (
     <button

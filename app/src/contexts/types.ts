@@ -10,6 +10,11 @@ export enum ModalTypes {
   ExportReceipt = "exportReceipt",
   EggInfo = "eggInfo",
   ConfirmAction = "confirmAction",
+  Welcome = "welcome",
+  CreateCarton = "createCarton",
+  FillCarton = "fillCarton",
+  Receipt = "receipt",
+  Claim = "claim",
 }
 
 export type Position = {
@@ -17,7 +22,7 @@ export type Position = {
   lng: number | undefined;
 };
 
-export type MarkerType = "cartons" | "users";
+export type MarkerType = "cartons" | "users" | "create";
 
 export type Marker = {
   type: string;
@@ -35,10 +40,10 @@ export type Carton = {
 export type Egg = {
   name: string | undefined;
   description: string | undefined;
-  recipient: string | undefined;
 };
 
 export type YaytsoMeta = {
+  id?: number;
   name: string;
   description: string;
   patternHash: string;
@@ -56,6 +61,7 @@ export type YaytsoMetaWeb2 = {
   patternHash: string;
   svgCID: string;
   uid: string;
+  isEggvatar: boolean;
 };
 
 export type YaytsoCID = {

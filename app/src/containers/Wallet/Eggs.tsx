@@ -49,7 +49,7 @@ export default function Eggs({ wallet }: Props) {
       <div className="wallet__egg-container">
         {yaytsoMeta.map((metadata, i) => {
           const onClick = () => openModal(ModalTypes.Mint, { metadata });
-          const navigateToEgg = () => history.push(`/egg/${metadata.metaCID}`);
+          const navigateToEgg = () => history.push(`/egg/${metadata.svgCID}`);
           const hasWallet = wallet.eth && wallet.address;
           const isNFT = metadata.nft;
           return (
@@ -60,12 +60,20 @@ export default function Eggs({ wallet }: Props) {
                   justifyContent: "center",
                 }}
               >
-                <TagText>{metadata.name}</TagText>
+                <TagText fontSize="1.2rem">
+                  {metadata.isEggvatar ? "Your eggvatar" : metadata.name}
+                </TagText>
               </div>
               {/* <div dangerouslySetInnerHTML={{ __html: svg }} /> */}
               <EggImg cid={metadata.svgCID} navigateToEgg={navigateToEgg} />
               {hasWallet && !isNFT && (
-                <Button name="Mint" onClick={onClick} width="30%" size="flex" />
+                <Button
+                  name="Mint"
+                  className="inverse"
+                  onClick={onClick}
+                  width="30%"
+                  size="flex"
+                />
               )}
               {isNFT && (
                 <div

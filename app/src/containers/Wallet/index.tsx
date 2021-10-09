@@ -10,6 +10,8 @@ import LoginButton from "../../components/Button/LoginButton";
 import LogoutButton from "../../components/Button/LogoutButton";
 import { WalletTypes } from "../../contexts/types";
 import { motion, useViewportScroll, useTransform } from "framer-motion";
+import EggImg from "./EggImg";
+import Eggvatar from "./Eggvatar";
 
 export default function Wallet() {
   const { wallet, disconnect } = useWallet();
@@ -23,10 +25,15 @@ export default function Wallet() {
     [50, 100],
     [10, window.innerWidth + 200]
   );
-  const marginTop = useTransform(scrollY, [0, 350], [0, -230]);
-
+  const marginTop = useTransform(scrollY, [50, 350], [10, -230]);
+  console.log("rendering");
   return (
     <div className="wallet__root">
+      {user.eggvatar && (
+        <div className="eggvatar__container">
+          <Eggvatar cid={user.eggvatar.svgCID} />
+        </div>
+      )}
       <div className="wallet__container">
         <motion.div style={{ marginLeft }} className="wallet__user-info">
           {/* <div className="wallet__user-info"> */}
