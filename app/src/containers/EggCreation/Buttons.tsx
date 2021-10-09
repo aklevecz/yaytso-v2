@@ -1,3 +1,4 @@
+import { UserInfo } from "os";
 import { Fragment } from "react";
 import Button from "../../components/Button";
 import FloatingButtonContainer from "../../components/Button/FloatingButtonContainer";
@@ -12,6 +13,7 @@ type Props = {
   inputRef: any;
   reset: any;
   onExport: any;
+  onEggvatar: any;
   uploadPattern: any;
   updating: boolean;
 };
@@ -23,6 +25,7 @@ export default function Buttons({
   inputRef,
   reset,
   onExport,
+  onEggvatar,
   uploadPattern,
   updating,
 }: Props) {
@@ -30,14 +33,21 @@ export default function Buttons({
     return <LoadingButton color="white" />;
   }
   if (!user.uid) {
-    return <Button name="Login" onClick={() => openModal(ModalTypes.Login)} />;
+    return (
+      <Button
+        name="Login / Signup"
+        size="flex2"
+        width="60%"
+        onClick={() => openModal(ModalTypes.Login)}
+      />
+    );
   }
 
   if (viewState === ViewStates.Blank) {
     return (
       <label className="upload-label">
         <input ref={inputRef} onChange={uploadPattern} type="file" />
-        Upload
+        Upload An Image
       </label>
     );
   }
@@ -46,7 +56,7 @@ export default function Buttons({
     return (
       <Fragment>
         <Button
-          name="Customize Egg"
+          name="Name the Egg"
           size="md"
           onClick={() => openModal(ModalTypes.EggMaker)}
         />
@@ -57,10 +67,21 @@ export default function Buttons({
     );
   }
 
+  // REFACTOR
+  const createPrompt = user.hasEggvatar ? "Create" : "Create Eggvatar";
   if (viewState === ViewStates.Customized) {
-    return <Fragment><Button name="Create" onClick={onExport} />  <FloatingButtonContainer bottom={"20%"} right={"50%"} marginRight={-65}>
-      <Button name="Clear" onClick={reset} className="anti-state" />
-    </FloatingButtonContainer></Fragment>;
+    return (
+      <Fragment>
+        <Button
+          size={user.hasEggvatar ? "" : "md"}
+          name={createPrompt}
+          onClick={user.hasEggvatar ? onExport : onEggvatar}
+        />
+        <FloatingButtonContainer bottom={"20%"} right={"50%"} marginRight={-65}>
+          <Button name="Clear" onClick={reset} className="anti-state" />
+        </FloatingButtonContainer>
+      </Fragment>
+    );
   }
 
   return (

@@ -17,7 +17,14 @@ export default function ExportReceipt() {
   useEffect(() => {
     if (open) {
       const eggMask = document.getElementById("eggMask2") as HTMLImageElement;
-      createEggMask(eggMask, canvas, 200, 200, repetitions);
+      createEggMask(
+        eggMask,
+        canvas,
+        canvas.width,
+        canvas.height,
+        repetitions,
+        () => {}
+      );
     }
   }, [open]);
 

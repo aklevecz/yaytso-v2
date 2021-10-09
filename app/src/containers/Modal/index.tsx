@@ -15,13 +15,20 @@ import Login from "./Login";
 import Mint from "./Mint";
 import ChevronLeft from "../../components/icons/ChevronLeft";
 import ExportReceipt from "./ExportReceipt";
-import EggInfo from "./EggInfo"
+import EggInfo from "./EggInfo";
 import ConfirmAction from "./ConfirmAction";
+import Welcome from "./Welcome";
+import CreateCarton from "./CreateCarton";
+import FillCarton from "./FillCarton";
+import Receipt from "./Receipt";
+import { useHistory } from "react-router";
+import Claim from "./Claim";
+import ConnectWallet from "./ConnectWallet";
 
 const modalMap = {
   info: { component: <Info />, maxState: 0 },
   cartonContent: { component: <CartonContent />, maxState: 0 },
-  eggMaker: { component: <EggMaker />, maxState: 1 },
+  eggMaker: { component: <EggMaker />, maxState: 0 },
   login: { component: <Login />, maxState: 1 },
   mint: {
     component: <Mint />,
@@ -33,19 +40,51 @@ const modalMap = {
   },
   eggInfo: {
     component: <EggInfo />,
-    maxState: 0
+    maxState: 0,
   },
   confirmAction: {
     component: <ConfirmAction />,
-    maxState: 0
-  }
+    maxState: 0,
+  },
+  welcome: {
+    component: <Welcome />,
+    maxState: 0,
+  },
+  createCarton: {
+    component: <CreateCarton />,
+    maxState: 2,
+  },
+  fillCarton: {
+    component: <FillCarton />,
+    maxState: 0,
+  },
+  receipt: {
+    component: <Receipt />,
+    maxState: 0,
+  },
+  claim: {
+    component: <Claim />,
+    maxState: 0,
+  },
+  connectWallet: {
+    component: <ConnectWallet />,
+    maxState: 0,
+  },
 };
 
 export default function Modal() {
+  const history = useHistory();
   const open = useModalOpen();
   const [display, setDisplay] = useState(false);
-  const { toggleModal, onModalBack, modalState, setMaxModalState, reset } =
-    useModalToggle();
+  const {
+    toggleModal,
+    closeModal,
+    onModalBack,
+    modalState,
+    setMaxModalState,
+    reset,
+    stateLocked,
+  } = useModalToggle();
   const modalType = useModalType();
   const lastModal = useRef<ModalTypes | undefined>(undefined);
   const modal = modalType && modalMap[modalType];
@@ -59,8 +98,15 @@ export default function Modal() {
         }
       }
     } else {
-      lastModal.current = modalType
+      lastModal.current = modalType;
     }
+    const unsub = history.listen(() => {
+      if (open) {
+        reset();
+        closeModal();
+      }
+    });
+    return () => unsub();
   }, [open]);
 
   useEffect(() => {
@@ -79,7 +125,7 @@ export default function Modal() {
         onExited={() => setDisplay(false)}
       >
         <div className="modal__wrapper">
-          {modalState > 0 && (
+          {modalState > 0 && !stateLocked && (
             <div onClick={onModalBack} className="modal__back">
               <ChevronLeft />
             </div>

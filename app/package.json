@@ -18,8 +18,11 @@
     "ethers": "^5.4.0",
     "firebase": "^8.6.8",
     "framer-motion": "^4.1.17",
+    "qr-code-styling": "^1.6.0-rc.1",
     "react": "^17.0.2",
+    "react-color": "^2.19.3",
     "react-dom": "^17.0.2",
+    "react-intersection-observer": "^8.33.0",
     "react-lottie": "^1.2.3",
     "react-phone-number-input": "^3.1.25",
     "react-router-dom": "^5.2.0",
@@ -34,6 +37,7 @@
     "build:deploy": "yarn build && firebase deploy --only hosting",
     "start": "react-scripts start",
     "build": "react-scripts build",
+    "postbuild": "node copyTemplate",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
@@ -57,6 +61,7 @@
   },
   "devDependencies": {
     "@types/google.maps": "^3.45.4",
+    "@types/react-color": "^3.0.6",
     "@types/react-lottie": "^1.2.5",
     "@types/react-phone-number-input": "^3.0.10",
     "@types/react-router-dom": "^5.1.7",

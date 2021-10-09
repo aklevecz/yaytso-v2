@@ -5,8 +5,6 @@ Have a ball, make an egg-- well as long as you have a wallet with some eth to sp
 
 Take a looksy at the ERC-721 contract on the mainnet here: [0x155b65c62e2bf8214d1e3f60854df761b9aa92b3](https://etherscan.io/address/0x155b65c62e2bf8214d1e3f60854df761b9aa92b3)
 
-See the new crytpo newb friendlier version. Make an account with your phone, make an egg, think about how much you love it, then decide whether you want to make it NFT official [v2.yaytso.art](https://v2.yaytso.art)
-
 ## **Premise**
 
 NFTs are great, decentralized storage is great, but unfortunately the degree of the curve one must climb in order to understand either of such things, is also great. The power is play is potent, it provides opportunity for motivation that is intrinsically imbedded in new found interests. Providing people with such stepping stones into new frontiers of technology will foster their development from both ends, with a middle path emerging into the brave new world.
@@ -58,3 +56,18 @@ Run the server using either
 `npm run start-mac`  or `npm run start-win`  
 
 ## You are ready to make eggs now
+
+## **Release #2 - 11/26/2021**
+### **Carton Creation**
+The user can now create cartons on the map page. They are guided through the process of dragging an icon to the desired lat/lng, and then writing to the Carton contract. A Carton can be used by anyone to hide their eggs, but in their current state they can only hold one.
+
+When clicking on an empty Carton, the user is presented with the yaytsos they own, and can then choose one to be placed into the Carton. They are then guided through the process of approving the Carton contract to transfer their yaytso, and then placing the yaytso into the Carton.
+
+Once the yaytso has been placed, the user will then sign a message with the Carton's `id` and `nonce`. After signing, the user is presented with a poster with a QR coded embedded with a link in the format of:
+
+   `https://yaytso.art/claim/<signed_message>/<carton_id>/<nonce>`
+   
+They will then place this poster at the lat/lng position of the Carton, and anyone who scans the QR code will be taken to a page that will guide them through claiming the yaytso.
+
+### **Eggvatar**
+The first yaytso that a user creates is now their *Eggvatar*. This yaytso is automatically given the name of their unique user id and is used to signify them. The Eggvatar also serves as a simple introduction to the process of creating a yaytso. 

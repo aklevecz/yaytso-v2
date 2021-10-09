@@ -1,3 +1,4 @@
+import { ethers } from "ethers";
 import {
   createContext,
   useContext,
@@ -6,7 +7,9 @@ import {
   useState,
 } from "react";
 import { CARTONS, db } from "../firebase";
+import { ipfsLink } from "../utils";
 import { useCartonContract, useYaytsoContract } from "./ContractContext";
+import { updateCarton } from "./services";
 import { Carton, YaytsoMeta } from "./types";
 import { ipfsToHttps } from "./utils";
 
@@ -108,9 +111,13 @@ export const useCartons = () => {
 // This is more specific to fetching a yaytso from a carton than its own info
 export const useCartonInfo = (data: { cartonId: number }) => {
   const context = useContext(CartonContext);
-  const [yaytso, setYaytso] = useState<YaytsoMeta>();
-  const cartonContract = useCartonContract();
-  const { getYaytsoURI } = useYaytsoContract();
+  const [carton, setCarton] = useState<Carton>();
+  const [yaytso, setYaytso] = useState<any>();
+  const [isOwner, setIsOwner] = useState(false);
+  const { contract } = useCartonContract();
+  const { getYaytsoURI, isUserOwnerOfYaytso } = useYaytsoContract();
+
+  const cartonContract = contract;
 
   if (context === undefined) {
     throw new Error("Carton Context error in Cartons hook");
@@ -118,10 +125,26 @@ export const useCartonInfo = (data: { cartonId: number }) => {
 
   const { dispatch, state } = context;
 
+  // Inefficient
+  const updateCartonData = async (id: number) => {
+    console.log("UPDATE CARTON DATA");
+    if (!cartonContract) {
+      return console.error("Carton contract is missing");
+    }
+
+    const box = await cartonContract.Boxes(id);
+    const lat = ethers.utils.parseBytes32String(box.lat);
+    const lng = ethers.utils.parseBytes32String(box.lon);
+    const locked = box.locked;
+
+    const yaytsoId = parseInt(await cartonContract.boxIdToTokenId(id));
+
+    setCarton({ id, lat, lng, locked, yaytsoId });
+  };
+
   const isLocked = async (id: number) =>
     cartonContract && (await cartonContract.Boxes(id)).locked;
 
-  // SIDE EFFECT: this tries to fetch when you close the carton, which it should not
   const getCartonsYaytsoMeta = async () => {
     setYaytso(undefined);
     if (!data) {
@@ -133,23 +156,33 @@ export const useCartonInfo = (data: { cartonId: number }) => {
     if (!yaytsoId) {
       return null;
     }
+    const isOwner = await isUserOwnerOfYaytso(yaytsoId);
+    setIsOwner(isOwner);
     const meta = await getYaytsoURI(yaytsoId);
-    const url = meta.replace("ipfs://", "https://") + ".ipfs.dweb.link";
+    const url = ipfsLink(meta.replace("ipfs://", ""));
     const yaytsoMeta = await fetch(url).then((r: Response) => r.json());
+    yaytsoMeta.id = yaytsoId;
     setYaytso(yaytsoMeta);
   };
 
   const getYaytsoImage = async () => {
     if (yaytso) {
       const prefix = ipfsToHttps(yaytso.image).split("?")[0];
-      return fetch(prefix + ".ipfs.dweb.link").then((r) => r.text());
+      const url = ipfsLink(prefix.replace("https://", ""));
+      return fetch(url).then((r) => r.text());
     }
     return null;
   };
 
+  // Should be reconciling these two functions for efficiency
+  useEffect(() => {
+    updateCartonData(data.cartonId);
+  }, []);
+
   useEffect(() => {
     getCartonsYaytsoMeta();
   }, [data && data.cartonId]);
+  // **********
 
-  return { isLocked, yaytso, getYaytsoImage };
+  return { isLocked, yaytso, getYaytsoImage, isOwner };
 };

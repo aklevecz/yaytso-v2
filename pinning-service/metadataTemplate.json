@@ -1,9 +1,9 @@
 {
   "name": "яйцо",
-  "description": "a uniquely patterned яйцо",
-  "image": "ipfs://__HASH__?filename=yaytso.svg",
+  "description": "__NAME__, a uniquely patterned яйцо with a pattern hash of __PATTERN_HASH__",
+  "image": "ipfs://__HASH__",
   "animation_url": "ipfs://__HASH__?filename=yaytso.gltf",
-  "external_url": "https://yaytso.art/egg/__TOKEN_ID__",
+  "external_url": "https://yaytso.art/egg/__HASH__",
   "attributes": [
     { "display_type": "number", "trait_type": "Generation", "value": 1 }
   ]

@@ -10,6 +10,7 @@ import { ModalTypes } from "../../contexts/types";
 import DotTyping from "../../components/Loading/DotTyping";
 import { deleteYaytso } from "../../contexts/services";
 import { useMetaMask, useWalletConnect } from "../../contexts/WalletContext";
+import { useUser } from "../../contexts/UserContext";
 
 export default function Egg() {
   const { eggId } = useParams<{ eggId: string }>();
@@ -17,6 +18,7 @@ export default function Egg() {
   const sceneContainer = useRef<HTMLDivElement | null>(null);
   const { initScene } = useThreeScene();
   const { metadata, entities } = useFetchedYaytso(eggId);
+  const user = useUser();
   const openModal = useOpenModal();
   useWalletConnect();
   useMetaMask();
@@ -33,12 +35,16 @@ export default function Egg() {
 
     return () => cleanup();
   }, [initScene, metadata]);
+
   const onClick = () => openModal(ModalTypes.Mint, { metadata });
   const openEggInfo = () => openModal(ModalTypes.EggInfo, { metadata });
 
   if (!metadata) {
     return <DotTyping />;
   }
+  const isOwner = metadata.uid === user.uid;
+  const eggName =
+    isOwner && metadata.name == user.uid ? "Your Eggvatar" : metadata.name;
   // Confirmation modal
   // Deletes it from NFT storage? (that is probably an API call)
   const deleteEgg = () => {
@@ -56,11 +62,11 @@ export default function Egg() {
       prompt: "you want to delete this yaytso?",
     });
   };
-  console.log(entities.length);
+  console.log(metadata);
   return (
     <LayoutFullHeight>
       <div className="egg-view__container">
-        <div className="egg-view__name">{metadata && metadata.name}</div>
+        <div className="egg-view__name">{eggName}</div>
         <button className="info-button" onClick={openEggInfo}>
           i
         </button>
@@ -82,7 +88,7 @@ export default function Egg() {
           {metadata && metadata.description}
         </div>
         <div className="egg-view__mint-button-container">
-          {metadata && !metadata.nft && (
+          {metadata && !metadata.nft && isOwner && (
             <Fragment>
               <Button
                 name="Mint into NFT"
@@ -99,12 +105,14 @@ export default function Egg() {
           {metadata && metadata.nft && (
             <div
               style={{
-                color: "lime",
+                color: "white",
+                background: "black",
                 fontWeight: "bold",
                 fontSize: "2.5rem",
                 width: "80%",
                 textAlign: "center",
                 padding: 12,
+                maxWidth: 200,
               }}
             >
               NFT

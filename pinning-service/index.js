@@ -56,57 +56,70 @@ const db = admin.firestore();
 
   app.post("/", upload.any(), async (req, res) => {
     const { name, desc, uid } = req.body;
-    console.log(name, desc);
-    const gltf = req.files[0];
-    const svg = req.files[1];
+
+    const files = req.files.reduce((pv, cv) => {
+      return { ...pv, [cv.fieldname]: cv.buffer };
+    }, {});
+    const { gltf, svg, png } = files;
     const gltfCID = await store(gltf.buffer);
     const svgCID = await store(svg.buffer);
-
-    const metadata = JSON.parse(metadataFile);
-    metadata.image = metadata.image.replace("__HASH__", svgCID);
-    metadata.animation_url = metadata.animation_url.replace(
-      "__HASH__",
-      gltfCID
-    );
-    metadata.name = name;
-    metadata.description = desc;
-
-    let meta_id;
-    const metaString = JSON.stringify(metadata);
-    meta_id = await store(metaString);
-    const metaCID = meta_id;
-
-    console.log(metaCID);
-    console.log(metadata);
+    const pngCID = await store(png.buffer);
 
     const sliceAmt = dev ? 2 : 4;
-    const byteArray = new CID(svgCID).bytes.slice(sliceAmt);
-
+    const byteArray = new CID(pngCID).bytes.slice(sliceAmt);
     var arr = [];
     for (var p in Object.getOwnPropertyNames(byteArray)) {
       arr[p] = byteArray[p];
     }
     const patternHash = ethers.utils.hexlify(arr);
 
-    if (uid) {
-      db.collection("YAYTSOS").doc(metaCID).set({
-        name,
-        description: desc,
-        patternHash,
-        metaCID,
-        svgCID,
-        gltfCID,
-        uid,
-        nft: false,
-      });
-    }
+    const metadata = JSON.parse(metadataFile);
+    metadata.image = metadata.image.replace(
+      "__HASH__",
+      pngCID + "?filename=yaytso.png"
+    );
+    metadata.animation_url = metadata.animation_url.replace(
+      "__HASH__",
+      gltfCID
+    );
+    metadata.external_url = metadata.external_url.replace("__HASH__", svgCID);
+    metadata.name = name;
+    metadata.description = metadata.description
+      .replace("__NAME__", name)
+      .replace("__PATTERN_HASH__", patternHash);
+
+    let meta_id;
+    const metaString = JSON.stringify(metadata);
+    meta_id = await store(metaString);
+    const metaCID = meta_id;
+
+    // console.log(metaCID);
+    // console.log(metadata);
+
+    // if (uid) {
+    //   db.collection("YAYTSOS")
+    //     .doc(metaCID)
+    //     .set({
+    //       name,
+    //       description: desc,
+    //       patternHash,
+    //       metaCID,
+    //       svgCID,
+    //       gltfCID,
+    //       uid,
+    //       nft: false,
+    //       isEggvatar: name === uid,
+    //     });
+    // }
 
     return res.send({
       uid,
       metaCID,
       svgCID,
+      pngCID,
       gltfCID,
       byteArray,
+      description: metadata.description,
       success: true,
     });
   });

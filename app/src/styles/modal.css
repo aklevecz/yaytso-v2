@@ -82,15 +82,17 @@
   font-size: 1.8rem;
   font-weight: bold;
   text-align: center;
-  display: block;
-  margin: auto;
+  /* display: block;
+  margin: auto; */
+  display: flex;
+  justify-content: center;
 }
 
 .modal__title > div {
-  display: inline-block;
-  margin: auto;
-  padding: 15px;
-  border: 1px solid black;
+  /* display: inline-block;
+  margin: auto; */
+  /* padding: 15px;
+  border: 1px solid black; */
 }
 
 .modal__content {
@@ -100,10 +102,12 @@
   background: white;
   border-radius: 30px;
   padding: 30px;
+  padding-bottom: 20px;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  border: 10px solid black;
+  overflow: auto;
+  /* border: 10px solid black; */
 }
 
 .modal__description {
@@ -135,9 +139,11 @@
 }
 
 .modal__block {
-  font-size: 24px;
+  font-size: 1.4rem;
   display: flex;
   justify-content: center;
+  text-align: center;
+  margin-top: 10px;
   /* margin-top: -80px; */
 }
 
@@ -219,6 +225,22 @@
   /* animation: in 500ms forwards; */
 }
 
+.yaytsoId__container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  width: 100%;
+}
+
+.yaytsoId__container > div {
+  background-color: #ff4747;
+  color: white;
+  padding: 10px;
+  border-radius: 10px;
+  margin: 10px;
+  flex: 0 0 30%;
+}
+
 .PhoneInputInput {
   font-size: 1.3rem;
 }
@@ -229,6 +251,10 @@
 
 .spin-infinite {
   animation: spin 1000ms infinite ease-in-out;
+}
+
+.PhoneInputCountry {
+  padding-right: 10px;
 }
 
 @keyframes in {

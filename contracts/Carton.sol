@@ -21,6 +21,7 @@ contract Carton {
     mapping(uint256 => Box) public Boxes;
     mapping(uint256 => address) public idToKey;
     mapping(uint256 => uint256) public boxIdToTokenId;
+    mapping(uint256 => uint256) public tokenIdToBoxId;
 
     event BoxCreated(uint256 id);
     event BoxFilled(uint256 id, uint256 tokenId, uint256 nonce);
@@ -57,6 +58,7 @@ contract Carton {
         idToKey[_boxId] = _key;
         Boxes[_boxId] = _box;
         boxIdToTokenId[_boxId] = _tokenId;
+        tokenIdToBoxId[_tokenId] = _boxId;
         emit BoxFilled(_boxId, _tokenId, _box.nonce);
     }
 
@@ -95,13 +97,17 @@ contract Carton {
         uint256 _yaytsoId = boxIdToTokenId[_boxId];
         address _yaytsoOwner = YaytsoInterface.ownerOf(_yaytsoId);
         require(_yaytsoOwner == _key, "SIGNATURE_NOT_OWNER");
+        uint256 _boxOfToken = tokenIdToBoxId[_yaytsoId];
+        require(_boxOfToken != 0, "EGG IS IN A BOX ALREADY");
         YaytsoInterface.transferFrom(_key, msg.sender, _yaytsoId);
         _box.locked = false;
         boxIdToTokenId[_boxId] = 0;
+        tokenIdToBoxId[_yaytsoId] = 0;
         Boxes[_boxId] = _box;
         emit YaytsoClaimed(_boxId, _yaytsoId, msg.sender);
     }
 
+    // Dev functions
     function unlockBox(uint256 _boxId) public {
         Box memory _box = Boxes[_boxId];
         _box.locked = false;

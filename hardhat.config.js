@@ -1,4 +1,5 @@
 require("@nomiclabs/hardhat-waffle");
+require("@nomiclabs/hardhat-etherscan");
 require("dotenv").config();
 
 // This is a sample Hardhat task. To learn how to create your own go to
@@ -33,8 +34,15 @@ module.exports = {
       url: `https://mainnet.infura.io/v3/${INFURA_KEY}`,
       accounts: [pp],
     },
+    matic: {
+      url: "https://polygon-rpc.com",
+      accounts: [pp],
+    },
   },
   paths: {
     artifacts: "./app/src/ethereum",
+  },
+  etherscan: {
+    apiKey: process.env.ETHERSCAN_KEY,
   },
 };

@@ -1,6 +1,18 @@
 .wallet__root {
   width: 100%;
   height: 100%;
+  overflow-x: hidden;
+}
+
+.eggvatar__container {
+  display: flex;
+  justify-content: center;
+  background-color: black;
+  max-height: 100px;
+}
+
+.eggvatar__container img {
+  width: 100px;
 }
 
 .wallet__container {
@@ -14,16 +26,27 @@
   display: flex;
   justify-content: space-evenly;
   align-items: center;
-  margin: 20px 10px;
-  border-bottom: 1px solid;
-  padding-bottom: 20px;
+  margin-top: 10px;
+  /* flex-wrap: wrap; */
+  /* margin: 20px 10px; */
+  /* border-bottom: 1px solid; */
+  /* padding-bottom: 20px; */
 }
 
 .wallet__address {
   word-break: break-all;
-  margin: 0px 25px;
+  /* margin: 0px 25px; */
   letter-spacing: 4.1px;
-  flex: 0 0 33%;
+  flex: 0 0 50%;
+}
+
+.wallet__address__wrapper {
+  min-width: 150px;
+  max-width: 150px;
+  margin: auto;
+  background: black;
+  color: white;
+  padding: 10px;
 }
 
 .wallet__phone {
@@ -34,18 +57,24 @@
 
 .wallet__connect-container {
   text-align: center;
-  margin: 20px;
   flex: 0 0 50%;
-  display: flex;
-  flex-direction: column;
+  /* display: flex; */
+  /* flex-direction: column; */
 }
 
-.wallet__connect-container div {
+.wallet__connect-container div,
+.wallet__connect-container button {
   margin-top: 20px;
 }
 
-.wallet__connect-container div:first-of-type {
+.wallet__connect-container div:first-of-type,
+.wallet__connect-container button:first-of-type {
   margin-top: 0px;
+}
+
+.wallet__add-auth__container {
+  flex: 0 0 100%;
+  margin-top: 20px;
 }
 
 .wallet__egg-container {
@@ -53,14 +82,17 @@
   flex-wrap: wrap;
   justify-content: center;
   overflow: auto;
-  padding-bottom: 10%; /* REFACTOR */
+  /* padding-bottom: 10%; REFACTOR */
+  overflow-x: hidden;
+  background-color: black;
 }
 
-.wallet__egg-container div {
+.wallet__egg-container .wallet__egg-wrapper {
   flex: 0 0 80%;
   box-sizing: border-box;
   text-align: center;
   max-width: 300px;
+  height: 100%;
 }
 
 .wallet__title {
@@ -68,15 +100,15 @@
   letter-spacing: 5px;
   text-align: center;
   font-size: 1.5rem;
-  padding: 20px;
 }
 
 .wallet__egg-wrapper {
   position: relative;
-  border-radius: 30px;
+  /* border-radius: 30px; */
   padding: 20px 0px 40px 0px;
-  box-shadow: rgb(0 0 0) 0px 0px 31px;
+  /* box-shadow: rgb(0 0 0) 0px 0px 31px; */
   margin: 40px;
+  background-color: black;
 }
 
 .wallet__nft-tag {
@@ -102,4 +134,24 @@
   margin-left: 50%;
   margin-top: 40%;
   min-height: 130px;
+}
+
+.wallet__container--body-cta {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  text-align: center;
+  flex-direction: column;
+  margin-top: 10%;
+  font-weight: bold;
+}
+
+.wallet__container-no-egg {
+  font-size: 1.5rem;
+  width: 70%;
+  /* background: #ff2a2a; */
+  color: white;
+  padding: 30px;
+  border-radius: 20px;
+  font-weight: bold;
 }

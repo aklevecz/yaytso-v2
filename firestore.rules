@@ -5,10 +5,19 @@ service cloud.firestore {
       allow read, write: if false;
     }
     match /CARTONS/{document=**} {
-      allow read: if true;
+      allow read, write: if true;
     }
     match /YAYTSOS/{document=**} {
       allow read, write: if true;
+    }
+    match /NFTS/{document=**} {
+      allow read, write: if true;
+    }
+    match /TxLogs/{document=**} {
+      allow read, write: if true;
+    }
+    match /Users/{userId} {
+      allow read, write: if request.auth.uid == userId;
     }
   }
 }
