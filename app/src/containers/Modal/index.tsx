@@ -23,6 +23,7 @@ import FillCarton from "./FillCarton";
 import Receipt from "./Receipt";
 import { useHistory } from "react-router";
 import Claim from "./Claim";
+import ConnectWallet from "./ConnectWallet";
 
 const modalMap = {
   info: { component: <Info />, maxState: 0 },
@@ -63,6 +64,10 @@ const modalMap = {
   },
   claim: {
     component: <Claim />,
+    maxState: 0,
+  },
+  connectWallet: {
+    component: <ConnectWallet />,
     maxState: 0,
   },
 };

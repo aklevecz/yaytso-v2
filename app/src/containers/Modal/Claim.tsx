@@ -7,6 +7,9 @@ import TransactionProcessing, {
 } from "../../components/TransactionProcessing";
 import { useCartonContract } from "../../contexts/ContractContext";
 import { useModalData, useModalToggle } from "../../contexts/ModalContext";
+import { updateYaytso } from "../../contexts/services";
+import { useUser } from "../../contexts/UserContext";
+import { useWallet } from "../../contexts/WalletContext";
 
 enum View {
   Initial,
@@ -15,21 +18,28 @@ enum View {
 
 export default function Claim() {
   const history = useHistory();
+  const user = useUser();
+  const { wallet } = useWallet();
   const { toggleModal } = useModalToggle();
   const [view, setView] = useState<View>(View.Initial);
   const { getTokenOfBox, claimYaytso, txState } = useCartonContract();
   const {
-    data: { signature, boxId, nonce, gltfCID },
+    data: { signature, boxId, nonce, gltfCID, metaCID },
   } = useModalData();
 
   const onClaim = () => {
-    claimYaytso(signature, boxId, nonce, () => setView(View.Completed));
+    claimYaytso(signature, boxId, nonce, () => {
+      setView(View.Completed);
+      updateYaytso(metaCID, { uid: user.uid, eth: wallet.address });
+    });
   };
 
   const onYay = () => {
     toggleModal();
     history.push("/wallet");
   };
+  console.log(user);
+  console.log(wallet);
   return (
     <div>
       {view === View.Initial && (

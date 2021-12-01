@@ -12,12 +12,16 @@ import { WalletTypes } from "../../contexts/types";
 import { motion, useViewportScroll, useTransform } from "framer-motion";
 import EggImg from "./EggImg";
 import Eggvatar from "./Eggvatar";
+import { useNetwork } from "../../contexts/ContractContext";
+import React from "react";
 
 export default function Wallet() {
   const { wallet, disconnect } = useWallet();
   const user = useUser();
   const { metamaskConnect, isConnected } = useMetaMask();
   const { startProvider } = useWalletConnect();
+
+  const { updateNetwork, network } = useNetwork();
 
   const { scrollYProgress, scrollY } = useViewportScroll();
   const marginLeft = useTransform(
@@ -26,7 +30,11 @@ export default function Wallet() {
     [10, window.innerWidth + 200]
   );
   const marginTop = useTransform(scrollY, [50, 350], [10, -230]);
-  console.log("rendering");
+
+  const onNetworkChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    updateNetwork(e.target.value);
+  };
+  console.log(network);
   return (
     <div className="wallet__root">
       {user.eggvatar && (
@@ -54,6 +62,15 @@ export default function Wallet() {
                     onClick={disconnect}
                   />
                 )}
+              <select
+                onChange={onNetworkChange}
+                name="networks"
+                value={network}
+              >
+                <option value="rinkeby">Rinkeby</option>
+                <option value="mainnet">Mainnet</option>
+                <option value="polygon">Polygon</option>
+              </select>
             </div>
           )}
           {user.phone && (

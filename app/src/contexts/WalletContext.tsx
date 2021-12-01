@@ -137,7 +137,7 @@ const WalletProvider = ({
     chainId,
     provider,
     walletType,
-  }: Eth) =>
+  }: Eth) => {
     dispatch({
       type: "INIT_WALLET",
       signer,
@@ -146,6 +146,7 @@ const WalletProvider = ({
       provider,
       walletType,
     });
+  };
 
   const disconnect = () => {
     dispatch({ type: "DISCONNECT" });
@@ -296,22 +297,23 @@ export const useMetaMask = () => {
     throw new Error("Wallet Context error in MetaMask hook");
   }
   const { dispatch, state, initWallet, disconnect } = context;
-
-  const web3WindowConnect = async () => {
-    const web3 = new Web3WindowApi();
-    const { address, chainId } = await web3.requestAccount().catch(console.log);
-    const provider = new ethers.providers.Web3Provider(window.ethereum);
-    const signer = provider.getSigner();
-    web3.onNetworkChange(initWallet);
-    web3.onAccountChange(initWallet, disconnect);
-    initWallet({
-      signer,
-      address,
-      chainId,
-      provider,
-      walletType: WalletTypes.MetaMask,
+  const web3WindowConnect = (): Promise<Web3WindowApi> => {
+    return new Promise(async (resolve, _) => {
+      const web3 = new Web3WindowApi();
+      const { address, chainId } = await web3
+        .requestAccount()
+        .catch(console.log);
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const signer = provider.getSigner();
+      initWallet({
+        signer,
+        address,
+        chainId,
+        provider,
+        walletType: WalletTypes.MetaMask,
+      });
+      resolve(web3);
     });
-    return web3;
   };
 
   const metamaskConnect = () => {
@@ -319,13 +321,13 @@ export const useMetaMask = () => {
       web3WindowConnect()
         .then((web3) => {
           if (web3.isAvailable) {
-            // web3.onNetworkChange(initWallet);
-            // web3.onAccountChange(initWallet, disconnect);
+            web3.onNetworkChange(web3WindowConnect);
+            web3.onAccountChange(web3WindowConnect, disconnect);
           }
         })
         .catch(console.log);
     } else {
-      alert("I don't need a MetaMask extension present");
+      alert("I don't see a MetaMask extension present");
     }
   };
 
@@ -333,8 +335,16 @@ export const useMetaMask = () => {
     if (window.ethereum) {
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       provider.listAccounts().then((accounts) => {
+        console.log(accounts);
         if (accounts.length > 0) {
-          web3WindowConnect();
+          web3WindowConnect()
+            .then((web3) => {
+              if (web3.isAvailable) {
+                web3.onNetworkChange(web3WindowConnect);
+                web3.onAccountChange(web3WindowConnect, disconnect);
+              }
+            })
+            .catch(console.log);
         }
       });
     }
@@ -357,13 +367,14 @@ export const useWalletConnect = () => {
     console.log("STARTING PROVIDER");
     const walletConnectProvider = new WalletConnectProvider({
       infuraId: process.env.REACT_APP_INFURA_KEY,
-      chainId: CHAIN_ID,
+      // chainId: CHAIN_ID,
     });
     setWalletConnectProvider(walletConnectProvider);
     await walletConnectProvider.enable().catch(console.log);
     const provider = new ethers.providers.Web3Provider(walletConnectProvider);
     const address = (await provider.listAccounts())[0];
     const chainId = (await provider.getNetwork()).chainId;
+    (window as any).provider = walletConnectProvider;
     const signer = provider.getSigner();
     initWallet({
       provider,
@@ -378,7 +389,7 @@ export const useWalletConnect = () => {
 
     // Subscribe to chainId change
     walletConnectProvider.on("chainChanged", (chainId: number) => {
-      console.log(chainId);
+      console.log("chain changed", chainId);
     });
 
     // Subscribe to session disconnection

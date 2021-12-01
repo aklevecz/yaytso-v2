@@ -24,6 +24,7 @@ const YAYTSO_RINKEBY_ADDRESS = "0x6fE0E0672C967dA6F7927150b9f8CEb028021cFf";
 const CARTON_RINKEBY_ADDRESS = "0x2004Ec13Fe8BF6d19Ace9FC687D98Ad1a210386c";
 
 const YAYTSO_POLYGON_ADDRESS = "0x37847a40B038094046B1C767ddf9A536C924A55f";
+const CARTON_POLYGON_ADDRESS = "";
 
 const NETWORK = process.env.NODE_ENV === "development" ? "rinkeby" : "mainnet";
 export const CHAIN_ID = NETWORK === "rinkeby" ? 4 : 1;
@@ -32,20 +33,35 @@ export let YAYTSO_ADDRESS =
 export let CARTON_ADDRESS =
   NETWORK === "rinkeby" ? CARTON_RINKEBY_ADDRESS : CARTON_MAIN_ADDRESS;
 
-// YAYTSO_ADDRESS = YAYTSO_POLYGON_ADDRESS;
-
 const contractMap: { [key: string]: { interface: any; address: string } } = {
   yaytso: { interface: YaytsoInterface, address: YAYTSO_ADDRESS },
   carton: { interface: CartonInterface, address: CARTON_ADDRESS },
 };
 
+const contractNetworkMap: {
+  [key: string]: { [key: string]: { interface: any; address: string } };
+} = {
+  yaytso: {
+    rinkeby: { interface: YaytsoInterface, address: YAYTSO_RINKEBY_ADDRESS },
+    mainnet: { interface: YaytsoInterface, address: YAYTSO_MAIN_ADDRESS },
+    polygon: { interface: YaytsoInterface, address: YAYTSO_POLYGON_ADDRESS },
+  },
+  carton: {
+    rinkeby: { interface: CartonInterface, address: CARTON_RINKEBY_ADDRESS },
+    mainnet: { interface: CartonInterface, address: CARTON_MAIN_ADDRESS },
+    polygon: { interface: CartonInterface, address: CARTON_POLYGON_ADDRESS },
+  },
+};
+
 console.log(CARTON_ADDRESS);
 
-type Action = {
-  type: "initContract";
-  contractName: "yaytsoContract" | "cartonContract";
-  contract: ethers.Contract;
-};
+type Action =
+  | {
+      type: "initContract";
+      contractName: "yaytsoContract" | "cartonContract";
+      contract: ethers.Contract;
+    }
+  | { type: "updateNetwork"; network: string };
 
 type Dispatch = (action: Action) => void;
 
@@ -53,8 +69,9 @@ type State = {
   yaytsoContract: ethers.Contract | undefined;
   cartonContract: ethers.Contract | undefined;
   provider: ethers.providers.BaseProvider;
+  network: string;
 };
-console.log(YAYTSO_ADDRESS);
+
 const provider =
   // process.env.NODE_ENV === "development"
   false
@@ -69,6 +86,7 @@ const initialState = {
   yaytsoContract: undefined,
   cartonContract: undefined,
   provider,
+  network: NETWORK,
 };
 
 const ContractContext = createContext<
@@ -79,6 +97,8 @@ const reducer = (state: State, action: Action) => {
   switch (action.type) {
     case "initContract":
       return { ...state, [action.contractName]: action.contract };
+    case "updateNetwork":
+      return { ...state, network: action.network };
     default:
       return state;
   }
@@ -93,12 +113,14 @@ const ContractProvider = ({
 
   const initContract = useCallback(
     (contract: string) => {
-      const address = contractMap[contract].address;
-      const abi = contractMap[contract].interface.abi;
-      console.log(address);
+      const {
+        address,
+        interface: { abi },
+      } = contractNetworkMap[contract][state.network];
+      console.log(state.network, address);
       return new ethers.Contract(address, abi, state.provider);
     },
-    [state.provider]
+    [state.provider, state.network]
   );
 
   useEffect(() => {
@@ -116,9 +138,10 @@ const ContractProvider = ({
       contractName: "cartonContract",
       contract: cartonContract,
     });
-  }, [initContract, state.provider]);
+  }, [initContract, state.provider, state.network]);
 
   const value = { state, dispatch };
+  console.log(state);
   return (
     <ContractContext.Provider value={value}>
       {children}
@@ -128,6 +151,20 @@ const ContractProvider = ({
 
 export { ContractContext, ContractProvider };
 
+export const useNetwork = () => {
+  const context = useContext(ContractContext);
+  if (context === undefined) {
+    throw new Error("Carton Context error in Cartons hook");
+  }
+  const { state, dispatch } = context;
+  const updateNetwork = (network: string) => {
+    dispatch({ type: "updateNetwork", network });
+  };
+
+  return { updateNetwork, network: state.network };
+};
+
+// UPDATE CONTRACT ON WALLET NETWORK CHANGE
 export const useCartonContract = () => {
   const context = useContext(ContractContext);
   const { wallet } = useWallet();

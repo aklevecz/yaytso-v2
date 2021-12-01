@@ -15,6 +15,7 @@ export enum ModalTypes {
   FillCarton = "fillCarton",
   Receipt = "receipt",
   Claim = "claim",
+  ConnectWallet = "connectWallet",
 }
 
 export type Position = {

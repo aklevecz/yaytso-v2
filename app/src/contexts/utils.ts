@@ -2,6 +2,18 @@ import { CanvasTexture, RepeatWrapping } from "three";
 import { NAV_CLASS_NAME } from "../constants";
 import { REPEAT_CANVAS_ID } from "../containers/EggCreation/constants";
 
+export const idToNetwork = {
+  1: "mainnet",
+  4: "rinkeby",
+  137: "polygon",
+};
+
+export const networkToId = {
+  mainnet: 1,
+  rinkeby: 4,
+  polygon: 137,
+};
+
 export const ipfsToHttps = (uri: string) => uri.replace("ipfs", "https");
 
 export const getMarker = (selector: string): any => {

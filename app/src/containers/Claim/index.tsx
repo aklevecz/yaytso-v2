@@ -4,7 +4,11 @@ import { useParams, useHistory } from "react-router-dom";
 
 import "../../styles/egg-view.css";
 
-import { useMetaMask, useWalletConnect } from "../../contexts/WalletContext";
+import {
+  useMetaMask,
+  useWallet,
+  useWalletConnect,
+} from "../../contexts/WalletContext";
 import { useUser } from "../../contexts/UserContext";
 import { useEffect, useState } from "react";
 import {
@@ -29,18 +33,24 @@ export default function Claim() {
     useParams<{ signature: string; boxId: string; nonce: string }>();
   const history = useHistory();
   const user = useUser();
+  const { wallet } = useWallet();
   const { getTokenOfBox, claimYaytso, txState } = useCartonContract();
   const { getYaytsoURI } = useYaytsoContract();
   const openModal = useOpenModal();
   const [yaytsoUri, setYaytsoUri] = useState("");
   const [yaytsoMeta, setYaytsoMeta] = useState<YaytsoMetaWeb2 | null>(null);
   const onClaim = () => {
-    openModal(ModalTypes.Claim, {
-      signature,
-      boxId,
-      nonce,
-      gltfCID: yaytsoMeta && yaytsoMeta.gltfCID,
-    });
+    if (!wallet.address) {
+      openModal(ModalTypes.ConnectWallet);
+    } else {
+      openModal(ModalTypes.Claim, {
+        signature,
+        boxId,
+        nonce,
+        gltfCID: yaytsoMeta && yaytsoMeta.gltfCID,
+        metaCID: yaytsoMeta && yaytsoMeta.metaCID,
+      });
+    }
   };
 
   useEffect(() => {

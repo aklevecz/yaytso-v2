@@ -15,6 +15,7 @@ export class Web3WindowApi {
   async _init() {
     this.ethereum = window.ethereum;
     this.isAvailable = true;
+    this.chainId = parseInt(window.ethereum.chainId);
   }
 
   requestAccount() {
@@ -31,6 +32,7 @@ export class Web3WindowApi {
 
   onNetworkChange(action: any) {
     this.ethereum.on("chainChanged", (chainId: number) => {
+      this.chainId = chainId;
       action();
     });
   }
