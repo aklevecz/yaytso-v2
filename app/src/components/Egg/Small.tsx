@@ -8,11 +8,12 @@ import {
 } from "../../contexts/ThreeContext";
 import { YaytsoMetaWeb2 } from "../../contexts/types";
 
-const Scene = ({ gltfCid }: { gltfCid: string }) => {
+const Scene = ({ gltfCid, legacy }: { gltfCid: string; legacy: boolean }) => {
   const sceneContainer = useRef<HTMLDivElement | null>(null);
   const { initScene } = useThreeScene();
   // const { metadata, entities } = useFetchedYaytso(eggId);
-  const { loaded, entities } = useGltfCid(gltfCid);
+  // TODO ADD LOGIC FOR SMALL LEGACY EGG
+  const { loaded, entities } = useGltfCid(gltfCid, legacy);
   useEffect(() => {
     if (!sceneContainer.current) {
       return;
@@ -48,22 +49,27 @@ const Scene = ({ gltfCid }: { gltfCid: string }) => {
 };
 
 // This is the meta data for some reason should be id and fetch from the blockchain
-export default function Small({ gltfCid }: { gltfCid: string }) {
+export default function Small({
+  gltfCid,
+  legacy,
+}: {
+  gltfCid: string;
+  legacy: boolean;
+}) {
   const [wait, setWait] = useState(true);
   useEffect(() => {
     setTimeout(() => setWait(false), 2000);
   }, []);
-  console.log(wait, "WAITING");
   return (
     <ThreeProvider>
       <>
         {wait && (
-          <div style={{ height: 200 }}>
+          <div style={{ height: 267 }}>
             <DotTyping />
           </div>
         )}
       </>
-      <> {!wait && <Scene gltfCid={gltfCid} />}</>
+      <> {!wait && <Scene gltfCid={gltfCid} legacy={legacy} />}</>
     </ThreeProvider>
   );
 }

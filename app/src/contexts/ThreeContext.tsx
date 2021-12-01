@@ -119,7 +119,6 @@ const ThreeProvider = ({
   const loadGLTF = useCallback(
     (path: string, scene: THREE.Scene, scale = 1) => {
       const loader = new GLTFLoader();
-      console.log("trying to load egg");
       loader.load(path, (object: GLTF) => {
         // object.scene.scale.set(0.1, 0.1, 0.1);
         object.scene.scale.set(scale, scale, scale);
@@ -134,7 +133,6 @@ const ThreeProvider = ({
         });
         // This could be removed and they could just be loaded first
         scene.add(object.scene);
-        console.log("egg is loaded");
         dispatch({
           type: "ADD_ENITITIES",
           entities: [{ object, name: "egg" }],
@@ -176,8 +174,6 @@ export const useThreeScene = () => {
     (container: HTMLDivElement, encoding?: boolean, square = false) => {
       const renderer = new THREE.WebGLRenderer({ alpha: true });
       const { width } = container.getBoundingClientRect();
-      console.log(container.offsetWidth);
-      console.log(width);
       // REFACTOR
       let height = width;
       if (!square) {
@@ -192,7 +188,6 @@ export const useThreeScene = () => {
       // WTF is with this shit
       if (encoding) renderer.outputEncoding = THREE.sRGBEncoding;
       const domElement = renderer.domElement;
-      console.log(domElement);
 
       const scene = new THREE.Scene();
       const camera = new THREE.PerspectiveCamera(65, windowAspect, 0.1, 1000);
@@ -205,6 +200,7 @@ export const useThreeScene = () => {
       const controls = new OrbitControls(camera, domElement);
       controls.autoRotate = true;
       controls.update();
+      controls.enabled = false;
 
       const hemi = new THREE.HemisphereLight(0xffffff, 0x080820, 0.3);
       scene.add(hemi);
@@ -333,7 +329,6 @@ export const useFetchedYaytso = (metaCID: string) => {
 
   // This probably does not belong here
   useEffect(() => {
-    console.log(metaCID);
     const unsub = subscribeToYaytso(metaCID, (metadata) => {
       setMetadata(metadata);
     });
@@ -343,37 +338,49 @@ export const useFetchedYaytso = (metaCID: string) => {
     };
   }, []);
 
-  console.log(metadata, metaCID);
-
   useEffect(() => {
     if (state.scene && metadata) {
       const gltfUrl = ipfsLink(metadata.gltfCID);
-      console.log(metadata);
-      loadGLTF(gltfUrl, state.scene, 0.7);
+      const scale = metadata.legacy ? 0.1 : 0.7;
+      loadGLTF(gltfUrl, state.scene, scale);
     }
   }, [state.scene, metadata]);
 
   return { metadata, entities: state.entities };
 };
 
-export const useGltfCid = (cid: string) => {
+export const useGltfCid = (cid: string, legacy: boolean) => {
   const context = useContext(ThreeContext);
   const [loaded, setLoaded] = useState(false);
-  console.log(cid);
   if (context === undefined) {
     throw new Error("Three Context error in ThreeScene hook");
   }
   const { state, loadGLTF } = context;
 
   useEffect(() => {
-    console.log(state.scene);
     if (state.scene) {
       const gltfUrl = ipfsLink(cid);
-      loadGLTF(gltfUrl, state.scene, 0.7);
-      console.log("hi");
+      const scale = legacy ? 0.07 : 0.7;
+      loadGLTF(gltfUrl, state.scene, scale);
       setLoaded(true);
     }
   }, [state.scene, cid]);
-  console.log(loaded);
   return { loaded, entities: state.entities };
+};
+
+export const useStaticGltf = (path: string, legacy: boolean) => {
+  const context = useContext(ThreeContext);
+  if (context === undefined) {
+    throw new Error("Three Context error in ThreeScene hook");
+  }
+  const { state, loadGLTF } = context;
+  const { scene } = state;
+  useEffect(() => {
+    if (scene) {
+      const scale = legacy ? 0.07 : 0.7;
+      loadGLTF(path, scene, scale);
+    }
+  }, [scene, path]);
+
+  return true;
 };

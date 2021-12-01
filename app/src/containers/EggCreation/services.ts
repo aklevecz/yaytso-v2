@@ -3,7 +3,7 @@ import { Scene } from "three";
 import { GLTFExporter } from "three/examples/jsm/exporters/GLTFExporter";
 import { Egg } from "../../contexts/types";
 import { EGGVG } from "./constants";
-import { createBlobs, saveYaytso } from "./utils";
+import { createBlobs, saveYaytso, svgToImgBlob } from "./utils";
 
 export const PIN_URL =
   process.env.NODE_ENV === "development"
@@ -43,7 +43,14 @@ export const exportYaytso = async (
     scene,
     async (sceneGLTF) => {
       const eggVG = document.getElementById(EGGVG);
-      const data: any = createBlobs(sceneGLTF, eggVG, description, name);
+      const imgBlob = await svgToImgBlob(eggVG);
+      const data: any = createBlobs(
+        sceneGLTF,
+        eggVG,
+        imgBlob,
+        description,
+        name
+      );
       data.append("uid", userId);
       const r = await pinBlobs(data);
       if (r.success) {
@@ -53,13 +60,15 @@ export const exportYaytso = async (
         }
         const svgUrl = URL.createObjectURL(data.get("svg"));
         const patternHash = ethers.utils.hexlify(arr);
+        console.log(r);
         const response = await saveYaytso(
           userId,
           name,
-          description,
+          r.description,
           patternHash,
           r.metaCID,
           r.svgCID,
+          r.pngCID,
           r.gltfCID
         );
         if (response) {

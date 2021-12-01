@@ -20,13 +20,12 @@ type Props = {
 
 const txStates = {
   [TxStatus.Waiting]: "Waiting for signature",
-  [TxStatus.Minting]: "...",
+  [TxStatus.Minting]: "Tx is being mined...",
   [TxStatus.Completed]: "Completed!",
   [TxStatus.Failed]: "Failed!",
 };
 const txDescriptions = {
-  [TxStatus.Waiting]:
-    "You must sign this transaction using MetaMask or the wallet you connected!",
+  [TxStatus.Waiting]: "Please sign the transaction using your wallet!",
   [TxStatus.Minting]:
     "Your transaction is on its way through the blockchain! This may take awhile though...",
   [TxStatus.Completed]: "",

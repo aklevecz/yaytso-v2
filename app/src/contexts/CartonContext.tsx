@@ -112,7 +112,7 @@ export const useCartons = () => {
 export const useCartonInfo = (data: { cartonId: number }) => {
   const context = useContext(CartonContext);
   const [carton, setCarton] = useState<Carton>();
-  const [yaytso, setYaytso] = useState<YaytsoMeta>();
+  const [yaytso, setYaytso] = useState<any>();
   const [isOwner, setIsOwner] = useState(false);
   const { contract } = useCartonContract();
   const { getYaytsoURI, isUserOwnerOfYaytso } = useYaytsoContract();

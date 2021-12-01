@@ -15,6 +15,8 @@ export enum ModalTypes {
   FillCarton = "fillCarton",
   Receipt = "receipt",
   Claim = "claim",
+  ConnectWallet = "connectWallet",
+  CreateEggNotLoggedIn = "createEggNotLoggedIn",
 }
 
 export type Position = {
@@ -62,6 +64,7 @@ export type YaytsoMetaWeb2 = {
   svgCID: string;
   uid: string;
   isEggvatar: boolean;
+  legacy?: boolean;
 };
 
 export type YaytsoCID = {

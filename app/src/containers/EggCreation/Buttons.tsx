@@ -32,15 +32,42 @@ export default function Buttons({
   if (updating || viewState === ViewStates.Creating) {
     return <LoadingButton color="white" />;
   }
-  if (!user.uid) {
-    return <Button name="Login" onClick={() => openModal(ModalTypes.Login)} />;
-  }
+
+  const onNameEgg = () => {
+    if (user.uid) {
+      openModal(ModalTypes.EggMaker);
+    } else {
+      openModal(ModalTypes.CreateEggNotLoggedIn);
+    }
+  };
+
+  const onCreate = () => {
+    if (user.uid) {
+      if (user.hasEggvatar) {
+        onExport();
+      } else {
+        onEggvatar();
+      }
+    } else {
+      openModal(ModalTypes.CreateEggNotLoggedIn);
+    }
+  };
+  // if (!user.uid) {
+  //   return (
+  //     <Button
+  //       name="Login / Signup"
+  //       size="flex2"
+  //       width="60%"
+  //       onClick={() => openModal(ModalTypes.Login)}
+  //     />
+  //   );
+  // }
 
   if (viewState === ViewStates.Blank) {
     return (
       <label className="upload-label">
         <input ref={inputRef} onChange={uploadPattern} type="file" />
-        Upload
+        Upload An Image
       </label>
     );
   }
@@ -48,11 +75,7 @@ export default function Buttons({
   if (viewState === ViewStates.Pattern) {
     return (
       <Fragment>
-        <Button
-          name="Name the Egg"
-          size="md"
-          onClick={() => openModal(ModalTypes.EggMaker)}
-        />
+        <Button name="Name the Egg" size="md" onClick={onNameEgg} />
         <FloatingButtonContainer bottom={"20%"} right={"50%"} marginRight={-65}>
           <Button name="Clear" onClick={reset} className="anti-state" />
         </FloatingButtonContainer>
@@ -61,14 +84,18 @@ export default function Buttons({
   }
 
   // REFACTOR
-  const createPrompt = user.hasEggvatar ? "Create" : "Create Eggvatar";
+  // const createPrompt = user.hasEggvatar ? "Create" : "Create Eggvatar";
+  let createPrompt = "Create";
+  if (user.uid && !user.hasEggvatar) {
+    createPrompt = "Create Eggvatar";
+  }
   if (viewState === ViewStates.Customized) {
     return (
       <Fragment>
         <Button
           size={user.hasEggvatar ? "" : "md"}
           name={createPrompt}
-          onClick={user.hasEggvatar ? onExport : onEggvatar}
+          onClick={onCreate}
         />
         <FloatingButtonContainer bottom={"20%"} right={"50%"} marginRight={-65}>
           <Button name="Clear" onClick={reset} className="anti-state" />

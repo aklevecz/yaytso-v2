@@ -19,12 +19,17 @@ type Action =
 
 type Dispatch = (action: Action) => void;
 
-type User = {
+export type User = {
   phone: string;
   uid: string;
   refreshToken: string;
   hasEggvatar: boolean;
   eggvatar?: YaytsoMetaWeb2;
+  discordId?: string;
+  discord?: boolean;
+  discordUsername?: string;
+  email?: string;
+  addresses: string[];
 };
 
 type State = {
@@ -76,9 +81,10 @@ const UserProvider = ({
 
   const login = async (user: firebase.User) => {
     const { phoneNumber, uid, refreshToken } = user;
-    if (!phoneNumber) {
-      return console.error("phone number is missing");
-    }
+    console.log(user);
+    // if (!phoneNumber) {
+    //   return console.error("phone number is missing");
+    // }
     const { hasEggvatar } = (await onSignIn()).data;
     dispatch({
       type: "UPDATE_USER",
@@ -89,14 +95,14 @@ const UserProvider = ({
   const checkAuth = async () => {
     auth.onAuthStateChanged(async (user) => {
       if (!user) {
-        console.log("not authed");
+        dispatch({ type: "SET_LOADING", loading: false });
       } else {
         if (!state.user.uid) {
+          dispatch({ type: "SET_LOADING", loading: true });
           await login(user);
-          subscribeToUser(user.uid, dispatch);
+          subscribeToUser(user.uid, dispatch).then(() => {});
         }
       }
-      dispatch({ type: "SET_LOADING", loading: false });
     });
   };
 

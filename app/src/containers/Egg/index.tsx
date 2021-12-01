@@ -62,6 +62,7 @@ export default function Egg() {
       prompt: "you want to delete this yaytso?",
     });
   };
+  console.log(metadata);
   return (
     <LayoutFullHeight>
       <div className="egg-view__container">

@@ -1,0 +1,45 @@
+.guestlist__container {
+}
+
+.guestlist__egg-name {
+  font-size: 2rem;
+  width: 100%;
+  text-align: center;
+  font-weight: bold;
+  background: black;
+  color: white;
+  padding: 20px 0px;
+}
+
+.guestlist__heading {
+  font-size: 2.5rem;
+  font-weight: bold;
+  text-align: center;
+  background: red;
+  margin: 0px 20px;
+  padding: 10px;
+  color: white;
+  border-radius: 10px;
+}
+
+.guestlist__text {
+  font-size: 1.3rem;
+  padding: 10px 30px;
+  background: black;
+  color: white;
+  margin: 19px;
+  border-radius: 10px;
+  font-weight: bold;
+}
+
+.guestlist__container img {
+  width: 100%;
+  padding: 0px 20px;
+  box-sizing: border-box;
+  border-radius: 10%;
+}
+
+.input--label {
+  font-size: 1.5rem;
+  margin: 7px 15px;
+}

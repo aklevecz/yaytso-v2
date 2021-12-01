@@ -11,6 +11,7 @@ artifacts
 **/**/firestore-debug.log
 **/**/ui-debug.log
 **/**/firebase-admin.json
+**/**/admin.json
 .vscode
 
 .firebase

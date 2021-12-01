@@ -82,15 +82,17 @@
   font-size: 1.8rem;
   font-weight: bold;
   text-align: center;
-  display: block;
-  margin: auto;
+  /* display: block;
+  margin: auto; */
+  display: flex;
+  justify-content: center;
 }
 
 .modal__title > div {
-  display: inline-block;
-  margin: auto;
-  padding: 15px;
-  border: 1px solid black;
+  /* display: inline-block;
+  margin: auto; */
+  /* padding: 15px;
+  border: 1px solid black; */
 }
 
 .modal__content {

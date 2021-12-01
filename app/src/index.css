@@ -7,6 +7,7 @@
   --pink: #e4cbcf;
   --red: #ff4c38;
   --pale-red: #ffb6b6;
+  --green: #99ff7f;
 }
 
 body {
@@ -14,6 +15,10 @@ body {
   font-family: Sen;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+.firebase-emulator-warning {
+  display: none;
 }
 
 code {
@@ -77,6 +82,15 @@ input[type="tel"] {
   max-width: 320px;
   border: 2px solid;
   border-radius: 0px;
+}
+
+select {
+  border: none;
+  background: black;
+  color: white;
+  padding: 10px;
+  font-weight: bold;
+  letter-spacing: 1px;
 }
 
 .grecaptcha-badge {

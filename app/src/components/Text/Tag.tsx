@@ -14,6 +14,7 @@ const TagText = ({
       padding,
       fontSize,
       fontWeight: "bold",
+      fontFamily: "Montserrat",
     }}
   >
     {children}

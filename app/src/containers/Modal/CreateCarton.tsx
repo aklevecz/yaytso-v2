@@ -13,6 +13,7 @@ import {
   useWalletConnect,
 } from "../../contexts/WalletContext";
 import { BiAnim } from "./Transitions";
+import LoadingButton from "../../components/Button/LoadingButton";
 
 const CTA = () => (
   <div>
@@ -32,7 +33,7 @@ const Location = ({ position }: { position: Position }) => (
           fontWeight: "bold",
           justifyContent: "space-around",
           fontSize: "2rem",
-          color: "#ff6c6c",
+          color: "#5ce191",
         }}
       >
         <div>{position.lat && position.lat.toFixed(2)}</div>
@@ -118,7 +119,7 @@ export default function CreateCarton() {
   } = useModalData();
   const [step, setStep] = useState(givenStep ? givenStep : Steps.CTA);
   const [txStatus, setTxStats] = useState<TxStatus | null>(null);
-  const { toggleModal } = useModalToggle();
+  const { toggleModal, closeModal } = useModalToggle();
   const { modalState, onModalNext } = useModalToggle();
   useWalletConnect();
   useMetaMask();
@@ -169,12 +170,17 @@ export default function CreateCarton() {
           <Button name="Ok" onClick={ok} />
         </div>
       )}
+      {step === Steps.Minting && (
+        <div className="modal__button-container">
+          <LoadingButton color="white" />
+        </div>
+      )}
       {step === Steps.Completed && (
         <div className="modal__button-container">
           <Button
             name="Ok"
             onClick={() => {
-              toggleModal();
+              closeModal();
               setStep(Steps.CTA);
             }}
           />

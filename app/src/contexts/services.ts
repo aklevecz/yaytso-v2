@@ -6,14 +6,49 @@ export const subscribeToUser = async (userId: string, dispatch: any) => {
     .collection(Collections.Users)
     .doc(userId)
     .onSnapshot((doc) => {
-      dispatch({ type: "UPDATE_USER", user: doc.data() });
+      const data = doc.data();
+      if (data) {
+        const user = Object.keys(data).reduce(
+          (acc: { [key: string]: string }, cv) => {
+            let key = cv;
+            if (cv === "phone_number") {
+              key = "phone";
+            }
+            acc[key] = data[cv];
+            return acc;
+          },
+          {}
+        );
+        dispatch({ type: "UPDATE_USER", user });
+        dispatch({ type: "SET_LOADING", loading: false });
+      }
     });
 };
 
-export const fetchUserYaytsos = async (userId: string) => {
+export const updateUserAddresses = async (
+  userId: string,
+  newAddress: string
+) => {
+  const userRef = db.collection(Collections.Users).doc(userId);
+  const user = (await userRef.get()).data();
+  if (user) {
+    const currentAddresses = user.addresses ? user.addresses : [];
+    const addresses = new Set([...currentAddresses, newAddress]);
+    return userRef.update({ addresses: Array.from(addresses) });
+  }
+};
+
+export const fetchUserYaytsos = async (
+  userId: string,
+  limit: number,
+  startAt: number
+) => {
   const res = await db
     .collection(Collections.Yaytso)
     .where("uid", "==", userId)
+    .orderBy("name")
+    .limit(limit)
+    .startAt(startAt)
     .get();
   return res;
 };
@@ -89,4 +124,16 @@ export const updateCarton = (id: number, params: any) => {
     .collection(Collections.Cartons)
     .doc(id.toString())
     .update({ ...params });
+};
+
+export const txLog = (
+  txHash: string,
+  yaytsoMetaCid: string,
+  walletAddress: string,
+  userId: string
+) => {
+  return db
+    .collection(Collections.TxLogs)
+    .doc(txHash)
+    .set({ txHash, yaytsoMetaCid, walletAddress, userId, completed: false });
 };

@@ -7,22 +7,19 @@ import {
   useReducer,
   useState,
 } from "react";
-import { IPFS_URL } from "../constants";
 import {
   Eth,
   WalletState,
   WalletTypes,
   YaytsoCID,
-  YaytsoMeta,
   YaytsoMetaWeb2,
 } from "./types";
 import { useUser } from "./UserContext";
 import { Web3WindowApi } from "./Web3WindowApi";
 import WalletConnectProvider from "@walletconnect/web3-provider";
 
-import { fetchUserYaytsos } from "./services";
+import { fetchUserYaytsos, updateUserAddresses } from "./services";
 import { ipfsLink } from "../utils";
-import { CHAIN_ID } from "./ContractContext";
 
 declare global {
   interface Window {
@@ -76,7 +73,7 @@ const WalletContext = createContext<
       dispatch: Dispatch;
       initWallet({ provider, signer, address, chainId, walletType }: Eth): void;
       disconnect(): void;
-      updateYaytsos: () => void;
+      updateYaytsos: (limit?: number, startAt?: number) => void;
     }
   | undefined
 >(undefined);
@@ -137,7 +134,10 @@ const WalletProvider = ({
     chainId,
     provider,
     walletType,
-  }: Eth) =>
+  }: Eth) => {
+    if (user.uid && (!user.addresses || !user.addresses.includes(address))) {
+      updateUserAddresses(user.uid, address);
+    }
     dispatch({
       type: "INIT_WALLET",
       signer,
@@ -146,6 +146,7 @@ const WalletProvider = ({
       provider,
       walletType,
     });
+  };
 
   const disconnect = () => {
     dispatch({ type: "DISCONNECT" });
@@ -159,8 +160,9 @@ const WalletProvider = ({
     }
   }, []);
 
-  const updateYaytsos = () =>
-    fetchUserYaytsos(user.uid).then((snapshot) => {
+  // At some point the db query might need a dynamic limit, but no one has enough eggs yet
+  const updateYaytsos = (limit = 100, startAt = 0) =>
+    fetchUserYaytsos(user.uid, limit, startAt).then((snapshot) => {
       let yaytsoCIDS: YaytsoCID[] = [];
       let yaytsoMeta: YaytsoMetaWeb2[] = [];
       let eggvatar: YaytsoMetaWeb2;
@@ -243,9 +245,7 @@ export const useCreateWallet = () => {
 };
 
 export const useYaytsoSVGs = () => {
-  const [fetching, setFetching] = useState(true);
-  // REFACTOR
-  const [svgToNFT, setSvgToNFT] = useState<any[]>([]);
+  const [startAt, setStartAt] = useState(0);
   const context = useContext(WalletContext);
   if (context === undefined) {
     throw new Error("Wallet Context error in YaytsoSVGs hook");
@@ -253,37 +253,14 @@ export const useYaytsoSVGs = () => {
 
   const { dispatch, state, updateYaytsos } = context;
 
-  const { yaytsoCIDS, yaytsoMeta, metaFetched } = state;
+  const { yaytsoMeta, metaFetched } = state;
 
   useEffect(() => {
-    updateYaytsos();
+    updateYaytsos(100, startAt);
   }, []);
-
-  // REFACTOR
-  useEffect(() => {
-    if (yaytsoCIDS.length === 0) {
-      setFetching(false);
-      return;
-    }
-    const svgMap: any[] = [];
-    const svgPromises = yaytsoCIDS.map((yaytsoCID, i) => {
-      svgMap.push({
-        nft: yaytsoMeta[i].nft,
-        name: yaytsoMeta[i].name,
-      });
-      return fetch(ipfsLink(yaytsoCID.svgCID)).then((r) => r.text());
-    });
-    Promise.all(svgPromises).then((svgs) => {
-      setFetching(false);
-      dispatch({ type: "SET_SVGs", yaytsoSVGs: svgs });
-      setSvgToNFT(svgMap);
-    });
-  }, [yaytsoCIDS]);
 
   return {
     svgs: state.yaytsoSVGs,
-    fetching,
-    svgToNFT,
     yaytsoMeta,
     metaFetched,
   };
@@ -296,22 +273,23 @@ export const useMetaMask = () => {
     throw new Error("Wallet Context error in MetaMask hook");
   }
   const { dispatch, state, initWallet, disconnect } = context;
-
-  const web3WindowConnect = async () => {
-    const web3 = new Web3WindowApi();
-    const { address, chainId } = await web3.requestAccount().catch(console.log);
-    const provider = new ethers.providers.Web3Provider(window.ethereum);
-    const signer = provider.getSigner();
-    web3.onNetworkChange(initWallet);
-    web3.onAccountChange(initWallet, disconnect);
-    initWallet({
-      signer,
-      address,
-      chainId,
-      provider,
-      walletType: WalletTypes.MetaMask,
+  const web3WindowConnect = (): Promise<Web3WindowApi> => {
+    return new Promise(async (resolve, _) => {
+      const web3 = new Web3WindowApi();
+      const { address, chainId } = await web3
+        .requestAccount()
+        .catch(console.log);
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const signer = provider.getSigner();
+      initWallet({
+        signer,
+        address,
+        chainId,
+        provider,
+        walletType: WalletTypes.MetaMask,
+      });
+      resolve(web3);
     });
-    return web3;
   };
 
   const metamaskConnect = () => {
@@ -319,13 +297,13 @@ export const useMetaMask = () => {
       web3WindowConnect()
         .then((web3) => {
           if (web3.isAvailable) {
-            // web3.onNetworkChange(initWallet);
-            // web3.onAccountChange(initWallet, disconnect);
+            web3.onNetworkChange(web3WindowConnect);
+            web3.onAccountChange(web3WindowConnect, disconnect);
           }
         })
         .catch(console.log);
     } else {
-      alert("I don't need a MetaMask extension present");
+      alert("I don't see a MetaMask extension present");
     }
   };
 
@@ -334,7 +312,14 @@ export const useMetaMask = () => {
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       provider.listAccounts().then((accounts) => {
         if (accounts.length > 0) {
-          web3WindowConnect();
+          web3WindowConnect()
+            .then((web3) => {
+              if (web3.isAvailable) {
+                web3.onNetworkChange(web3WindowConnect);
+                web3.onAccountChange(web3WindowConnect, disconnect);
+              }
+            })
+            .catch(console.log);
         }
       });
     }
@@ -357,13 +342,14 @@ export const useWalletConnect = () => {
     console.log("STARTING PROVIDER");
     const walletConnectProvider = new WalletConnectProvider({
       infuraId: process.env.REACT_APP_INFURA_KEY,
-      chainId: CHAIN_ID,
+      // chainId: CHAIN_ID,
     });
     setWalletConnectProvider(walletConnectProvider);
     await walletConnectProvider.enable().catch(console.log);
     const provider = new ethers.providers.Web3Provider(walletConnectProvider);
     const address = (await provider.listAccounts())[0];
     const chainId = (await provider.getNetwork()).chainId;
+    (window as any).provider = walletConnectProvider;
     const signer = provider.getSigner();
     initWallet({
       provider,
@@ -378,7 +364,7 @@ export const useWalletConnect = () => {
 
     // Subscribe to chainId change
     walletConnectProvider.on("chainChanged", (chainId: number) => {
-      console.log(chainId);
+      console.log("chain changed", chainId);
     });
 
     // Subscribe to session disconnection

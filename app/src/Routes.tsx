@@ -17,6 +17,8 @@ import { useLoading } from "./contexts/UserContext";
 import DotTyping from "./components/Loading/DotTyping";
 import Modal from "./containers/Modal";
 import { MapProvider } from "./contexts/MapContext";
+import Callback from "./containers/Callback";
+import Guestlist from "./containers/Guestlist";
 
 const noOverFlow = ["map", "", "egg"];
 
@@ -24,6 +26,7 @@ const AppComponents = () => {
   const location = useLocation();
   useEffect(() => {
     if (noOverFlow.includes(location.pathname.split("/")[1])) {
+      window.scrollTo(0, 0);
       document.documentElement.style.overflow = "hidden";
       document.body.style.overflow = "hidden";
       (document.querySelector(".App") as HTMLDivElement).style.overflow =
@@ -37,9 +40,7 @@ const AppComponents = () => {
       document.getElementById("root")!.style.overflow = "auto";
     }
   }, [location]);
-  useEffect(() => {
-    console.log("routes render");
-  }, []);
+
   return (
     <Switch>
       <Route path="/egg/:eggId">
@@ -58,6 +59,14 @@ const AppComponents = () => {
       <Route path="/map">
         <Map />
       </Route>
+      <Route path="/callback">
+        <Callback />
+      </Route>
+      <Route path="/hunt">
+        <ThreeProvider>
+          <Guestlist />
+        </ThreeProvider>
+      </Route>
       <Route path="/">
         <PatternProvider>
           <ThreeProvider>
@@ -75,6 +84,7 @@ export default function Routes() {
   return (
     <Router>
       <Nav />
+      {/* <DotTyping /> */}
       {loading && <DotTyping />}
       {!loading && <AppComponents />}
       {/* <AppComponents /> */}

@@ -23,11 +23,13 @@ import FillCarton from "./FillCarton";
 import Receipt from "./Receipt";
 import { useHistory } from "react-router";
 import Claim from "./Claim";
+import ConnectWallet from "./ConnectWallet";
+import CreateEggNotLoggedIn from "./CreateEggNotLoggedIn";
 
 const modalMap = {
   info: { component: <Info />, maxState: 0 },
   cartonContent: { component: <CartonContent />, maxState: 0 },
-  eggMaker: { component: <EggMaker />, maxState: 1 },
+  eggMaker: { component: <EggMaker />, maxState: 0 },
   login: { component: <Login />, maxState: 1 },
   mint: {
     component: <Mint />,
@@ -63,6 +65,14 @@ const modalMap = {
   },
   claim: {
     component: <Claim />,
+    maxState: 0,
+  },
+  connectWallet: {
+    component: <ConnectWallet />,
+    maxState: 0,
+  },
+  createEggNotLoggedIn: {
+    component: <CreateEggNotLoggedIn />,
     maxState: 0,
   },
 };

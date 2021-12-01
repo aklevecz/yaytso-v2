@@ -2,10 +2,14 @@ export default function EggMask({
   svgId,
   imgId,
   visible,
+  width,
+  height,
 }: {
   svgId: string;
   imgId: string;
   visible: boolean;
+  width?: number;
+  height?: number;
 }) {
   return (
     <svg
@@ -13,7 +17,7 @@ export default function EggMask({
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 216.03 216.03"
       xmlnsXlink="http://www.w3.org/1999/xlink"
-      style={{ display: visible ? "block" : "none" }}
+      style={{ display: visible ? "block" : "none", width, height }}
     >
       <defs>
         <clipPath id={`clip-path-${svgId}`} transform="translate(56.67 29.81)">
@@ -27,6 +31,7 @@ export default function EggMask({
       <g id="Layer_2" data-name="Layer 2">
         <g id="SVG">
           <g clipPath={`url(#clip-path-${svgId})`}>
+            <rect width="451" height="451" fill="white"></rect>
             <image
               id={imgId}
               width="451"

@@ -4,7 +4,11 @@ import { useParams, useHistory } from "react-router-dom";
 
 import "../../styles/egg-view.css";
 
-import { useMetaMask, useWalletConnect } from "../../contexts/WalletContext";
+import {
+  useMetaMask,
+  useWallet,
+  useWalletConnect,
+} from "../../contexts/WalletContext";
 import { useUser } from "../../contexts/UserContext";
 import { useEffect, useState } from "react";
 import {
@@ -29,28 +33,38 @@ export default function Claim() {
     useParams<{ signature: string; boxId: string; nonce: string }>();
   const history = useHistory();
   const user = useUser();
+  const { wallet } = useWallet();
   const { getTokenOfBox, claimYaytso, txState } = useCartonContract();
   const { getYaytsoURI } = useYaytsoContract();
   const openModal = useOpenModal();
   const [yaytsoUri, setYaytsoUri] = useState("");
   const [yaytsoMeta, setYaytsoMeta] = useState<YaytsoMetaWeb2 | null>(null);
   const onClaim = () => {
-    openModal(ModalTypes.Claim, {
-      signature,
-      boxId,
-      nonce,
-      gltfCID: yaytsoMeta && yaytsoMeta.gltfCID,
-    });
+    if (!wallet.address) {
+      openModal(ModalTypes.ConnectWallet);
+    } else {
+      openModal(ModalTypes.Claim, {
+        signature,
+        boxId,
+        nonce,
+        gltfCID: yaytsoMeta && yaytsoMeta.gltfCID,
+        metaCID: yaytsoMeta && yaytsoMeta.metaCID,
+        legacy: yaytsoMeta && yaytsoMeta.legacy,
+      });
+    }
   };
 
   useEffect(() => {
     setFetching(true);
+    console.log(boxId);
     getTokenOfBox(parseInt(boxId)).then((tokenId) => {
+      console.log(parseInt(tokenId));
       if (parseInt(tokenId)) {
         getYaytsoURI(tokenId).then((uri) => {
+          console.log(uri);
           const cid = uri.replace("ipfs://", "");
           fetchYaytso(cid).then((yaytso) => {
-            // console.log(yaytso.data());
+            console.log(yaytso.data());
             // setYaytsoUri(yaytso.data()!.svgCID.replace("ipfs://", ""));
             setYaytsoMeta(yaytso.data()! as YaytsoMetaWeb2);
             setFetching(false);
@@ -64,6 +78,7 @@ export default function Claim() {
 
   useWalletConnect();
   useMetaMask();
+  console.log(yaytsoMeta);
   return (
     <LayoutFullHeight>
       <>{yaytsoMeta && <Egg meta={yaytsoMeta} />}</>

@@ -7,6 +7,9 @@ import TransactionProcessing, {
 } from "../../components/TransactionProcessing";
 import { useCartonContract } from "../../contexts/ContractContext";
 import { useModalData, useModalToggle } from "../../contexts/ModalContext";
+import { updateYaytso } from "../../contexts/services";
+import { useUser } from "../../contexts/UserContext";
+import { useWallet } from "../../contexts/WalletContext";
 
 enum View {
   Initial,
@@ -15,21 +18,27 @@ enum View {
 
 export default function Claim() {
   const history = useHistory();
+  const user = useUser();
+  const { wallet } = useWallet();
   const { toggleModal } = useModalToggle();
   const [view, setView] = useState<View>(View.Initial);
-  const { getTokenOfBox, claimYaytso, txState } = useCartonContract();
+  const { claimYaytso, txState } = useCartonContract();
   const {
-    data: { signature, boxId, nonce, gltfCID },
+    data: { signature, boxId, nonce, gltfCID, metaCID, legacy },
   } = useModalData();
 
   const onClaim = () => {
-    claimYaytso(signature, boxId, nonce, () => setView(View.Completed));
+    claimYaytso(signature, boxId, nonce, () => {
+      setView(View.Completed);
+      updateYaytso(metaCID, { uid: user.uid, eth: wallet.address });
+    });
   };
 
   const onYay = () => {
     toggleModal();
     history.push("/wallet");
   };
+
   return (
     <div>
       {view === View.Initial && (
@@ -44,7 +53,7 @@ export default function Claim() {
             ) : (
               ""
             )}
-            {txState === 0 && <Small gltfCid={gltfCID} />}
+            {txState === 0 && <Small gltfCid={gltfCID} legacy={legacy} />}
           </div>
           <div className="modal__button-container">
             {txState === 0 && <Button name="Claim" onClick={onClaim} />}
@@ -56,7 +65,7 @@ export default function Claim() {
           <div className="modal__title">YAYY</div>
           <div className="modal__block" style={{ flexDirection: "column" }}>
             <div>This is now your egg!</div>
-            <Small gltfCid={gltfCID} />
+            <Small gltfCid={gltfCID} legacy={legacy} />
           </div>
           <div className="modal__button-container">
             <Button name="Yay!" onClick={onYay} />

@@ -9,9 +9,20 @@
   },
   "hosting": {
     "public": "app/build",
-    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
     "rewrites": [
-      { "source": "/egg/**", "function": "egg" },
+      {
+        "source": "/egg/**",
+        "function": "egg"
+      },
+      {
+        "source": "/guestlist",
+        "function": "guestlist"
+      },
       {
         "source": "**",
         "destination": "/index.html"
@@ -26,6 +37,15 @@
     "firestore": {
       "host": "localhost",
       "port": "8081"
+    },
+    "auth": {
+      "port": 9099
+    },
+    "hosting": {
+      "port": 5000
+    },
+    "ui": {
+      "enabled": true
     }
   }
 }

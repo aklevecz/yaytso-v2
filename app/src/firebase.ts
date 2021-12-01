@@ -3,7 +3,6 @@ import "firebase/auth";
 import "firebase/firestore";
 import "firebase/functions";
 
-// const firebaseConfig = require("./firebase-config.json");
 const config = {
   apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
   authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
@@ -24,6 +23,7 @@ if (process.env.NODE_ENV === "development") {
     ssl: false,
   });
   functions.useEmulator("localhost", 5002);
+  auth.useEmulator("http://localhost:9099");
 }
 
 export enum Collections {
@@ -31,6 +31,7 @@ export enum Collections {
   Cartons = "CARTONS",
   Yaytso = "YAYTSOS",
   NFT = "NFTS",
+  TxLogs = "TxLogs",
 }
 
 const CARTONS = "CARTONS";
@@ -41,5 +42,6 @@ export { auth, db };
 
 const onSignIn = functions.httpsCallable("onSignIn");
 const onCreateEggvatar = functions.httpsCallable("onCreateEggvatar");
+const discordAuth = functions.httpsCallable("discord-auth");
 
-export { onSignIn, onCreateEggvatar };
+export { onSignIn, onCreateEggvatar, discordAuth };

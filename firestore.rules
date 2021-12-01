@@ -13,6 +13,9 @@ service cloud.firestore {
     match /NFTS/{document=**} {
       allow read, write: if true;
     }
+    match /TxLogs/{document=**} {
+      allow read, write: if true;
+    }
     match /Users/{userId} {
       allow read, write: if request.auth.uid == userId;
     }
