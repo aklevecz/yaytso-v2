@@ -63,6 +63,7 @@ export type YaytsoMetaWeb2 = {
   svgCID: string;
   uid: string;
   isEggvatar: boolean;
+  legacy?: boolean;
 };
 
 export type YaytsoCID = {

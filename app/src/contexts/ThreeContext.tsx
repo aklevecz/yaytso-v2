@@ -343,23 +343,20 @@ export const useFetchedYaytso = (metaCID: string) => {
     };
   }, []);
 
-  console.log(metadata, metaCID);
-
   useEffect(() => {
     if (state.scene && metadata) {
       const gltfUrl = ipfsLink(metadata.gltfCID);
-      console.log(metadata);
-      loadGLTF(gltfUrl, state.scene, 0.7);
+      const scale = metadata.legacy ? 0.1 : 0.7;
+      loadGLTF(gltfUrl, state.scene, scale);
     }
   }, [state.scene, metadata]);
 
   return { metadata, entities: state.entities };
 };
 
-export const useGltfCid = (cid: string) => {
+export const useGltfCid = (cid: string, legacy: boolean) => {
   const context = useContext(ThreeContext);
   const [loaded, setLoaded] = useState(false);
-  console.log(cid);
   if (context === undefined) {
     throw new Error("Three Context error in ThreeScene hook");
   }
@@ -369,7 +366,8 @@ export const useGltfCid = (cid: string) => {
     console.log(state.scene);
     if (state.scene) {
       const gltfUrl = ipfsLink(cid);
-      loadGLTF(gltfUrl, state.scene, 0.7);
+      const scale = legacy ? 0.1 : 0.7;
+      loadGLTF(gltfUrl, state.scene, scale);
       console.log("hi");
       setLoaded(true);
     }

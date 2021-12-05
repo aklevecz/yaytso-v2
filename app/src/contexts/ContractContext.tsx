@@ -14,6 +14,7 @@ import { addCarton, saveNFT, updateYaytso } from "./services";
 import { YaytsoMetaWeb2 } from "./types";
 import { Collections, db } from "../firebase";
 import { TxStatus } from "../containers/Modal/CreateCarton";
+import { idToNetwork } from "./utils";
 
 const YAYTSO_HARDHAT_ADDRESS = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
 
@@ -24,7 +25,7 @@ const YAYTSO_RINKEBY_ADDRESS = "0x6fE0E0672C967dA6F7927150b9f8CEb028021cFf";
 const CARTON_RINKEBY_ADDRESS = "0x2004Ec13Fe8BF6d19Ace9FC687D98Ad1a210386c";
 
 const YAYTSO_POLYGON_ADDRESS = "0x37847a40B038094046B1C767ddf9A536C924A55f";
-const CARTON_POLYGON_ADDRESS = "";
+const CARTON_POLYGON_ADDRESS = YAYTSO_POLYGON_ADDRESS;
 
 const NETWORK = process.env.NODE_ENV === "development" ? "rinkeby" : "mainnet";
 export const CHAIN_ID = NETWORK === "rinkeby" ? 4 : 1;
@@ -110,22 +111,35 @@ const ContractProvider = ({
   children: JSX.Element | JSX.Element[];
 }) => {
   const [state, dispatch] = useReducer(reducer, initialState);
+  const { wallet } = useWallet();
 
   const initContract = useCallback(
-    (contract: string) => {
+    (
+      contract: string,
+      network: string,
+      provider: ethers.providers.BaseProvider | ethers.providers.Web3Provider
+    ) => {
       const {
         address,
         interface: { abi },
-      } = contractNetworkMap[contract][state.network];
-      console.log(state.network, address);
-      return new ethers.Contract(address, abi, state.provider);
+      } = contractNetworkMap[contract][network];
+      return new ethers.Contract(address, abi, provider);
     },
-    [state.provider, state.network]
+    []
   );
 
   useEffect(() => {
-    const yaytsoContract = initContract("yaytso");
-    const cartonContract = initContract("carton");
+    let network = state.network;
+    let provider:
+      | ethers.providers.Web3Provider
+      | ethers.providers.BaseProvider = state.provider;
+    if (wallet.chainId && wallet.provider) {
+      network = idToNetwork[wallet.chainId];
+      provider = wallet.provider;
+    }
+    console.log("contract change", network);
+    const yaytsoContract = initContract("yaytso", network, provider);
+    const cartonContract = initContract("carton", network, provider);
 
     dispatch({
       type: "initContract",
@@ -138,10 +152,9 @@ const ContractProvider = ({
       contractName: "cartonContract",
       contract: cartonContract,
     });
-  }, [initContract, state.provider, state.network]);
+  }, [initContract, state.provider, state.network, wallet.chainId]);
 
-  const value = { state, dispatch };
-  console.log(state);
+  const value = { state, dispatch, initContract };
   return (
     <ContractContext.Provider value={value}>
       {children}
@@ -405,7 +418,9 @@ export const useYaytsoContract = () => {
     if (!yaytsoContract) {
       return;
     }
+    console.log(yaytsoContract.address);
     const meta = await yaytsoContract.tokenURI(yaytsoId);
+    console.log(meta);
     return meta;
   };
 

@@ -49,18 +49,22 @@ export default function Claim() {
         nonce,
         gltfCID: yaytsoMeta && yaytsoMeta.gltfCID,
         metaCID: yaytsoMeta && yaytsoMeta.metaCID,
+        legacy: yaytsoMeta && yaytsoMeta.legacy,
       });
     }
   };
 
   useEffect(() => {
     setFetching(true);
+    console.log(boxId);
     getTokenOfBox(parseInt(boxId)).then((tokenId) => {
+      console.log(parseInt(tokenId));
       if (parseInt(tokenId)) {
         getYaytsoURI(tokenId).then((uri) => {
+          console.log(uri);
           const cid = uri.replace("ipfs://", "");
           fetchYaytso(cid).then((yaytso) => {
-            // console.log(yaytso.data());
+            console.log(yaytso.data());
             // setYaytsoUri(yaytso.data()!.svgCID.replace("ipfs://", ""));
             setYaytsoMeta(yaytso.data()! as YaytsoMetaWeb2);
             setFetching(false);
@@ -74,6 +78,7 @@ export default function Claim() {
 
   useWalletConnect();
   useMetaMask();
+  console.log(yaytsoMeta);
   return (
     <LayoutFullHeight>
       <>{yaytsoMeta && <Egg meta={yaytsoMeta} />}</>

@@ -12,9 +12,11 @@ export default function Egg({ meta }: { meta: YaytsoMetaWeb2 }) {
   const sceneContainer = useRef<HTMLDivElement | null>(null);
   const { initScene } = useThreeScene();
   // const { metadata, entities } = useFetchedYaytso(eggId);
-  const { loaded: metadata, entities } = useGltfCid(meta.gltfCID);
+  const { loaded, entities } = useGltfCid(
+    meta.gltfCID,
+    meta.legacy ? meta.legacy : false
+  );
   useEffect(() => {
-    console.log(sceneContainer.current);
     if (!sceneContainer.current) {
       return;
     }

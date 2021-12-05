@@ -15,8 +15,6 @@ export default function Bottom({
   action,
   position,
 }: Props) {
-  const openModal = useOpenModal();
-  console.log(view);
   return (
     <div className="overlay__bottom--m">
       <Button

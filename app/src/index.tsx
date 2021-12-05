@@ -19,15 +19,15 @@ import { MapProvider } from "./contexts/MapContext";
 ReactDOM.render(
   <CartonProvider>
     <UserProvider>
-      <ContractProvider>
-        <WalletProvider>
+      <WalletProvider>
+        <ContractProvider>
           <MapProvider>
             <ModalProvider>
               <App />
             </ModalProvider>
           </MapProvider>
-        </WalletProvider>
-      </ContractProvider>
+        </ContractProvider>
+      </WalletProvider>
     </UserProvider>
   </CartonProvider>,
   document.getElementById("root")

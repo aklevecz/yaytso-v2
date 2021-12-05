@@ -2,7 +2,7 @@ import { CanvasTexture, RepeatWrapping } from "three";
 import { NAV_CLASS_NAME } from "../constants";
 import { REPEAT_CANVAS_ID } from "../containers/EggCreation/constants";
 
-export const idToNetwork = {
+export const idToNetwork: { [key: number]: string } = {
   1: "mainnet",
   4: "rinkeby",
   137: "polygon",
