@@ -10,10 +10,10 @@ import LoginButton from "../../components/Button/LoginButton";
 import LogoutButton from "../../components/Button/LogoutButton";
 import { WalletTypes } from "../../contexts/types";
 import { motion, useViewportScroll, useTransform } from "framer-motion";
-import EggImg from "./EggImg";
 import Eggvatar from "./Eggvatar";
 import { useNetwork } from "../../contexts/ContractContext";
 import React from "react";
+import DiscordButton from "./DiscordButton";
 
 export default function Wallet() {
   const { wallet, disconnect } = useWallet();
@@ -34,7 +34,6 @@ export default function Wallet() {
   const onNetworkChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     updateNetwork(e.target.value);
   };
-  console.log(network);
   return (
     <div className="wallet__root">
       {user.eggvatar && (
@@ -78,6 +77,7 @@ export default function Wallet() {
               <div>{user.phone}</div>
               <div style={{ padding: 10, textAlign: "center" }}>
                 {user.uid && <LogoutButton size="xs" />}
+                {user.uid && <DiscordButton />}
               </div>
             </div>
           )}

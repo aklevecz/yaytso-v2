@@ -333,7 +333,6 @@ export const useFetchedYaytso = (metaCID: string) => {
 
   // This probably does not belong here
   useEffect(() => {
-    console.log(metaCID);
     const unsub = subscribeToYaytso(metaCID, (metadata) => {
       setMetadata(metadata);
     });
@@ -366,7 +365,7 @@ export const useGltfCid = (cid: string, legacy: boolean) => {
     console.log(state.scene);
     if (state.scene) {
       const gltfUrl = ipfsLink(cid);
-      const scale = legacy ? 0.1 : 0.7;
+      const scale = legacy ? 0.07 : 0.7;
       loadGLTF(gltfUrl, state.scene, scale);
       console.log("hi");
       setLoaded(true);

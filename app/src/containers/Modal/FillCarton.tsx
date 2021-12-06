@@ -17,6 +17,7 @@ import { batchFetchNFTs } from "../../contexts/services";
 
 import posterTemplate from "../../assets/poster_template.png";
 import { YaytsoMetaWeb2 } from "../../contexts/types";
+import Small from "../../components/Egg/Small";
 
 const PickYaytso = ({
   ok,
@@ -121,7 +122,6 @@ export default function FillCarton() {
   const qrRef = useRef<HTMLDivElement | null>(null);
 
   const { cartonId } = data;
-
   useEffect(() => {
     open &&
       getOwnersYaytsos().then(({ yaytsoIds, error }) => {
@@ -151,6 +151,7 @@ export default function FillCarton() {
     // });
   }, [open]);
 
+  // TODO: pickYaytso needs to be integrated with this skip logic
   useEffect(() => {
     if (data.skip && data.skip === "SIGNATURE") {
       getBoxData(data.cartonId).then((box) => {
@@ -158,6 +159,8 @@ export default function FillCarton() {
         setPickedYaytso({
           id: data.yaytso.id,
           img: ipfsLink(data.yaytso.image.replace("ipfs://", "")),
+          gltf: ipfsLink(data.yaytso.animation_url.replace("ipfs://", "")),
+          legacy: data.yaytso.legacy,
           name: data.yaytso.name,
         });
         setView(Views.CreateSignature);
@@ -178,10 +181,12 @@ export default function FillCarton() {
         .then((r) => r.json())
         .then((meta) => {
           // const meta = { name: id };
+          console.log(meta);
           setPickedYaytso({
             id,
             name: meta.name,
             img: ipfsLink(meta.image.replace("ipfs://", "")),
+            gltf: meta.animation_url.replace("ipfs://", ""),
           });
           checkCartonIsApproved(id).then((address) => {
             if (address === CARTON_ADDRESS) {
@@ -326,7 +331,8 @@ export default function FillCarton() {
             yaytso
           </div>
           <div className="modal__block">
-            <img style={{ background: "#e5e4e4" }} src={pickedYaytso.img} />
+            {/* <img style={{ background: "#e5e4e4" }} src={pickedYaytso.img} /> */}
+            <Small gltfCid={pickedYaytso.gltf} legacy={pickedYaytso.id <= 42} />
           </div>
           <div className="modal__button-container">
             <Button
@@ -342,7 +348,8 @@ export default function FillCarton() {
         <div>
           <div className="modal__title">Ready to fill this carton?</div>
           <div className="modal__block">
-            <img style={{ background: "#e5e4e4" }} src={pickedYaytso.img} />
+            {/* <img style={{ background: "#e5e4e4" }} src={pickedYaytso.img} /> */}
+            <Small gltfCid={pickedYaytso.gltf} legacy={pickedYaytso.id <= 42} />
           </div>
           <div className="modal__button-container">
             <Button name="Fill Carton" onClick={fillCarton} />

@@ -17,6 +17,7 @@ import { useLoading } from "./contexts/UserContext";
 import DotTyping from "./components/Loading/DotTyping";
 import Modal from "./containers/Modal";
 import { MapProvider } from "./contexts/MapContext";
+import Callback from "./containers/Callback";
 
 const noOverFlow = ["map", "", "egg"];
 
@@ -24,6 +25,7 @@ const AppComponents = () => {
   const location = useLocation();
   useEffect(() => {
     if (noOverFlow.includes(location.pathname.split("/")[1])) {
+      window.scrollTo(0, 0);
       document.documentElement.style.overflow = "hidden";
       document.body.style.overflow = "hidden";
       (document.querySelector(".App") as HTMLDivElement).style.overflow =
@@ -57,6 +59,9 @@ const AppComponents = () => {
       </Route>
       <Route path="/map">
         <Map />
+      </Route>
+      <Route path="/callback">
+        <Callback />
       </Route>
       <Route path="/">
         <PatternProvider>

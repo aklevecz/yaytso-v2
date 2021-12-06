@@ -3,7 +3,6 @@ import "firebase/auth";
 import "firebase/firestore";
 import "firebase/functions";
 
-// const firebaseConfig = require("./firebase-config.json");
 const config = {
   apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
   authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
@@ -41,5 +40,6 @@ export { auth, db };
 
 const onSignIn = functions.httpsCallable("onSignIn");
 const onCreateEggvatar = functions.httpsCallable("onCreateEggvatar");
+const discordAuth = functions.httpsCallable("discordAuth");
 
-export { onSignIn, onCreateEggvatar };
+export { onSignIn, onCreateEggvatar, discordAuth };

@@ -61,3 +61,14 @@ export const egg = functions.https.onRequest(async (request, response) => {
     response.status(200).send("wtf");
   }
 });
+const isEmulator = process.env.FUNCTIONS_EMULATOR;
+// const baseUrl = "https://discord.com/api";
+import devConfig from "./dev.json";
+const clientId = isEmulator
+  ? devConfig.discord.client_secret
+  : functions.config().discord.client_secret;
+export const discordAuth = functions.https.onCall(async (data, context) => {
+  console.log(clientId);
+
+  return true;
+});
