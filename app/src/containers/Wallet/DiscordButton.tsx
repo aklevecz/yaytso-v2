@@ -4,10 +4,16 @@ const authLink =
 type Props = {
   // onClick: () => void;
 };
-
+export const discordColor = "#5865F2";
 export default function DiscordButton({}: Props) {
   const onClick = () => (window.location.href = authLink);
   return (
-    <Button margin="10px 0px 0px" name="Discord" onClick={onClick} size="xs" />
+    <Button
+      margin="10px"
+      name="Discord"
+      onClick={onClick}
+      size="xs"
+      background={discordColor}
+    />
   );
 }

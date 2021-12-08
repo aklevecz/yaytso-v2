@@ -20,7 +20,7 @@ import { useUser } from "./UserContext";
 import { Web3WindowApi } from "./Web3WindowApi";
 import WalletConnectProvider from "@walletconnect/web3-provider";
 
-import { fetchUserYaytsos } from "./services";
+import { fetchUserYaytsos, updateUserAddresses } from "./services";
 import { ipfsLink } from "../utils";
 import { CHAIN_ID } from "./ContractContext";
 
@@ -138,6 +138,9 @@ const WalletProvider = ({
     provider,
     walletType,
   }: Eth) => {
+    if (!user.addresses || !user.addresses.includes(address)) {
+      updateUserAddresses(user.uid, address);
+    }
     dispatch({
       type: "INIT_WALLET",
       signer,
@@ -335,7 +338,6 @@ export const useMetaMask = () => {
     if (window.ethereum) {
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       provider.listAccounts().then((accounts) => {
-        console.log(accounts);
         if (accounts.length > 0) {
           web3WindowConnect()
             .then((web3) => {

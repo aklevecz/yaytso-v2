@@ -10,6 +10,18 @@ export const subscribeToUser = async (userId: string, dispatch: any) => {
     });
 };
 
+export const updateUserAddresses = async (
+  userId: string,
+  newAddress: string
+) => {
+  const userRef = db.collection(Collections.Users).doc(userId);
+  const user = (await userRef.get()).data();
+  if (user) {
+    const addresses = user.addresses ? user.addresses : [];
+    return userRef.update({ addresses: [...addresses, newAddress] });
+  }
+};
+
 export const fetchUserYaytsos = async (userId: string) => {
   const res = await db
     .collection(Collections.Yaytso)
@@ -89,4 +101,16 @@ export const updateCarton = (id: number, params: any) => {
     .collection(Collections.Cartons)
     .doc(id.toString())
     .update({ ...params });
+};
+
+export const txLog = (
+  txHash: string,
+  yaytsoMetaCid: string,
+  walletAddress: string,
+  userId: string
+) => {
+  return db
+    .collection(Collections.TxLogs)
+    .doc(txHash)
+    .set({ txHash, yaytsoMetaCid, walletAddress, userId, completed: false });
 };

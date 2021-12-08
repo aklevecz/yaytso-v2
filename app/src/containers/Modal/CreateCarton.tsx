@@ -33,7 +33,7 @@ const Location = ({ position }: { position: Position }) => (
           fontWeight: "bold",
           justifyContent: "space-around",
           fontSize: "2rem",
-          color: "#ff6c6c",
+          color: "#5ce191",
         }}
       >
         <div>{position.lat && position.lat.toFixed(2)}</div>

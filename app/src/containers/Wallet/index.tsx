@@ -13,7 +13,8 @@ import { motion, useViewportScroll, useTransform } from "framer-motion";
 import Eggvatar from "./Eggvatar";
 import { useNetwork } from "../../contexts/ContractContext";
 import React from "react";
-import DiscordButton from "./DiscordButton";
+import DiscordButton, { discordColor } from "./DiscordButton";
+import SelectNetwork from "./SelectNetwork";
 
 export default function Wallet() {
   const { wallet, disconnect } = useWallet();
@@ -61,23 +62,19 @@ export default function Wallet() {
                     onClick={disconnect}
                   />
                 )}
-              <select
-                onChange={onNetworkChange}
-                name="networks"
-                value={network}
-              >
-                <option value="rinkeby">Rinkeby</option>
-                <option value="mainnet">Mainnet</option>
-                <option value="polygon">Polygon</option>
-              </select>
+              <SelectNetwork
+                onNetworkChange={onNetworkChange}
+                network={network}
+              />
             </div>
           )}
           {user.phone && (
             <div className="wallet__phone">
               <div>{user.phone}</div>
+              <div style={{ color: discordColor }}>{user.discordUsername}</div>
               <div style={{ padding: 10, textAlign: "center" }}>
                 {user.uid && <LogoutButton size="xs" />}
-                {user.uid && <DiscordButton />}
+                {user.uid && !user.discordId && <DiscordButton />}
               </div>
             </div>
           )}

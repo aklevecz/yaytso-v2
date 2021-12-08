@@ -25,6 +25,11 @@ type User = {
   refreshToken: string;
   hasEggvatar: boolean;
   eggvatar?: YaytsoMetaWeb2;
+  discordId?: string;
+  discord?: boolean;
+  discordUsername?: string;
+  email?: string;
+  addresses: string[];
 };
 
 type State = {

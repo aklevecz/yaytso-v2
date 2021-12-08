@@ -78,7 +78,7 @@ export default function Eggs({ wallet }: Props) {
               {isNFT && (
                 <div
                   style={{
-                    color: "var(--red)",
+                    color: "var(--green)",
                     fontWeight: "bold",
                     fontSize: "3.5rem",
                   }}

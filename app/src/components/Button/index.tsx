@@ -12,6 +12,7 @@ type Props = {
   margin?: number | string;
   padding?: number | string;
   display?: string;
+  background?: string;
   disabled?: boolean;
 };
 
@@ -27,6 +28,7 @@ export default function Button({
   margin,
   padding,
   display,
+  background,
   disabled,
 }: Props) {
   return (
@@ -34,7 +36,7 @@ export default function Button({
       id={id}
       className={`btn ${className} ${size} ${disabled ? "disabled" : ""}`}
       onClick={onClick}
-      style={{ margin, padding, width, height, maxWidth, display }}
+      style={{ margin, padding, width, height, maxWidth, display, background }}
       disabled={disabled}
     >
       {name}

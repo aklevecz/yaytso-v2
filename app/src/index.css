@@ -7,6 +7,7 @@
   --pink: #e4cbcf;
   --red: #ff4c38;
   --pale-red: #ffb6b6;
+  --green: #99ff7f;
 }
 
 body {
@@ -77,6 +78,15 @@ input[type="tel"] {
   max-width: 320px;
   border: 2px solid;
   border-radius: 0px;
+}
+
+select {
+  border: none;
+  background: black;
+  color: white;
+  padding: 10px;
+  font-weight: bold;
+  letter-spacing: 1px;
 }
 
 .grecaptcha-badge {

@@ -327,8 +327,7 @@ export default function FillCarton() {
             {pickedYaytso.name}
           </div>
           <div className="modal__block">
-            You must give approval to the Carton contract for transfering your
-            yaytso
+            Approve the Carton contract to transfer your yaytso
           </div>
           <div className="modal__block">
             {/* <img style={{ background: "#e5e4e4" }} src={pickedYaytso.img} /> */}
@@ -346,7 +345,10 @@ export default function FillCarton() {
       )}
       {view === Views.FillCarton && (
         <div>
-          <div className="modal__title">Ready to fill this carton?</div>
+          <div className="modal__title">
+            Fill carton with{" "}
+            <span style={{ color: "red" }}>{pickedYaytso.name}</span>
+          </div>
           <div className="modal__block">
             {/* <img style={{ background: "#e5e4e4" }} src={pickedYaytso.img} /> */}
             <Small gltfCid={pickedYaytso.gltf} legacy={pickedYaytso.id <= 42} />

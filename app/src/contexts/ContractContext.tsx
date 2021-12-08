@@ -10,11 +10,12 @@ import { ethers } from "ethers";
 import YaytsoInterface from "../ethereum/contracts/Yaytso.sol/Yaytso.json";
 import CartonInterface from "../ethereum/contracts/Carton.sol/Carton.json";
 import { useWallet } from "./WalletContext";
-import { addCarton, saveNFT, updateYaytso } from "./services";
+import { addCarton, saveNFT, txLog, updateYaytso } from "./services";
 import { YaytsoMetaWeb2 } from "./types";
 import { Collections, db } from "../firebase";
 import { TxStatus } from "../containers/Modal/CreateCarton";
 import { idToNetwork } from "./utils";
+import { useUser } from "./UserContext";
 
 const YAYTSO_HARDHAT_ADDRESS = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
 
@@ -129,14 +130,45 @@ const ContractProvider = ({
   );
 
   useEffect(() => {
-    let network = state.network;
-    let provider:
+    const network = state.network;
+    const provider:
       | ethers.providers.Web3Provider
       | ethers.providers.BaseProvider = state.provider;
-    if (wallet.chainId && wallet.provider) {
-      network = idToNetwork[wallet.chainId];
-      provider = wallet.provider;
+
+    const yaytsoContract = initContract("yaytso", network, provider);
+    const cartonContract = initContract("carton", network, provider);
+
+    dispatch({
+      type: "initContract",
+      contractName: "yaytsoContract",
+      contract: yaytsoContract,
+    });
+
+    dispatch({
+      type: "initContract",
+      contractName: "cartonContract",
+      contract: cartonContract,
+    });
+
+    dispatch({
+      type: "updateNetwork",
+      network,
+    });
+  }, [initContract, state.provider, state.network]);
+
+  useEffect(() => {
+    // let network = state.network;
+    // let provider:
+    //   | ethers.providers.Web3Provider
+    //   | ethers.providers.BaseProvider = state.provider;
+    // if (wallet.chainId && wallet.provider) {
+    if (!wallet.chainId || !wallet.provider) {
+      return;
     }
+    console.log("wallet change");
+    const network = idToNetwork[wallet.chainId];
+    const provider = wallet.provider;
+    // }
     console.log("contract change", network);
     const yaytsoContract = initContract("yaytso", network, provider);
     const cartonContract = initContract("carton", network, provider);
@@ -152,7 +184,12 @@ const ContractProvider = ({
       contractName: "cartonContract",
       contract: cartonContract,
     });
-  }, [initContract, state.provider, state.network, wallet.chainId]);
+
+    dispatch({
+      type: "updateNetwork",
+      network,
+    });
+  }, [wallet.chainId]);
 
   const value = { state, dispatch, initContract };
   return (
@@ -368,6 +405,7 @@ export const useYaytsoContract = () => {
   const [receipt, setReceipt] = useState({});
   const context = useContext(ContractContext);
   const { wallet } = useWallet();
+  const user = useUser();
   if (context === undefined) {
     throw new Error("Carton Context error in Cartons hook");
   }
@@ -493,6 +531,7 @@ export const useYaytsoContract = () => {
       setTxState(TxStates.Failed);
       return tx;
     }
+    txLog(tx.hash, metaCID, wallet.address, user.uid);
     setTxState(TxStates.Minting);
     const receipt = await tx.wait();
     for (const event of receipt.events) {
@@ -508,8 +547,8 @@ export const useYaytsoContract = () => {
           tokenId,
         });
         setTxState(TxStates.Completed);
-        await updateYaytso(metaCID, { nft: true });
-        await saveNFT(tokenId, meta);
+        // await updateYaytso(metaCID, { nft: true });
+        // await saveNFT(tokenId, meta);
       } else {
         // setTxState(TxStates.Failed);
       }

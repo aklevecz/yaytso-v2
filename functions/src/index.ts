@@ -1,13 +1,30 @@
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
+import * as ethers from "ethers";
 import { template } from "./template";
 
 admin.initializeApp({ projectId: "yaytso" });
 const db = admin.firestore();
 
-enum Collections {
+const provider = ethers.providers.getDefaultProvider("rinkeby", {
+  // infura: process.env.REACT_APP_INFURA_KEY,
+  alchemy: "e4ej--n7cdRR-_rL3f55XQSTc-Z5ZW3j",
+  // etherscan: process.env.REACT_APP_ETHERSCAN_KEY,
+});
+const YAYTSO_RINKEBY_ADDRESS = "0x6fE0E0672C967dA6F7927150b9f8CEb028021cFf";
+
+import yaytsoInterface from "./Yaytso.json";
+import { giveUseryaytsoCreatorRole } from "./discord";
+const yaytsoContract = new ethers.Contract(
+  YAYTSO_RINKEBY_ADDRESS,
+  yaytsoInterface.abi,
+  provider
+);
+export enum Collections {
   Users = "Users",
   Yaytsos = "YAYTSOS",
+  TxLogs = "TxLogs",
+  NFTS = "NFTS",
 }
 
 export const onSignIn = functions.https.onCall(async (_, context) => {
@@ -61,14 +78,47 @@ export const egg = functions.https.onRequest(async (request, response) => {
     response.status(200).send("wtf");
   }
 });
-const isEmulator = process.env.FUNCTIONS_EMULATOR;
-// const baseUrl = "https://discord.com/api";
-import devConfig from "./dev.json";
-const clientId = isEmulator
-  ? devConfig.discord.client_secret
-  : functions.config().discord.client_secret;
-export const discordAuth = functions.https.onCall(async (data, context) => {
-  console.log(clientId);
 
-  return true;
+// webhook from alchemy
+export const onTx = functions.https.onRequest(async (request, response) => {
+  const { activity } = request.body;
+  const { hash, fromAddress } = activity[0];
+  const txLogRef = db.collection(Collections.TxLogs).doc(hash);
+  const txLog = (await txLogRef.get()).data();
+  if (!txLog) {
+    response.status(404);
+  }
+  if (txLog) {
+    const receipt = await provider.getTransactionReceipt(hash);
+    const log = yaytsoContract.interface.parseLog(receipt.logs[1]);
+    const tokenId = log.args[1].toString();
+    if (txLog.walletAddress === fromAddress && log.name === "YaytsoLaid") {
+      const yaytsoMetaCid = txLog.yaytsoMetaCid;
+      const yaytsoRef = db.collection(Collections.Yaytsos).doc(yaytsoMetaCid);
+      yaytsoRef.update({ nft: true }).then(async () => {
+        const yaytso = (await yaytsoRef.get()).data();
+        db.collection(Collections.NFTS)
+          .doc(tokenId)
+          .set({ tokenId, ...yaytso });
+      });
+      txLogRef.update({ completed: true });
+      db.collection(Collections.Users)
+        .doc(txLog.userId)
+        .get()
+        .then((userDoc) => {
+          const user = userDoc.data();
+          if (user) {
+            const { discordId } = user;
+            giveUseryaytsoCreatorRole(discordId);
+          }
+        });
+    }
+    response.status(200).send("hi");
+  } else {
+    response.status(404);
+  }
 });
+
+// import * as discord from "./discord";
+// export { discord };
+export * as discord from "./discord";

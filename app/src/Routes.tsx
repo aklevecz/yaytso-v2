@@ -80,6 +80,7 @@ export default function Routes() {
   return (
     <Router>
       <Nav />
+      {/* <DotTyping /> */}
       {loading && <DotTyping />}
       {!loading && <AppComponents />}
       {/* <AppComponents /> */}

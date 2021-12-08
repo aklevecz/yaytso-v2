@@ -30,6 +30,7 @@ export enum Collections {
   Cartons = "CARTONS",
   Yaytso = "YAYTSOS",
   NFT = "NFTS",
+  TxLogs = "TxLogs",
 }
 
 const CARTONS = "CARTONS";
@@ -40,6 +41,6 @@ export { auth, db };
 
 const onSignIn = functions.httpsCallable("onSignIn");
 const onCreateEggvatar = functions.httpsCallable("onCreateEggvatar");
-const discordAuth = functions.httpsCallable("discordAuth");
+const discordAuth = functions.httpsCallable("discord-auth");
 
 export { onSignIn, onCreateEggvatar, discordAuth };
