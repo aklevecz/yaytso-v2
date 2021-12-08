@@ -80,7 +80,7 @@ export const auth = functions.https.onCall(async (data, context) => {
       role = yaytsoCreatorRoleId;
     }
   }
-  console.log("ROLE", role);
+
   const body: any = { access_token: tokens.access_token };
   if (role) {
     body.roles = [role];
