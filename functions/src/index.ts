@@ -3,20 +3,27 @@ import * as admin from "firebase-admin";
 import * as ethers from "ethers";
 import { template } from "./template";
 
+const isEmulator = process.env.FUNCTIONS_EMULATOR;
+
 admin.initializeApp({ projectId: "yaytso" });
 const db = admin.firestore();
+const env = isEmulator ? require("./dev.json") : functions.config();
 
 const provider = ethers.providers.getDefaultProvider("rinkeby", {
-  // infura: process.env.REACT_APP_INFURA_KEY,
-  alchemy: "e4ej--n7cdRR-_rL3f55XQSTc-Z5ZW3j",
-  // etherscan: process.env.REACT_APP_ETHERSCAN_KEY,
+  infura: env.provider_keys.infura,
+  alchemy: env.provider_keys.alchemy,
+  etherscan: env.provider_keys.etherscan,
 });
 const YAYTSO_RINKEBY_ADDRESS = "0x6fE0E0672C967dA6F7927150b9f8CEb028021cFf";
+const YAYTSO_MAIN_ADDRESS = "0x155b65c62e2bf8214d1e3f60854df761b9aa92b3";
+const YAYTSO_ADDRESS = isEmulator
+  ? YAYTSO_RINKEBY_ADDRESS
+  : YAYTSO_MAIN_ADDRESS;
 
 import yaytsoInterface from "./Yaytso.json";
 import { giveUseryaytsoCreatorRole } from "./discord";
 const yaytsoContract = new ethers.Contract(
-  YAYTSO_RINKEBY_ADDRESS,
+  YAYTSO_ADDRESS,
   yaytsoInterface.abi,
   provider
 );
@@ -119,6 +126,4 @@ export const onTx = functions.https.onRequest(async (request, response) => {
   }
 });
 
-// import * as discord from "./discord";
-// export { discord };
 export * as discord from "./discord";

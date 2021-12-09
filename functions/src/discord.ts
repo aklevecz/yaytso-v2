@@ -7,21 +7,22 @@ import { Collections } from ".";
 import { isAddressCreator } from "./utils";
 // import { isAddressCreator } from "./utils";
 
+const LOCAL_HOST_CALLBACK = "http://localhost:3000/callback";
+const PROD_HOST_CALLBACK = "https://yaytso.art/callback";
+
 const isEmulator = process.env.FUNCTIONS_EMULATOR;
 
 const baseUrl = "https://discord.com/api";
 
 const clientId = "917496007913246731";
 const guildId = "829945948745498664";
-const clientSecret = isEmulator
-  ? devConfig.discord.client_secret
-  : functions.config().discord.client_secret;
-const botToken = isEmulator
-  ? devConfig.discord.bot_token
-  : functions.config().discord.bot_token;
-const redirectUri = isEmulator
-  ? "http://localhost:3000/callback"
-  : "https://yaytso.art/callback";
+
+const env = isEmulator ? devConfig : functions.config();
+
+const clientSecret = env.discord.client_secret;
+const botToken = env.discord.bot_token;
+
+const redirectUri = isEmulator ? LOCAL_HOST_CALLBACK : PROD_HOST_CALLBACK;
 
 // const ownerRole = "yaytso_owner";
 const yaytsoCreatorRoleId = "917833078016180264";
@@ -40,17 +41,8 @@ export const giveUseryaytsoCreatorRole = (userId: string) => {
   );
 };
 
-export const auth = functions.https.onCall(async (data, context) => {
-  const { code } = data;
-  if (!context.auth) {
-    return false;
-  }
-  const userRef = db.collection(Collections.Users).doc(context.auth.uid);
-  const user = (await userRef.get()).data();
-  if (!user) {
-    return false;
-  }
-  const tokens = await fetch(`${baseUrl}/oauth2/token`, {
+const fetchToken = (code: string) => {
+  return fetch(`${baseUrl}/oauth2/token`, {
     method: "POST",
     headers: {
       "Content-Type": "application/x-www-form-urlencoded",
@@ -63,29 +55,24 @@ export const auth = functions.https.onCall(async (data, context) => {
       grant_type: "authorization_code",
     }),
   }).then((r) => r.json());
+};
 
-  // console.log(tokens);
-
-  const discordUser = await fetch(`${baseUrl}/users/@me`, {
+const getUser = (access_token: string) => {
+  return fetch(`${baseUrl}/users/@me`, {
     method: "GET",
     headers: {
-      Authorization: `Bearer ${tokens.access_token}`,
+      Authorization: `Bearer ${access_token}`,
     },
   }).then((r) => r.json());
+};
 
-  let role = "";
-  if (user.addresses) {
-    const isCreator = await isAddressCreator(user.addresses);
-    if (isCreator) {
-      role = yaytsoCreatorRoleId;
-    }
-  }
-
-  const body: any = { access_token: tokens.access_token };
+const addToGuild = (userId: string, access_token: string, role: string) => {
+  const body: any = { access_token };
   if (role) {
     body.roles = [role];
   }
-  fetch(`${baseUrl}/guilds/${guildId}/members/${discordUser.id}`, {
+
+  fetch(`${baseUrl}/guilds/${guildId}/members/${userId}`, {
     method: "PUT",
     headers: {
       Authorization: `Bot ${botToken}`,
@@ -95,6 +82,31 @@ export const auth = functions.https.onCall(async (data, context) => {
   })
     .then(console.log)
     .catch(console.log);
+};
+
+export const auth = functions.https.onCall(async (data, context) => {
+  const { code } = data;
+  if (!context.auth) {
+    return false;
+  }
+
+  const userRef = db.collection(Collections.Users).doc(context.auth.uid);
+  const user = (await userRef.get()).data();
+  if (!user) {
+    return false;
+  }
+  const tokens = await fetchToken(code);
+  const discordUser = await getUser(tokens.access_token);
+
+  let role = "";
+  if (user.addresses) {
+    const isCreator = await isAddressCreator(user.addresses);
+    if (isCreator) {
+      role = yaytsoCreatorRoleId;
+    }
+  }
+
+  addToGuild(discordUser.id, tokens.access_token, role);
 
   admin
     .auth()

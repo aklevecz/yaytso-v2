@@ -7,13 +7,11 @@ import {
   useReducer,
   useState,
 } from "react";
-import { IPFS_URL } from "../constants";
 import {
   Eth,
   WalletState,
   WalletTypes,
   YaytsoCID,
-  YaytsoMeta,
   YaytsoMetaWeb2,
 } from "./types";
 import { useUser } from "./UserContext";
@@ -22,7 +20,6 @@ import WalletConnectProvider from "@walletconnect/web3-provider";
 
 import { fetchUserYaytsos, updateUserAddresses } from "./services";
 import { ipfsLink } from "../utils";
-import { CHAIN_ID } from "./ContractContext";
 
 declare global {
   interface Window {
