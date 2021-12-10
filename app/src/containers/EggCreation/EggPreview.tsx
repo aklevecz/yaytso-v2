@@ -1,8 +1,12 @@
 import { forwardRef, useEffect, useRef, useState } from "react";
+import { SketchPicker } from "react-color";
 import Button from "../../components/Button";
+import IconButton from "../../components/Button/IconButton";
+import Expand from "../../components/icons/Expand";
 import Pen from "../../components/icons/Pen";
+import Retract from "../../components/icons/Retract";
 import { useOpenModal } from "../../contexts/ModalContext";
-import { useCanvasPreview } from "../../contexts/PatternContext";
+import { useCanvasPreview, useDraw } from "../../contexts/PatternContext";
 import { Egg, ModalTypes } from "../../contexts/types";
 import { PREVIEW_CANVAS_ID } from "./constants";
 
@@ -12,11 +16,19 @@ type Props = {
   openPreview: () => void;
 };
 
+const DEFAULT_DIMS = 200;
+
 const EggPreview = forwardRef<HTMLCanvasElement, Props>(
   ({ showPreview, customEgg, openPreview }, ref) => {
-    const { initCanvas, previewDims, toggleFullscreen } = useCanvasPreview();
+    const [containerDims, setContainerDims] = useState(DEFAULT_DIMS);
+    const [expanded, setExpanded] = useState(false);
+    const { initCanvas, previewDims } = useCanvasPreview();
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
     const openModal = useOpenModal();
+
+    const { lineWidth, updateLineWidth, color, updateColor } = useDraw();
+
+    const toggleExpanded = () => setExpanded(!expanded);
 
     useEffect(() => {
       if (canvasRef && canvasRef.current) {
@@ -24,6 +36,18 @@ const EggPreview = forwardRef<HTMLCanvasElement, Props>(
       }
     }, []);
 
+    useEffect(() => {
+      if (expanded) {
+        const windowWidth = window.innerWidth;
+        const windowHeight = window.innerHeight;
+        const dim = windowWidth > windowHeight ? windowHeight : windowWidth;
+        setContainerDims(dim * 0.9);
+      } else {
+        setContainerDims(DEFAULT_DIMS);
+      }
+    }, [expanded]);
+
+    // Might not be necessary now that im moving dims to the container
     useEffect(() => {
       if (canvasRef && canvasRef.current) {
         const ctx = canvasRef.current.getContext("2d")!;
@@ -34,7 +58,10 @@ const EggPreview = forwardRef<HTMLCanvasElement, Props>(
 
     const { name, description } = customEgg;
     return (
-      <div className="egg__preview-container">
+      <div
+        className="egg__preview-container"
+        style={{ width: containerDims, height: containerDims }}
+      >
         <div className="egg__details">
           {!showPreview && (
             <div className="egg__pen-wrapper" onClick={openPreview}>
@@ -49,7 +76,31 @@ const EggPreview = forwardRef<HTMLCanvasElement, Props>(
             id={PREVIEW_CANVAS_ID}
           ></canvas>
           {showPreview && (
-            <button onClick={toggleFullscreen}>Fullscreen</button>
+            <>
+              <IconButton onClick={toggleExpanded} id="expand-button">
+                {!expanded ? <Expand /> : <Retract />}
+              </IconButton>
+
+              <div>
+                <SketchPicker
+                  color={color}
+                  onChange={(color) => updateColor(color.hex)}
+                />
+                {[10, 20, 30, 40].map((brush) => (
+                  <div
+                    key={brush}
+                    style={{
+                      margin: "10px auto",
+                      width: brush,
+                      height: brush,
+                      background: lineWidth === brush ? "red" : "black",
+                      borderRadius: "50%",
+                    }}
+                    onClick={() => updateLineWidth(brush)}
+                  />
+                ))}
+              </div>
+            </>
           )}
           <div>{name}</div>
           <div>{description}</div>

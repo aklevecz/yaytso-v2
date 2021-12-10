@@ -101,3 +101,11 @@ button.info-button {
   height: 40px;
   font-weight: bold;
 }
+
+#expand-button {
+  border: none;
+  background: none;
+  position: absolute;
+  bottom: 0px;
+  right: 0px;
+}

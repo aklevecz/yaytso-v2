@@ -126,7 +126,7 @@ const PatternProvider = ({
 
 export { PatternContext, PatternProvider };
 
-const DEFAULT_DIMS = 200;
+const DEFAULT_DIMS = 1080;
 export const useCanvasPreview = () => {
   const context = useContext(PatternContext);
   const [fullscreen, setFullscreen] = useState(false);
@@ -281,12 +281,17 @@ export const usePattern = () => {
   return state.pattern;
 };
 
-export const useDraw = (canvaas: HTMLCanvasElement | null) => {
+export const useDraw = () => {
   const context = useContext(PatternContext);
+  const [lineWidth, setLineWidth] = useState(30);
+  const [color, setColor] = useState("#FFF");
 
   if (context === undefined) {
     throw new Error("must be within its provider: Pattern");
   }
+
+  const updateLineWidth = (width: number) => setLineWidth(width);
+  const updateColor = (color: string) => setColor(color);
 
   const { dispatch, state } = context;
   const { canvasPreview: canvas } = state;
@@ -323,13 +328,22 @@ export const useDraw = (canvaas: HTMLCanvasElement | null) => {
       if (mouseDown && prevMouse.x !== 0 && prevMouse.y !== 0) {
         const ctx = canvas.getContext("2d")!;
         ctx.beginPath();
+        // ctx.arc(100, 75, 50, 0, 2 * Math.PI);
+
         // ctx.strokeStyle = colorRef.current;
-        ctx.strokeStyle = "black";
-        ctx.lineWidth = 3;
+        ctx.strokeStyle = color;
+
+        ctx.lineWidth = lineWidth;
         ctx.moveTo(prevMouse.x, prevMouse.y);
         ctx.lineTo(nX, nY);
         ctx.closePath();
         ctx.stroke();
+
+        ctx.beginPath();
+        ctx.arc(nX, nY, lineWidth, 0, 2 * Math.PI);
+
+        ctx.fillStyle = color;
+        ctx.fill();
 
         const eggMask = document.getElementById("egg-mask") as HTMLImageElement;
         createEggMask(eggMask, canvas, 200, 200, state.repetitions);
@@ -395,5 +409,7 @@ export const useDraw = (canvaas: HTMLCanvasElement | null) => {
       canvas.removeEventListener("touchstart", onDown);
       canvas.removeEventListener("touchend", onUp);
     };
-  }, [canvas, state.repetitions]);
+  }, [canvas, state.repetitions, lineWidth, color]);
+
+  return { lineWidth, updateLineWidth, color, updateColor };
 };

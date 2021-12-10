@@ -23,7 +23,6 @@ export default function Egg() {
   const inputRef = useRef<HTMLInputElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [showPreview, setShowPreview] = useState(false);
-  const draw = useDraw(canvasRef.current);
   const { initScene, scene } = useThreeScene();
   useThreePatternUpdater();
   const {
