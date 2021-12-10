@@ -65,8 +65,8 @@
   left: 10px;
   top: 10px; */
   border: 1px solid black;
-  width: 130px;
-  height: 130px;
+  /* width: 130px; */
+  /* height: 130px; */
 }
 
 .slider__container {

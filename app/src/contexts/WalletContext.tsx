@@ -135,7 +135,7 @@ const WalletProvider = ({
     provider,
     walletType,
   }: Eth) => {
-    if (!user.addresses || !user.addresses.includes(address)) {
+    if (user.uid && (!user.addresses || !user.addresses.includes(address))) {
       updateUserAddresses(user.uid, address);
     }
     dispatch({

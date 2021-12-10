@@ -7,16 +7,15 @@ import {
   useThreeScene,
 } from "../../contexts/ThreeContext";
 import { useCustomEgg, useUser } from "../../contexts/UserContext";
-import { EGGVG, EGG_MASK, PREVIEW_CANVAS_ID, ViewStates } from "./constants";
+import { EGGVG, EGG_MASK, ViewStates } from "./constants";
 import { exportYaytso } from "./services";
 import Buttons from "./Buttons";
 
 import "../../styles/egg.css";
 import { ModalTypes } from "../../contexts/types";
 import LayoutFullHeight from "../../components/Layout/FullHeight";
-import Button from "../../components/Button";
-import Pen from "../../components/icons/Pen";
 import { onCreateEggvatar } from "../../firebase";
+import EggPreview from "./EggPreview";
 
 export default function Egg() {
   const [viewState, setViewState] = useState<ViewStates>(ViewStates.Blank);
@@ -35,7 +34,7 @@ export default function Egg() {
     updating,
     canvas,
     repetitions,
-  } = useUpdatePattern(canvasRef.current);
+  } = useUpdatePattern();
   const { customEgg, clearEgg } = useCustomEgg();
   const openModal = useOpenModal();
 
@@ -76,6 +75,8 @@ export default function Egg() {
       openModal(ModalTypes.Welcome);
     }
   }, [user, user.hasEggvatar]);
+
+  const openPreview = () => setShowPreview(true);
 
   const reset = () => {
     clearPattern();
@@ -144,37 +145,12 @@ export default function Egg() {
           </div>
         )}
         <div className="canvas__container" ref={sceneContainer} />
-        <div className="egg__preview-container">
-          <div className="egg__details">
-            {!showPreview && (
-              <div
-                className="egg__pen-wrapper"
-                onClick={() => setShowPreview(true)}
-              >
-                <Pen />
-              </div>
-            )}
-            <canvas
-              width={200}
-              height={200}
-              ref={canvasRef}
-              style={{ display: showPreview ? "block" : "none" }}
-              id={PREVIEW_CANVAS_ID}
-            ></canvas>
-            <div>{name}</div>
-            <div>{description}</div>
-            {customEgg.name && customEgg.description && (
-              <Button
-                padding="0"
-                width="unset"
-                height={30}
-                name="Edit"
-                onClick={() => openModal(ModalTypes.EggMaker)}
-                className="anti-state"
-              />
-            )}
-          </div>
-        </div>
+        <EggPreview
+          ref={canvasRef}
+          customEgg={customEgg}
+          openPreview={openPreview}
+          showPreview={showPreview}
+        />
 
         <div style={{ textAlign: "center" }}>
           <Buttons

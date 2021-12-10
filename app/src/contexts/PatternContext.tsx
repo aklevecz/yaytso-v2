@@ -25,7 +25,12 @@ type Action =
     }
   | { type: "CLEAR_PATTERN" }
   | { type: "SET_REPETITIONS"; repetitions: number }
-  | { type: "INIT_PREVIEW"; canvasPreview: HTMLCanvasElement };
+  | { type: "INIT_PREVIEW"; canvasPreview: HTMLCanvasElement }
+  | {
+      type: "SET_PREVIEW_DIMS";
+      dims: { w: number; h: number };
+      oldCanvas: any;
+    };
 
 type Dispatch = (action: Action) => void;
 
@@ -33,6 +38,8 @@ type State = {
   pattern: CanvasTexture | null;
   canvas: HTMLCanvasElement | null;
   canvasPreview: HTMLCanvasElement | null;
+  oldCanvas: any;
+  previewDims: { [key: string]: number };
   repetitions: number;
 };
 
@@ -40,6 +47,8 @@ const initialState = {
   pattern: null,
   canvas: null,
   canvasPreview: null,
+  oldCanvas: null,
+  previewDims: { w: 200, h: 200 },
   repetitions: 1,
 };
 
@@ -62,6 +71,12 @@ const reducer = (state: State, action: Action) => {
       return { ...state, pattern: null, canvas: null };
     case "SET_REPETITIONS":
       return { ...state, repetitions: action.repetitions };
+    case "SET_PREVIEW_DIMS":
+      return {
+        ...state,
+        previewDims: { w: action.dims.w, h: action.dims.h },
+        oldCanvas: action.oldCanvas,
+      };
     default:
       return state;
   }
@@ -74,11 +89,9 @@ const PatternProvider = ({
 }) => {
   const [state, dispatch] = useReducer(reducer, initialState);
 
+  // IS this even doing anything?
   useEffect(() => {
     if (!state.pattern && !state.canvas && state.canvasPreview) {
-      // const previewCanvas = document.getElementById(
-      //   PREVIEW_CANVAS_ID
-      // )! as HTMLCanvasElement;
       const previewCanvas = state.canvasPreview;
       const ctx = previewCanvas.getContext("2d")!;
 
@@ -113,7 +126,50 @@ const PatternProvider = ({
 
 export { PatternContext, PatternProvider };
 
-export const useUpdatePattern = (canvasPreview: HTMLCanvasElement | null) => {
+const DEFAULT_DIMS = 200;
+export const useCanvasPreview = () => {
+  const context = useContext(PatternContext);
+  const [fullscreen, setFullscreen] = useState(false);
+
+  if (context === undefined) {
+    throw new Error("must be within its provider: Pattern");
+  }
+
+  const { dispatch, state } = context;
+
+  const { previewDims, oldCanvas } = state;
+
+  const initCanvas = (canvasPreview: HTMLCanvasElement) => {
+    dispatch({ type: "INIT_PREVIEW", canvasPreview });
+  };
+
+  const toggleFullscreen = () => setFullscreen(!fullscreen);
+
+  useEffect(() => {
+    let w = DEFAULT_DIMS,
+      h = DEFAULT_DIMS;
+    if (fullscreen) {
+      w = window.innerWidth / 1.1;
+      h = w;
+      dispatch({
+        type: "SET_PREVIEW_DIMS",
+        dims: { w, h },
+        oldCanvas: state.canvasPreview,
+      });
+    } else {
+      dispatch({
+        type: "SET_PREVIEW_DIMS",
+        dims: { w, h },
+        oldCanvas: state.canvasPreview,
+      });
+    }
+  }, [fullscreen]);
+
+  return { initCanvas, previewDims, toggleFullscreen, oldCanvas };
+};
+
+// This is pretty specific to the preview pattern
+export const useUpdatePattern = () => {
   const [updating, setUpdating] = useState(false);
   const context = useContext(PatternContext);
 
@@ -123,13 +179,13 @@ export const useUpdatePattern = (canvasPreview: HTMLCanvasElement | null) => {
 
   const { dispatch, state } = context;
 
-  useEffect(() => {
-    if (!canvasPreview) {
-      console.log("missing preview");
-      return;
-    }
-    dispatch({ type: "INIT_PREVIEW", canvasPreview });
-  }, [canvasPreview]);
+  // useEffect(() => {
+  //   if (!canvasPreview) {
+  //     console.log("missing preview");
+  //     return;
+  //   }
+  //   dispatch({ type: "INIT_PREVIEW", canvasPreview });
+  // }, [canvasPreview]);
 
   const uploadPattern = (e: React.FormEvent<HTMLInputElement>) => {
     const files = (e.target as HTMLInputElement).files;
@@ -146,9 +202,10 @@ export const useUpdatePattern = (canvasPreview: HTMLCanvasElement | null) => {
       if (typeof e.target.result !== "string") {
         return console.error("expecting a single file");
       }
-      if (!canvasPreview) {
+      if (!state.canvasPreview) {
         return console.error("canvas preview is missing");
       }
+      const { canvasPreview } = state;
       // const { canvas, img } = await createCanvasCropped(
       //   e.target.result,
       //   200,
@@ -200,6 +257,7 @@ export const useUpdatePattern = (canvasPreview: HTMLCanvasElement | null) => {
 
   const updatePatternRepetitions = (repetitions: number) =>
     dispatch({ type: "SET_REPETITIONS", repetitions });
+
   return {
     clearPattern,
     uploadPattern,
@@ -244,13 +302,6 @@ export const useDraw = (canvaas: HTMLCanvasElement | null) => {
 
     const ctx = canvas.getContext("2d")!;
 
-    const w = canvas.width;
-    const h = canvas.height;
-
-    // ctx.rect(0, 0, w, h);
-    // ctx.fillStyle = "white";
-    // ctx.fill();
-
     const setMouse = (e: any) => {
       mousePos.x = e.touches ? e.touches[0].clientX : e.clientX;
       mousePos.y = e.touches ? e.touches[0].clientY : e.clientY;
@@ -258,6 +309,8 @@ export const useDraw = (canvaas: HTMLCanvasElement | null) => {
 
     const normalizedPos = () => {
       const rect = canvas.getBoundingClientRect();
+      const w = canvas.width;
+      const h = canvas.height;
       const nX = (mousePos.x - rect.left) * (w / rect.width);
       const nY = (mousePos.y - rect.top) * (h / rect.height);
       return { x: nX, y: nY };
@@ -268,6 +321,7 @@ export const useDraw = (canvaas: HTMLCanvasElement | null) => {
       setMouse(e);
       const { x: nX, y: nY } = normalizedPos();
       if (mouseDown && prevMouse.x !== 0 && prevMouse.y !== 0) {
+        const ctx = canvas.getContext("2d")!;
         ctx.beginPath();
         // ctx.strokeStyle = colorRef.current;
         ctx.strokeStyle = "black";

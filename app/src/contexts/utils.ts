@@ -86,7 +86,6 @@ export const createCanvas = (
       const { width, height } = img;
       const aspect = width / height;
       const canvasDim = { width: 1080, height: 1080 };
-      console.log(width, height, aspect);
       if (aspect > 1) {
         canvasDim.width = width > 1080 ? 1080 : width;
         canvasDim.height = width / aspect;
@@ -96,7 +95,6 @@ export const createCanvas = (
       }
       ctx.canvas.width = canvasDim.width;
       ctx.canvas.height = canvasDim.height;
-      console.log(canvasDim);
       ctx.drawImage(img, 0, 0, canvasDim.width, canvasDim.height);
       resolve({ canvas, img });
     };
