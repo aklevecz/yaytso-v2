@@ -40,6 +40,16 @@
   justify-content: center;
 }
 
+.egg__preview-close-icon {
+  border: none;
+  background: none;
+  position: absolute;
+  right: -4px;
+  top: 0px;
+  width: 30px;
+  height: 30px;
+}
+
 .upload-label {
   color: white;
   background-color: black;

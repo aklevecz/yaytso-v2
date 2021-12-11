@@ -2,6 +2,7 @@ import { forwardRef, useEffect, useRef, useState } from "react";
 import { SketchPicker } from "react-color";
 import Button from "../../components/Button";
 import IconButton from "../../components/Button/IconButton";
+import CloseIcon from "../../components/icons/CloseIcon";
 import Expand from "../../components/icons/Expand";
 import Pen from "../../components/icons/Pen";
 import Retract from "../../components/icons/Retract";
@@ -14,12 +15,13 @@ type Props = {
   showPreview: boolean;
   customEgg: Egg;
   openPreview: () => void;
+  closePreview: () => void;
 };
 
 const DEFAULT_DIMS = 200;
 
 const EggPreview = forwardRef<HTMLCanvasElement, Props>(
-  ({ showPreview, customEgg, openPreview }, ref) => {
+  ({ showPreview, customEgg, openPreview, closePreview }, ref) => {
     const [containerDims, setContainerDims] = useState(DEFAULT_DIMS);
     const [expanded, setExpanded] = useState(false);
     const { initCanvas, previewDims } = useCanvasPreview();
@@ -80,25 +82,33 @@ const EggPreview = forwardRef<HTMLCanvasElement, Props>(
               <IconButton onClick={toggleExpanded} id="expand-button">
                 {!expanded ? <Expand /> : <Retract />}
               </IconButton>
+              <IconButton
+                onClick={closePreview}
+                className="egg__preview-close-icon"
+              >
+                <CloseIcon />
+              </IconButton>
 
-              <div>
+              <div style={{ display: "flex" }}>
                 <SketchPicker
                   color={color}
-                  onChange={(color) => updateColor(color.hex)}
+                  onChange={(color) => updateColor(color.rgb)}
                 />
-                {[10, 20, 30, 40].map((brush) => (
-                  <div
-                    key={brush}
-                    style={{
-                      margin: "10px auto",
-                      width: brush,
-                      height: brush,
-                      background: lineWidth === brush ? "red" : "black",
-                      borderRadius: "50%",
-                    }}
-                    onClick={() => updateLineWidth(brush)}
-                  />
-                ))}
+                <div style={{ padding: 5 }}>
+                  {[10, 20, 30, 40, 50].map((brush) => (
+                    <div
+                      key={brush}
+                      style={{
+                        margin: "10px auto",
+                        width: brush,
+                        height: brush,
+                        background: lineWidth === brush ? "red" : "black",
+                        borderRadius: "50%",
+                      }}
+                      onClick={() => updateLineWidth(brush)}
+                    />
+                  ))}
+                </div>
               </div>
             </>
           )}

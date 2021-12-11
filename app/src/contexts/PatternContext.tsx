@@ -6,6 +6,7 @@ import {
   useReducer,
   useState,
 } from "react";
+import { RGBColor } from "react-color";
 import { CanvasTexture, RepeatWrapping } from "three";
 import { REPEAT_CANVAS_ID } from "../containers/EggCreation/constants";
 import {
@@ -284,14 +285,19 @@ export const usePattern = () => {
 export const useDraw = () => {
   const context = useContext(PatternContext);
   const [lineWidth, setLineWidth] = useState(30);
-  const [color, setColor] = useState("#FFF");
+  const [color, setColor] = useState<RGBColor>({ r: 0, g: 0, b: 0, a: 1 });
 
   if (context === undefined) {
     throw new Error("must be within its provider: Pattern");
   }
 
   const updateLineWidth = (width: number) => setLineWidth(width);
-  const updateColor = (color: string) => setColor(color);
+  const updateColor = (color: RGBColor) => {
+    console.log(color);
+    setColor(color);
+  };
+
+  console.log(color);
 
   const { dispatch, state } = context;
   const { canvasPreview: canvas } = state;
@@ -328,10 +334,8 @@ export const useDraw = () => {
       if (mouseDown && prevMouse.x !== 0 && prevMouse.y !== 0) {
         const ctx = canvas.getContext("2d")!;
         ctx.beginPath();
-        // ctx.arc(100, 75, 50, 0, 2 * Math.PI);
-
-        // ctx.strokeStyle = colorRef.current;
-        ctx.strokeStyle = color;
+        const colorString = `rgba(${color.r}, ${color.g}, ${color.b}, ${color.a})`;
+        ctx.strokeStyle = colorString;
 
         ctx.lineWidth = lineWidth;
         ctx.moveTo(prevMouse.x, prevMouse.y);
@@ -342,7 +346,7 @@ export const useDraw = () => {
         ctx.beginPath();
         ctx.arc(nX, nY, lineWidth, 0, 2 * Math.PI);
 
-        ctx.fillStyle = color;
+        ctx.fillStyle = colorString;
         ctx.fill();
 
         const eggMask = document.getElementById("egg-mask") as HTMLImageElement;

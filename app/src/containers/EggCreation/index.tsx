@@ -76,6 +76,7 @@ export default function Egg() {
   }, [user, user.hasEggvatar]);
 
   const openPreview = () => setShowPreview(true);
+  const closePreview = () => setShowPreview(false);
 
   const reset = () => {
     clearPattern();
@@ -148,6 +149,7 @@ export default function Egg() {
           ref={canvasRef}
           customEgg={customEgg}
           openPreview={openPreview}
+          closePreview={closePreview}
           showPreview={showPreview}
         />
 
