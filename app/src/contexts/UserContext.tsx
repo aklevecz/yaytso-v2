@@ -19,7 +19,7 @@ type Action =
 
 type Dispatch = (action: Action) => void;
 
-type User = {
+export type User = {
   phone: string;
   uid: string;
   refreshToken: string;

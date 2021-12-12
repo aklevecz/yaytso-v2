@@ -14,7 +14,7 @@ export default function CloseIcon() {
             cx="44.5"
             cy="65"
             r="40"
-            fill="#fff"
+            fill="none"
             stroke="#000"
             strokeMiterlimit="10"
             strokeWidth="9"

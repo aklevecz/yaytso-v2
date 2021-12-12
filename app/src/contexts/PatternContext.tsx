@@ -24,13 +24,13 @@ type Action =
       canvas: HTMLCanvasElement;
       canvasPreview: HTMLCanvasElement;
     }
+  | { type: "SET_IMG_UPLOAD"; canvasImgUpload: HTMLCanvasElement }
   | { type: "CLEAR_PATTERN" }
   | { type: "SET_REPETITIONS"; repetitions: number }
   | { type: "INIT_PREVIEW"; canvasPreview: HTMLCanvasElement }
   | {
       type: "SET_PREVIEW_DIMS";
       dims: { w: number; h: number };
-      oldCanvas: any;
     };
 
 type Dispatch = (action: Action) => void;
@@ -39,7 +39,7 @@ type State = {
   pattern: CanvasTexture | null;
   canvas: HTMLCanvasElement | null;
   canvasPreview: HTMLCanvasElement | null;
-  oldCanvas: any;
+  canvasImgUpload: HTMLCanvasElement | null;
   previewDims: { [key: string]: number };
   repetitions: number;
 };
@@ -48,7 +48,7 @@ const initialState = {
   pattern: null,
   canvas: null,
   canvasPreview: null,
-  oldCanvas: null,
+  canvasImgUpload: null,
   previewDims: { w: 200, h: 200 },
   repetitions: 1,
 };
@@ -68,6 +68,8 @@ const reducer = (state: State, action: Action) => {
         canvas: action.canvas,
         canvasPreview: action.canvasPreview,
       };
+    case "SET_IMG_UPLOAD":
+      return { ...state, canvasImgUpload: action.canvasImgUpload };
     case "CLEAR_PATTERN":
       return { ...state, pattern: null, canvas: null };
     case "SET_REPETITIONS":
@@ -76,7 +78,6 @@ const reducer = (state: State, action: Action) => {
       return {
         ...state,
         previewDims: { w: action.dims.w, h: action.dims.h },
-        oldCanvas: action.oldCanvas,
       };
     default:
       return state;
@@ -138,7 +139,7 @@ export const useCanvasPreview = () => {
 
   const { dispatch, state } = context;
 
-  const { previewDims, oldCanvas } = state;
+  const { previewDims } = state;
 
   const initCanvas = (canvasPreview: HTMLCanvasElement) => {
     dispatch({ type: "INIT_PREVIEW", canvasPreview });
@@ -155,18 +156,16 @@ export const useCanvasPreview = () => {
       dispatch({
         type: "SET_PREVIEW_DIMS",
         dims: { w, h },
-        oldCanvas: state.canvasPreview,
       });
     } else {
       dispatch({
         type: "SET_PREVIEW_DIMS",
         dims: { w, h },
-        oldCanvas: state.canvasPreview,
       });
     }
   }, [fullscreen]);
 
-  return { initCanvas, previewDims, toggleFullscreen, oldCanvas };
+  return { initCanvas, previewDims, toggleFullscreen };
 };
 
 // This is pretty specific to the preview pattern
@@ -214,7 +213,12 @@ export const useUpdatePattern = () => {
       // );
 
       const { canvas, img } = await createCanvas(e.target.result);
-      drawToPreview(img, canvasPreview);
+      drawToPreview(
+        img,
+        canvasPreview,
+        canvasPreview.width,
+        canvasPreview.height
+      );
 
       // This could just be created at export -- but there is some sanity in the redudancy at the moment
       const eggMask = document.getElementById("egg-mask") as HTMLImageElement;
@@ -228,6 +232,7 @@ export const useUpdatePattern = () => {
 
       const pattern = createTexture(canvas, state.repetitions);
       dispatch({ type: "SET_PATTERN", canvas, pattern, canvasPreview });
+      dispatch({ type: "SET_IMG_UPLOAD", canvasImgUpload: canvas });
       setUpdating(false);
     };
     reader.readAsDataURL(file);
@@ -291,16 +296,30 @@ export const useDraw = () => {
     throw new Error("must be within its provider: Pattern");
   }
 
+  const { dispatch, state } = context;
+  const { canvasPreview: canvas } = state;
+
   const updateLineWidth = (width: number) => setLineWidth(width);
+
   const updateColor = (color: RGBColor) => {
-    console.log(color);
     setColor(color);
   };
 
-  console.log(color);
+  const clearDrawing = () => {
+    if (!canvas) {
+      return;
+    }
+    const ctx = canvas.getContext("2d")!;
 
-  const { dispatch, state } = context;
-  const { canvasPreview: canvas } = state;
+    ctx.fillStyle = "white";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    if (state.canvasImgUpload) {
+      ctx.drawImage(state.canvasImgUpload, 0, 0, canvas.width, canvas.height);
+    }
+    const pattern = createTexture(canvas, state.repetitions);
+    dispatch({ type: "SET_PATTERN", pattern, canvas, canvasPreview: canvas });
+  };
+
   useEffect(() => {
     if (!canvas) {
       return;
@@ -313,6 +332,7 @@ export const useDraw = () => {
 
     const ctx = canvas.getContext("2d")!;
 
+    const colorString = `rgba(${color.r}, ${color.g}, ${color.b}, ${color.a})`;
     const setMouse = (e: any) => {
       mousePos.x = e.touches ? e.touches[0].clientX : e.clientX;
       mousePos.y = e.touches ? e.touches[0].clientY : e.clientY;
@@ -334,7 +354,6 @@ export const useDraw = () => {
       if (mouseDown && prevMouse.x !== 0 && prevMouse.y !== 0) {
         const ctx = canvas.getContext("2d")!;
         ctx.beginPath();
-        const colorString = `rgba(${color.r}, ${color.g}, ${color.b}, ${color.a})`;
         ctx.strokeStyle = colorString;
 
         ctx.lineWidth = lineWidth;
@@ -347,6 +366,7 @@ export const useDraw = () => {
         ctx.arc(nX, nY, lineWidth, 0, 2 * Math.PI);
 
         ctx.fillStyle = colorString;
+        // ctx.fillRect(nX, nY, lineWidth, lineWidth);
         ctx.fill();
 
         const eggMask = document.getElementById("egg-mask") as HTMLImageElement;
@@ -374,8 +394,11 @@ export const useDraw = () => {
       if (!mouseMoved) {
         const { x, y } = normalizedPos();
         // ctx.fillStyle = colorRef.current;
-        ctx.fillStyle = "black";
-        ctx.fillRect(x, y, 5, 5);
+        ctx.fillStyle = colorString;
+        ctx.beginPath();
+        ctx.arc(x, y, lineWidth, 0, 2 * Math.PI);
+        ctx.fill();
+        // ctx.fillRect(x, y, lineWidth, lineWidth);
         const pattern = createTexture(canvas, state.repetitions);
         // TOD: Refactor?
         const eggMask = document.getElementById("egg-mask") as HTMLImageElement;
@@ -415,5 +438,5 @@ export const useDraw = () => {
     };
   }, [canvas, state.repetitions, lineWidth, color]);
 
-  return { lineWidth, updateLineWidth, color, updateColor };
+  return { lineWidth, updateLineWidth, color, updateColor, clearDrawing };
 };

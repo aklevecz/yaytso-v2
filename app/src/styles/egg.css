@@ -44,10 +44,30 @@
   border: none;
   background: none;
   position: absolute;
-  right: -4px;
-  top: 0px;
+  right: -2px;
+  top: 2px;
   width: 30px;
   height: 30px;
+  mix-blend-mode: difference;
+}
+
+.egg__preview-close-icon > svg * {
+  stroke: white;
+}
+
+#expand-button {
+  border: none;
+  background: none;
+  position: absolute;
+  bottom: 0px;
+  right: 0px;
+  width: 40px;
+  height: 40px;
+  mix-blend-mode: difference;
+}
+
+#expand-button > svg * {
+  fill: white;
 }
 
 .upload-label {

@@ -28,7 +28,8 @@ const EggPreview = forwardRef<HTMLCanvasElement, Props>(
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
     const openModal = useOpenModal();
 
-    const { lineWidth, updateLineWidth, color, updateColor } = useDraw();
+    const { lineWidth, updateLineWidth, color, updateColor, clearDrawing } =
+      useDraw();
 
     const toggleExpanded = () => setExpanded(!expanded);
 
@@ -50,13 +51,13 @@ const EggPreview = forwardRef<HTMLCanvasElement, Props>(
     }, [expanded]);
 
     // Might not be necessary now that im moving dims to the container
-    useEffect(() => {
-      if (canvasRef && canvasRef.current) {
-        const ctx = canvasRef.current.getContext("2d")!;
-        ctx.fillStyle = "white";
-        ctx.fillRect(0, 0, previewDims.w, previewDims.h);
-      }
-    }, [previewDims]);
+    // useEffect(() => {
+    //   if (canvasRef && canvasRef.current) {
+    //     const ctx = canvasRef.current.getContext("2d")!;
+    //     ctx.fillStyle = "white";
+    //     ctx.fillRect(0, 0, previewDims.w, previewDims.h);
+    //   }
+    // }, [previewDims]);
 
     const { name, description } = customEgg;
     return (
@@ -108,6 +109,12 @@ const EggPreview = forwardRef<HTMLCanvasElement, Props>(
                       onClick={() => updateLineWidth(brush)}
                     />
                   ))}
+                  <Button
+                    background="#6483c9"
+                    size="xs"
+                    name="Clear"
+                    onClick={clearDrawing}
+                  />
                 </div>
               </div>
             </>
