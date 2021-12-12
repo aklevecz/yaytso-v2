@@ -10,6 +10,7 @@ import { useOpenModal } from "../../contexts/ModalContext";
 import { useCanvasPreview, useDraw } from "../../contexts/PatternContext";
 import { Egg, ModalTypes } from "../../contexts/types";
 import { PREVIEW_CANVAS_ID } from "./constants";
+import DrawingTools from "./DrawingTools";
 
 type Props = {
   showPreview: boolean;
@@ -27,9 +28,6 @@ const EggPreview = forwardRef<HTMLCanvasElement, Props>(
     const { initCanvas, previewDims } = useCanvasPreview();
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
     const openModal = useOpenModal();
-
-    const { lineWidth, updateLineWidth, color, updateColor, clearDrawing } =
-      useDraw();
 
     const toggleExpanded = () => setExpanded(!expanded);
 
@@ -50,16 +48,8 @@ const EggPreview = forwardRef<HTMLCanvasElement, Props>(
       }
     }, [expanded]);
 
-    // Might not be necessary now that im moving dims to the container
-    // useEffect(() => {
-    //   if (canvasRef && canvasRef.current) {
-    //     const ctx = canvasRef.current.getContext("2d")!;
-    //     ctx.fillStyle = "white";
-    //     ctx.fillRect(0, 0, previewDims.w, previewDims.h);
-    //   }
-    // }, [previewDims]);
-
     const { name, description } = customEgg;
+
     return (
       <div
         className="egg__preview-container"
@@ -89,34 +79,7 @@ const EggPreview = forwardRef<HTMLCanvasElement, Props>(
               >
                 <CloseIcon />
               </IconButton>
-
-              <div style={{ display: "flex" }}>
-                <SketchPicker
-                  color={color}
-                  onChange={(color) => updateColor(color.rgb)}
-                />
-                <div style={{ padding: 5 }}>
-                  {[10, 20, 30, 40, 50].map((brush) => (
-                    <div
-                      key={brush}
-                      style={{
-                        margin: "10px auto",
-                        width: brush,
-                        height: brush,
-                        background: lineWidth === brush ? "red" : "black",
-                        borderRadius: "50%",
-                      }}
-                      onClick={() => updateLineWidth(brush)}
-                    />
-                  ))}
-                  <Button
-                    background="#6483c9"
-                    size="xs"
-                    name="Clear"
-                    onClick={clearDrawing}
-                  />
-                </div>
-              </div>
+              <DrawingTools />
             </>
           )}
           <div>{name}</div>
