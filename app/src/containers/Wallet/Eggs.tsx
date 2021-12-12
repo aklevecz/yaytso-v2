@@ -13,14 +13,15 @@ type Props = {
 
 const NoEggs = () => (
   <div style={{ fontSize: "1.5rem", width: "70%" }}>
-    <div>you haven't created any eggs yet!</div>
-    <p>
-      go to the{" "}
-      <Link style={{ color: "red" }} to="/egg">
-        egg
-      </Link>{" "}
-      view to begin!
-    </p>
+    <div>
+      Go to the{" "}
+      <Button size="xs" onClick={console.log}>
+        <Link style={{ color: "white", textDecoration: "none" }} to="/egg">
+          Egg
+        </Link>
+      </Button>{" "}
+      view to make your first Yaytso!
+    </div>
   </div>
 );
 
@@ -47,6 +48,7 @@ export default function Eggs({ wallet }: Props) {
         </TagText>
       </div>
       <div className="wallet__egg-container">
+        {yaytsoMeta.length === 0 && <NoEggs />}
         {yaytsoMeta.map((metadata, i) => {
           const onClick = () => openModal(ModalTypes.Mint, { metadata });
           const navigateToEgg = () => history.push(`/egg/${metadata.svgCID}`);
@@ -89,7 +91,6 @@ export default function Eggs({ wallet }: Props) {
             </div>
           );
         })}
-        {yaytsoMeta.length === 0 && <NoEggs />}
       </div>
     </Fragment>
   );

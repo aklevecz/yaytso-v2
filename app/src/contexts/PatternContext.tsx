@@ -287,10 +287,12 @@ export const usePattern = () => {
   return state.pattern;
 };
 
+const DEFAULT_LINE_WIDTH = 15;
+const RGB_BLACK = { r: 0, g: 0, b: 0, a: 1 };
 export const useDraw = () => {
   const context = useContext(PatternContext);
-  const [lineWidth, setLineWidth] = useState(30);
-  const [color, setColor] = useState<RGBColor>({ r: 0, g: 0, b: 0, a: 1 });
+  const [lineWidth, setLineWidth] = useState(DEFAULT_LINE_WIDTH);
+  const [color, setColor] = useState<RGBColor>(RGB_BLACK);
 
   if (context === undefined) {
     throw new Error("must be within its provider: Pattern");
@@ -330,7 +332,7 @@ export const useDraw = () => {
     let mouseDown = false;
     let mouseMoved = false;
 
-    const ctx = canvas.getContext("2d")!;
+    let drawing = false;
 
     const colorString = `rgba(${color.r}, ${color.g}, ${color.b}, ${color.a})`;
     const setMouse = (e: any) => {
@@ -347,74 +349,77 @@ export const useDraw = () => {
       return { x: nX, y: nY };
     };
 
+    const drawPoint = (x: number, y: number) => {
+      const ctx = canvas.getContext("2d")!;
+      ctx.beginPath();
+      ctx.strokeStyle = colorString;
+
+      ctx.lineWidth = lineWidth * 2;
+      ctx.moveTo(prevMouse.x, prevMouse.y);
+      ctx.lineTo(x, y);
+      ctx.closePath();
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.arc(prevMouse.x, prevMouse.y, lineWidth, 0, 2 * Math.PI);
+
+      ctx.fillStyle = colorString;
+      ctx.fill();
+
+      const eggMask = document.getElementById("egg-mask") as HTMLImageElement;
+      createEggMask(eggMask, canvas, 200, 200, state.repetitions);
+      const pattern = createTexture(canvas, state.repetitions);
+      dispatch({
+        type: "SET_PATTERN",
+        canvas,
+        pattern,
+        canvasPreview: canvas,
+      });
+    };
+
     const onMove = (e: any) => {
       mouseMoved = true;
       setMouse(e);
-      const { x: nX, y: nY } = normalizedPos();
+      const { x, y } = normalizedPos();
       if (mouseDown && prevMouse.x !== 0 && prevMouse.y !== 0) {
-        const ctx = canvas.getContext("2d")!;
-        ctx.beginPath();
-        ctx.strokeStyle = colorString;
-
-        ctx.lineWidth = lineWidth;
-        ctx.moveTo(prevMouse.x, prevMouse.y);
-        ctx.lineTo(nX, nY);
-        ctx.closePath();
-        ctx.stroke();
-
-        ctx.beginPath();
-        ctx.arc(nX, nY, lineWidth, 0, 2 * Math.PI);
-
-        ctx.fillStyle = colorString;
-        // ctx.fillRect(nX, nY, lineWidth, lineWidth);
-        ctx.fill();
-
-        const eggMask = document.getElementById("egg-mask") as HTMLImageElement;
-        createEggMask(eggMask, canvas, 200, 200, state.repetitions);
-        const pattern = createTexture(canvas, state.repetitions);
-        dispatch({
-          type: "SET_PATTERN",
-          canvas,
-          pattern,
-          canvasPreview: canvas,
-        });
+        drawPoint(x, y);
       }
-      prevMouse.x = nX;
-      prevMouse.y = nY;
+      prevMouse.x = x;
+      prevMouse.y = y;
     };
 
     // clean this up
+    let frame = 0;
     const onDown = (e: any) => {
       setMouse(e);
+
       mouseDown = true;
       mouseMoved = false;
+      drawing = true;
+      function animate() {
+        console.log(drawing);
+        if (drawing) {
+          frame = requestAnimationFrame(animate);
+        }
+        const { x, y } = normalizedPos();
+        if (prevMouse.x && prevMouse.y) drawPoint(x, y);
+      }
+      animate();
     };
 
     const onUp = (e: any) => {
       if (!mouseMoved) {
         const { x, y } = normalizedPos();
-        // ctx.fillStyle = colorRef.current;
-        ctx.fillStyle = colorString;
-        ctx.beginPath();
-        ctx.arc(x, y, lineWidth, 0, 2 * Math.PI);
-        ctx.fill();
-        // ctx.fillRect(x, y, lineWidth, lineWidth);
-        const pattern = createTexture(canvas, state.repetitions);
-        // TOD: Refactor?
-        const eggMask = document.getElementById("egg-mask") as HTMLImageElement;
-        createEggMask(eggMask, canvas, 200, 200, state.repetitions);
-        dispatch({
-          type: "SET_PATTERN",
-          canvas,
-          pattern,
-          canvasPreview: canvas,
-        });
+        if (prevMouse.x && prevMouse.y) drawPoint(x, y);
       }
       mousePos.x = 0;
       mousePos.y = 0;
       prevMouse.x = 0;
       prevMouse.y = 0;
       mouseDown = false;
+      drawing = false;
+      cancelAnimationFrame(frame);
+      frame = 0;
     };
 
     canvas.addEventListener("mousemove", onMove);

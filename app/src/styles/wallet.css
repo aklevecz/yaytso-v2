@@ -127,3 +127,12 @@
   margin-top: 10%;
   font-weight: bold;
 }
+
+.wallet__container-no-egg {
+  font-size: 1.5rem;
+  width: 70%;
+  background: #ff2a2a;
+  padding: 30px;
+  border-radius: 20px;
+  font-weight: bold;
+}

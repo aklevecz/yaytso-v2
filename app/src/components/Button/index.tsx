@@ -1,7 +1,7 @@
 export type Sizes = "xs" | "s" | "md" | "lg" | "flex" | "flex2" | "";
 
 type Props = {
-  name: string;
+  name?: string;
   onClick: (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void;
   className?: string;
   size?: Sizes;
@@ -14,6 +14,7 @@ type Props = {
   display?: string;
   background?: string;
   disabled?: boolean;
+  children?: JSX.Element | JSX.Element[];
 };
 
 export default function Button({
@@ -30,6 +31,7 @@ export default function Button({
   display,
   background,
   disabled,
+  children,
 }: Props) {
   return (
     <button
@@ -39,7 +41,7 @@ export default function Button({
       style={{ margin, padding, width, height, maxWidth, display, background }}
       disabled={disabled}
     >
-      {name}
+      {name ? name : children}
     </button>
   );
 }

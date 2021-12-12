@@ -1,10 +1,10 @@
 import { useWallet } from "../../contexts/WalletContext";
 import { useUser } from "../../contexts/UserContext";
 import Eggs from "./Eggs";
-import LoginButton from "../../components/Button/LoginButton";
 import { motion, useViewportScroll, useTransform } from "framer-motion";
 import Eggvatar from "./Eggvatar";
 import UserInfo from "./UserInfo";
+import LoginCta from "./LoginCta";
 
 export default function Wallet() {
   const { wallet, disconnect } = useWallet();
@@ -23,16 +23,7 @@ export default function Wallet() {
         <UserInfo wallet={wallet} user={user} disconnect={disconnect} />
         <motion.div style={{ marginTop, overflowX: "hidden" }}>
           {user.uid && <Eggs wallet={wallet} />}
-          {!user.uid && (
-            <div className="wallet__container--body-cta">
-              <div
-                style={{ marginBottom: 20, fontSize: "1.3rem", width: "80%" }}
-              >
-                You must login to view your collection!
-              </div>
-              <LoginButton />
-            </div>
-          )}
+          {!user.uid && <LoginCta />}
         </motion.div>
       </div>
     </div>
