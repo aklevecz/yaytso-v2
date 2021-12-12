@@ -1,0 +1,12 @@
+import LoginButton from "../../components/Button/LoginButton";
+
+export default function LoginCta() {
+  return (
+    <div className="wallet__container--body-cta">
+      <div style={{ marginBottom: 20, fontSize: "1.3rem", width: "80%" }}>
+        You must login to view your collection!
+      </div>
+      <LoginButton />
+    </div>
+  );
+}
