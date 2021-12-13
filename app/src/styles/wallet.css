@@ -69,11 +69,12 @@
   overflow-x: hidden;
 }
 
-.wallet__egg-container div {
+.wallet__egg-container .wallet__egg-wrapper {
   flex: 0 0 80%;
   box-sizing: border-box;
   text-align: center;
   max-width: 300px;
+  height: 100%;
 }
 
 .wallet__title {

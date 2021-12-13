@@ -1,6 +1,6 @@
 import { useWallet } from "../../contexts/WalletContext";
 import { useUser } from "../../contexts/UserContext";
-import Eggs from "./Eggs";
+import EggCollection from "./EggCollection";
 import { motion, useViewportScroll, useTransform } from "framer-motion";
 import Eggvatar from "./Eggvatar";
 import UserInfo from "./UserInfo";
@@ -22,7 +22,7 @@ export default function Wallet() {
       <div className="wallet__container">
         <UserInfo wallet={wallet} user={user} disconnect={disconnect} />
         <motion.div style={{ marginTop, overflowX: "hidden" }}>
-          {user.uid && <Eggs wallet={wallet} />}
+          {user.uid && <EggCollection wallet={wallet} />}
           {!user.uid && <LoginCta />}
         </motion.div>
       </div>

@@ -54,13 +54,14 @@ export default function Egg() {
       (pattern && customEgg.name && customEgg.description) ||
       (pattern && !user.hasEggvatar)
     ) {
+      setShowPreview(true);
       return setViewState(ViewStates.Customized);
     }
     if (pattern) {
       setShowPreview(true);
       return setViewState(ViewStates.Pattern);
     }
-    setShowPreview(false);
+    // setShowPreview(false);
     return setViewState(ViewStates.Blank);
   }, [pattern, customEgg]);
 

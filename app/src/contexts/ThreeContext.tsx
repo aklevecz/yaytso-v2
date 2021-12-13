@@ -205,6 +205,7 @@ export const useThreeScene = () => {
       const controls = new OrbitControls(camera, domElement);
       controls.autoRotate = true;
       controls.update();
+      controls.enabled = false;
 
       const hemi = new THREE.HemisphereLight(0xffffff, 0x080820, 0.3);
       scene.add(hemi);

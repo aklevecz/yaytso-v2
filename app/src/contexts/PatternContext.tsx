@@ -8,7 +8,10 @@ import {
 } from "react";
 import { RGBColor } from "react-color";
 import { CanvasTexture, RepeatWrapping } from "three";
-import { REPEAT_CANVAS_ID } from "../containers/EggCreation/constants";
+import {
+  EGG_MASK,
+  REPEAT_CANVAS_ID,
+} from "../containers/EggCreation/constants";
 import {
   createCanvas,
   createCanvasCropped,
@@ -71,7 +74,7 @@ const reducer = (state: State, action: Action) => {
     case "SET_IMG_UPLOAD":
       return { ...state, canvasImgUpload: action.canvasImgUpload };
     case "CLEAR_PATTERN":
-      return { ...state, pattern: null, canvas: null };
+      return { ...state, pattern: null, canvas: null, canvasImgUpload: null };
     case "SET_REPETITIONS":
       return { ...state, repetitions: action.repetitions };
     case "SET_PREVIEW_DIMS":
@@ -242,7 +245,7 @@ export const useUpdatePattern = () => {
     if (!state.canvas || !state.canvasPreview) {
       return;
     }
-    const eggMask = document.getElementById("egg-mask") as HTMLImageElement;
+    const eggMask = document.getElementById(EGG_MASK) as HTMLImageElement;
     createEggMask(
       eggMask,
       state.canvas,
@@ -317,9 +320,11 @@ export const useDraw = () => {
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     if (state.canvasImgUpload) {
       ctx.drawImage(state.canvasImgUpload, 0, 0, canvas.width, canvas.height);
+      const pattern = createTexture(canvas, state.repetitions);
+      dispatch({ type: "SET_PATTERN", pattern, canvas, canvasPreview: canvas });
+    } else {
+      dispatch({ type: "CLEAR_PATTERN" });
     }
-    const pattern = createTexture(canvas, state.repetitions);
-    dispatch({ type: "SET_PATTERN", pattern, canvas, canvasPreview: canvas });
   };
 
   useEffect(() => {
@@ -333,6 +338,8 @@ export const useDraw = () => {
     let mouseMoved = false;
 
     let drawing = false;
+
+    let timeDown = new Date();
 
     const colorString = `rgba(${color.r}, ${color.g}, ${color.b}, ${color.a})`;
     const setMouse = (e: any) => {
@@ -365,9 +372,14 @@ export const useDraw = () => {
 
       ctx.fillStyle = colorString;
       ctx.fill();
-
-      const eggMask = document.getElementById("egg-mask") as HTMLImageElement;
-      createEggMask(eggMask, canvas, 200, 200, state.repetitions);
+      const eggMask = document.getElementById(EGG_MASK) as HTMLImageElement;
+      createEggMask(
+        eggMask,
+        canvas,
+        canvas.width,
+        canvas.height,
+        state.repetitions
+      );
       const pattern = createTexture(canvas, state.repetitions);
       dispatch({
         type: "SET_PATTERN",
@@ -391,13 +403,12 @@ export const useDraw = () => {
     // clean this up
     let frame = 0;
     const onDown = (e: any) => {
+      timeDown = new Date();
       setMouse(e);
-
       mouseDown = true;
       mouseMoved = false;
       drawing = true;
       function animate() {
-        console.log(drawing);
         if (drawing) {
           frame = requestAnimationFrame(animate);
         }
@@ -407,8 +418,10 @@ export const useDraw = () => {
       animate();
     };
 
+    const PRESSED_TIME_MS = 400;
     const onUp = (e: any) => {
-      if (!mouseMoved) {
+      const downDelta = new Date().getTime() - timeDown.getTime();
+      if (!mouseMoved && downDelta > PRESSED_TIME_MS) {
         const { x, y } = normalizedPos();
         if (prevMouse.x && prevMouse.y) drawPoint(x, y);
       }
