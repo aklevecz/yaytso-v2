@@ -24,6 +24,7 @@ export default function Egg() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [showPreview, setShowPreview] = useState(false);
   const { initScene, scene } = useThreeScene();
+  // This loads a blank egg
   useThreePatternUpdater();
   const {
     uploadPattern,

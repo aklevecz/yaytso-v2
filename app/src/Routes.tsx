@@ -18,6 +18,7 @@ import DotTyping from "./components/Loading/DotTyping";
 import Modal from "./containers/Modal";
 import { MapProvider } from "./contexts/MapContext";
 import Callback from "./containers/Callback";
+import Guestlist from "./containers/Guestlist";
 
 const noOverFlow = ["map", "", "egg"];
 
@@ -39,9 +40,7 @@ const AppComponents = () => {
       document.getElementById("root")!.style.overflow = "auto";
     }
   }, [location]);
-  useEffect(() => {
-    console.log("routes render");
-  }, []);
+
   return (
     <Switch>
       <Route path="/egg/:eggId">
@@ -62,6 +61,11 @@ const AppComponents = () => {
       </Route>
       <Route path="/callback">
         <Callback />
+      </Route>
+      <Route path="/guestlist">
+        <ThreeProvider>
+          <Guestlist />
+        </ThreeProvider>
       </Route>
       <Route path="/">
         <PatternProvider>

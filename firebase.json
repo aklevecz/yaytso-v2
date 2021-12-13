@@ -12,6 +12,7 @@
     "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
     "rewrites": [
       { "source": "/egg/**", "function": "egg" },
+      { "source": "/guestlist", "function": "guestlist" },
       {
         "source": "**",
         "destination": "/index.html"

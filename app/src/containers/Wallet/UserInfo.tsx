@@ -71,7 +71,7 @@ export default function UserInfo({ wallet, user, disconnect }: Props) {
             />
           )}
 
-          <Button name="Connect WC" size="flex2" onClick={startProvider} />
+          <Button name="Connect Wallet" size="flex2" onClick={startProvider} />
         </div>
       )}
     </motion.div>

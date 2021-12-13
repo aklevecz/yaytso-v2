@@ -126,4 +126,22 @@ export const onTx = functions.https.onRequest(async (request, response) => {
   }
 });
 
+export const guestlist = functions.https.onRequest(
+  async (request, response) => {
+    isEmulator && response.set("Access-Control-Allow-Origin", "*");
+    if (request.method === "POST") {
+      const { code } = JSON.parse(request.body);
+
+      const guestlistRef = db.collection("Guestlist").doc(code);
+      const guestlist = (await guestlistRef.get()).data();
+      if (guestlist && guestlist.claimed === false) {
+        guestlistRef.update({ claimed: true });
+        response.status(200).send({ winner: true });
+      }
+    }
+
+    response.status(404).send(false);
+  }
+);
+
 export * as discord from "./discord";
