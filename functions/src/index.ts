@@ -3,6 +3,10 @@ import * as admin from "firebase-admin";
 import * as ethers from "ethers";
 import { template } from "./template";
 
+const cors = require("cors")({
+  origin: true,
+});
+
 const isEmulator = process.env.FUNCTIONS_EMULATOR;
 
 admin.initializeApp({ projectId: "yaytso" });
@@ -128,19 +132,48 @@ export const onTx = functions.https.onRequest(async (request, response) => {
 
 export const guestlist = functions.https.onRequest(
   async (request, response) => {
-    isEmulator && response.set("Access-Control-Allow-Origin", "*");
-    if (request.method === "POST") {
-      const { code } = JSON.parse(request.body);
-
-      const guestlistRef = db.collection("Guestlist").doc(code);
-      const guestlist = (await guestlistRef.get()).data();
-      if (guestlist && guestlist.claimed === false) {
-        guestlistRef.update({ claimed: true });
-        response.status(200).send({ winner: true });
+    return cors(request, response, async () => {
+      if (request.method === "GET") {
+        // const { code } = JSON.parse(request.body);
+        const code = request.query.code as string;
+        const secret = request.query.ss as string;
+        console.log(secret);
+        if (code) {
+          const guestlistRef = db.collection("Guestlist").doc(code);
+          const guestlist = (await guestlistRef.get()).data();
+          if (guestlist && guestlist.claimed === false) {
+            guestlistRef.update({ claimed: true });
+            return response
+              .status(200)
+              .send({ winner: true, secret: guestlist.secret });
+          } else if (secret) {
+            if (guestlist && guestlist.secret === secret) {
+              return response
+                .status(200)
+                .send({
+                  winner: true,
+                  secret: guestlist.secret,
+                  email: guestlist.email,
+                });
+            }
+          }
+        }
       }
-    }
 
-    response.status(404).send(false);
+      if (request.method === "POST") {
+        const { email, secret, code } = JSON.parse(request.body);
+        const guestlistRef = db.collection("Guestlist").doc(code);
+        const guestlist = (await guestlistRef.get()).data();
+        if (guestlist && guestlist.secret === secret) {
+          guestlistRef.update({ email });
+          return response.status(200).send({ success: true });
+        } else {
+          return response.status(404).send(false);
+        }
+      }
+
+      return response.status(404).send(false);
+    });
   }
 );
 

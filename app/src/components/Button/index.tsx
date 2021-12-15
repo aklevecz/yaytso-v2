@@ -14,7 +14,7 @@ type Props = {
   display?: string;
   background?: string;
   disabled?: boolean;
-  children?: JSX.Element | JSX.Element[];
+  children?: JSX.Element | JSX.Element[] | string;
 };
 
 export default function Button({

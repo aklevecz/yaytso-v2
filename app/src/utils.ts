@@ -11,3 +11,8 @@ export const claimUrl = (signature: string, boxId: number, nonce: number) =>
 export const isMobile = () => window.innerWidth < 768;
 
 export const ipfsLink = (hash: string) => IPFS_URL.replace("__HASH__", hash);
+
+export function validateEmail(email: string) {
+  var re = /\S+@\S+\.\S+/;
+  return re.test(email);
+}

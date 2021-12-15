@@ -62,7 +62,7 @@ const AppComponents = () => {
       <Route path="/callback">
         <Callback />
       </Route>
-      <Route path="/guestlist">
+      <Route path="/hunt">
         <ThreeProvider>
           <Guestlist />
         </ThreeProvider>
