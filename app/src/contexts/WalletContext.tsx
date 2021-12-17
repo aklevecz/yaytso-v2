@@ -73,7 +73,7 @@ const WalletContext = createContext<
       dispatch: Dispatch;
       initWallet({ provider, signer, address, chainId, walletType }: Eth): void;
       disconnect(): void;
-      updateYaytsos: () => void;
+      updateYaytsos: (limit?: number, startAt?: number) => void;
     }
   | undefined
 >(undefined);
@@ -160,8 +160,9 @@ const WalletProvider = ({
     }
   }, []);
 
-  const updateYaytsos = () =>
-    fetchUserYaytsos(user.uid).then((snapshot) => {
+  // At some point the db query might need a dynamic limit, but no one has enough eggs yet
+  const updateYaytsos = (limit = 100, startAt = 0) =>
+    fetchUserYaytsos(user.uid, limit, startAt).then((snapshot) => {
       let yaytsoCIDS: YaytsoCID[] = [];
       let yaytsoMeta: YaytsoMetaWeb2[] = [];
       let eggvatar: YaytsoMetaWeb2;
@@ -246,6 +247,7 @@ export const useCreateWallet = () => {
 export const useYaytsoSVGs = () => {
   const [fetching, setFetching] = useState(true);
   // REFACTOR
+  const [startAt, setStartAt] = useState(0);
   const [svgToNFT, setSvgToNFT] = useState<any[]>([]);
   const context = useContext(WalletContext);
   if (context === undefined) {
@@ -257,29 +259,29 @@ export const useYaytsoSVGs = () => {
   const { yaytsoCIDS, yaytsoMeta, metaFetched } = state;
 
   useEffect(() => {
-    updateYaytsos();
+    updateYaytsos(2, startAt);
   }, []);
 
   // REFACTOR
-  useEffect(() => {
-    if (yaytsoCIDS.length === 0) {
-      setFetching(false);
-      return;
-    }
-    const svgMap: any[] = [];
-    const svgPromises = yaytsoCIDS.map((yaytsoCID, i) => {
-      svgMap.push({
-        nft: yaytsoMeta[i].nft,
-        name: yaytsoMeta[i].name,
-      });
-      return fetch(ipfsLink(yaytsoCID.svgCID)).then((r) => r.text());
-    });
-    Promise.all(svgPromises).then((svgs) => {
-      setFetching(false);
-      dispatch({ type: "SET_SVGs", yaytsoSVGs: svgs });
-      setSvgToNFT(svgMap);
-    });
-  }, [yaytsoCIDS]);
+  // useEffect(() => {
+  //   if (yaytsoCIDS.length === 0) {
+  //     setFetching(false);
+  //     return;
+  //   }
+  //   const svgMap: any[] = [];
+  //   const svgPromises = yaytsoCIDS.map((yaytsoCID, i) => {
+  //     svgMap.push({
+  //       nft: yaytsoMeta[i].nft,
+  //       name: yaytsoMeta[i].name,
+  //     });
+  //     return fetch(ipfsLink(yaytsoCID.svgCID)).then((r) => r.text());
+  //   });
+  //   Promise.all(svgPromises).then((svgs) => {
+  //     setFetching(false);
+  //     dispatch({ type: "SET_SVGs", yaytsoSVGs: svgs });
+  //     setSvgToNFT(svgMap);
+  //   });
+  // }, [yaytsoCIDS]);
 
   return {
     svgs: state.yaytsoSVGs,

@@ -8,6 +8,8 @@ import { BiAnim } from "./Transitions";
 import { useLogin } from "../../contexts/UserContext";
 import LoadingButton from "../../components/Button/LoadingButton";
 import ChevronLeft from "../../components/icons/ChevronLeft";
+import LoginButton from "../../components/Button/LoginButton";
+import DiscordButton from "../Wallet/DiscordButton";
 
 type PhoneProps = {
   phone: string;
@@ -98,11 +100,12 @@ const Confirm = ({
 };
 
 enum Step {
+  PhoneOrDiscord,
   Phone,
   Confirm,
 }
 
-const initialStep = Step.Phone;
+const initialStep = Step.PhoneOrDiscord;
 // const initialPhoneNumber = "+14159671642";
 const initialPhoneNumber = "";
 
@@ -199,7 +202,7 @@ export default function Login() {
 
   return (
     <div>
-      {step > Step.Phone && (
+      {step > Step.PhoneOrDiscord && (
         <div onClick={() => setState(state - 1)} className="modal__back">
           <ChevronLeft />
         </div>
@@ -208,6 +211,20 @@ export default function Login() {
       <BiAnim state={state} changeView={() => setStep(state)}>
         <div className="">
           <React.Fragment>
+            {step === Step.PhoneOrDiscord && (
+              <div>
+                <div className="modal__block">
+                  Sign in with Discord or your Phone number
+                </div>
+                <Button
+                  name="Login with your Phone"
+                  size="flex2"
+                  margin="10px 0px"
+                  onClick={() => setState(Step.Phone)}
+                />
+                <DiscordButton name="Login with Discord" size="flex2" />
+              </div>
+            )}
             {step === Step.Phone && (
               <PhoneNumber
                 phone={phone}

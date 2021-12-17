@@ -79,45 +79,68 @@ const addToGuild = (userId: string, access_token: string, role: string) => {
       "Content-Type": "application/json",
     },
     body: JSON.stringify(body),
-  })
-    .then(console.log)
-    .catch(console.log);
+  }).catch(console.log);
 };
 
 export const auth = functions.https.onCall(async (data, context) => {
   const { code } = data;
-  if (!context.auth) {
-    return false;
-  }
-
-  const userRef = db.collection(Collections.Users).doc(context.auth.uid);
-  const user = (await userRef.get()).data();
-  if (!user) {
-    return false;
-  }
   const tokens = await fetchToken(code);
   const discordUser = await getUser(tokens.access_token);
 
-  let role = "";
-  if (user.addresses) {
-    const isCreator = await isAddressCreator(user.addresses);
-    if (isCreator) {
-      role = yaytsoCreatorRoleId;
+  // Already a user && signed in
+  if (context.auth) {
+    const userRef = db.collection(Collections.Users).doc(context.auth.uid);
+    const user = (await userRef.get()).data();
+    if (!user) {
+      return false;
     }
+
+    // If hasn't been discorded yet
+    if (!user.discordId) {
+      let role = "";
+      if (user.addresses) {
+        const isCreator = await isAddressCreator(user.addresses);
+        if (isCreator) {
+          role = yaytsoCreatorRoleId;
+        }
+      }
+
+      addToGuild(discordUser.id, tokens.access_token, role);
+      admin
+        .auth()
+        .updateUser(context.auth.uid, { email: discordUser.email })
+        .catch(console.log);
+
+      userRef.update({
+        email: discordUser.email,
+        discord: true,
+        discordId: discordUser.id,
+        discordUsername: discordUser.username,
+      });
+    }
+    return { discordConnected: true };
+  } else {
+    // Not signed in
+    let user = await admin
+      .auth()
+      .getUserByEmail(discordUser.email)
+      .catch(() => console.log("no user reocrd"));
+    addToGuild(discordUser.id, tokens.access_token, "");
+    let loginToken = "";
+    if (user) {
+    } else {
+      user = await admin.auth().createUser({ email: discordUser.email });
+      const userRef = db.collection(Collections.Users).doc(user.uid);
+      userRef.set({
+        email: discordUser.email,
+        discord: true,
+        discordId: discordUser.id,
+        discordUsername: discordUser.username,
+      });
+    }
+    loginToken = await admin.auth().createCustomToken(user.uid);
+    return { loginToken };
   }
 
-  addToGuild(discordUser.id, tokens.access_token, role);
-
-  admin
-    .auth()
-    .updateUser(context.auth.uid, { email: discordUser.email })
-    .catch(console.log);
-
-  userRef.update({
-    email: discordUser.email,
-    discord: true,
-    discordId: discordUser.id,
-    discordUsername: discordUser.username,
-  });
-  return true;
+  return false;
 });

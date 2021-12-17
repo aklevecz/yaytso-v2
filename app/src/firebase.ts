@@ -23,6 +23,7 @@ if (process.env.NODE_ENV === "development") {
     ssl: false,
   });
   functions.useEmulator("localhost", 5002);
+  auth.useEmulator("http://localhost:9099");
 }
 
 export enum Collections {

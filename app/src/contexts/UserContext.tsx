@@ -81,9 +81,10 @@ const UserProvider = ({
 
   const login = async (user: firebase.User) => {
     const { phoneNumber, uid, refreshToken } = user;
-    if (!phoneNumber) {
-      return console.error("phone number is missing");
-    }
+    console.log(user);
+    // if (!phoneNumber) {
+    //   return console.error("phone number is missing");
+    // }
     const { hasEggvatar } = (await onSignIn()).data;
     dispatch({
       type: "UPDATE_USER",

@@ -26,6 +26,7 @@ export default function UserInfo({ wallet, user, disconnect }: Props) {
     [50, 100],
     [10, window.innerWidth + 200]
   );
+  console.log(user);
   return (
     <motion.div style={{ marginLeft }} className="wallet__user-info">
       {wallet.connected && (
@@ -48,7 +49,7 @@ export default function UserInfo({ wallet, user, disconnect }: Props) {
           <SelectNetwork onNetworkChange={onNetworkChange} network={network} />
         </div>
       )}
-      {user.phone && (
+      {user.uid && (
         <div className="wallet__phone">
           <div>{user.phone}</div>
           <div style={{ color: discordColor }}>{user.discordUsername}</div>

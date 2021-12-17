@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
 import { useHistory } from "react-router";
 import DotTyping from "../../components/Loading/DotTyping";
-import { useWallet } from "../../contexts/WalletContext";
-import { discordAuth } from "../../firebase";
+import { auth, discordAuth } from "../../firebase";
 
 export default function Callback() {
   const [loading, setLoading] = useState(true);
@@ -12,8 +11,14 @@ export default function Callback() {
     const code = params.get("code");
     if (code) {
       discordAuth({ code }).then((r) => {
-        if (r) {
+        console.log(r);
+        if (r.data.discordConnected) {
           history.push("/wallet");
+        }
+        if (r.data.loginToken) {
+          auth.signInWithCustomToken(r.data.loginToken).then(() => {
+            history.push("/wallet");
+          });
         }
       });
     } else {

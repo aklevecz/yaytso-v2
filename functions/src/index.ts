@@ -9,7 +9,8 @@ const cors = require("cors")({
 
 const isEmulator = process.env.FUNCTIONS_EMULATOR;
 
-admin.initializeApp({ projectId: "yaytso" });
+const adminConfig = require("./admin.json");
+admin.initializeApp({ credential: admin.credential.cert(adminConfig) });
 const db = admin.firestore();
 const env = isEmulator ? require("./dev.json") : functions.config();
 
@@ -36,6 +37,7 @@ export enum Collections {
   Yaytsos = "YAYTSOS",
   TxLogs = "TxLogs",
   NFTS = "NFTS",
+  Guestlist = "Guestlist",
 }
 
 export const onSignIn = functions.https.onCall(async (_, context) => {
@@ -48,7 +50,10 @@ export const onSignIn = functions.https.onCall(async (_, context) => {
   } = context.auth;
   let user = (await db.collection(Collections.Users).doc(uid).get()).data();
   if (!user) {
-    const newUserObject = { phone_number, hasEggvatar: false };
+    const newUserObject = {
+      phone_number: phone_number ? phone_number : "",
+      hasEggvatar: false,
+    };
     db.collection(Collections.Users).doc(uid).set(newUserObject);
     user = newUserObject;
   }
@@ -134,12 +139,10 @@ export const guestlist = functions.https.onRequest(
   async (request, response) => {
     return cors(request, response, async () => {
       if (request.method === "GET") {
-        // const { code } = JSON.parse(request.body);
         const code = request.query.code as string;
         const secret = request.query.ss as string;
-        console.log(secret);
         if (code) {
-          const guestlistRef = db.collection("Guestlist").doc(code);
+          const guestlistRef = db.collection(Collections.Guestlist).doc(code);
           const guestlist = (await guestlistRef.get()).data();
           if (guestlist && guestlist.claimed === false) {
             guestlistRef.update({ claimed: true });
@@ -148,13 +151,11 @@ export const guestlist = functions.https.onRequest(
               .send({ winner: true, secret: guestlist.secret });
           } else if (secret) {
             if (guestlist && guestlist.secret === secret) {
-              return response
-                .status(200)
-                .send({
-                  winner: true,
-                  secret: guestlist.secret,
-                  email: guestlist.email,
-                });
+              return response.status(200).send({
+                winner: true,
+                secret: guestlist.secret,
+                email: guestlist.email,
+              });
             }
           }
         }
@@ -162,7 +163,7 @@ export const guestlist = functions.https.onRequest(
 
       if (request.method === "POST") {
         const { email, secret, code } = JSON.parse(request.body);
-        const guestlistRef = db.collection("Guestlist").doc(code);
+        const guestlistRef = db.collection(Collections.Guestlist).doc(code);
         const guestlist = (await guestlistRef.get()).data();
         if (guestlist && guestlist.secret === secret) {
           guestlistRef.update({ email });

@@ -10,7 +10,7 @@ export default function LoginButton({ size }: Props) {
   const openModal = useOpenModal();
   return (
     <Button
-      name="Login"
+      name="Login with Phone"
       onClick={() => openModal(ModalTypes.Login)}
       size={size}
     />

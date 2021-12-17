@@ -17,15 +17,23 @@ export const updateUserAddresses = async (
   const userRef = db.collection(Collections.Users).doc(userId);
   const user = (await userRef.get()).data();
   if (user) {
-    const addresses = user.addresses ? user.addresses : [];
-    return userRef.update({ addresses: [...addresses, newAddress] });
+    const currentAddresses = user.addresses ? user.addresses : [];
+    const addresses = new Set([...currentAddresses, newAddress]);
+    return userRef.update({ addresses: Array.from(addresses) });
   }
 };
 
-export const fetchUserYaytsos = async (userId: string) => {
+export const fetchUserYaytsos = async (
+  userId: string,
+  limit: number,
+  startAt: number
+) => {
   const res = await db
     .collection(Collections.Yaytso)
     .where("uid", "==", userId)
+    .orderBy("name")
+    .limit(limit)
+    .startAt(startAt)
     .get();
   return res;
 };

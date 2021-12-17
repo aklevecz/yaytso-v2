@@ -408,14 +408,14 @@ export const useDraw = () => {
       mouseDown = true;
       mouseMoved = false;
       drawing = true;
-      function animate() {
-        if (drawing) {
-          frame = requestAnimationFrame(animate);
-        }
-        const { x, y } = normalizedPos();
-        if (prevMouse.x && prevMouse.y) drawPoint(x, y);
-      }
-      animate();
+      // function animate() {
+      //   if (drawing) {
+      //     frame = requestAnimationFrame(animate);
+      //   }
+      //   const { x, y } = normalizedPos();
+      //   if (prevMouse.x && prevMouse.y) drawPoint(x, y);
+      // }
+      // animate();
     };
 
     const PRESSED_TIME_MS = 400;
@@ -431,7 +431,7 @@ export const useDraw = () => {
       prevMouse.y = 0;
       mouseDown = false;
       drawing = false;
-      cancelAnimationFrame(frame);
+      // cancelAnimationFrame(frame);
       frame = 0;
     };
 

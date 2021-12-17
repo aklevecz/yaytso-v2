@@ -114,7 +114,6 @@ export const useMap = () => {
 
   const { dispatch, state } = context;
   const initMap = useCallback(() => {
-    console.log("init map");
     loader.load().then(() => {
       if (!mapContainer.current) {
         return console.error("map container missing");

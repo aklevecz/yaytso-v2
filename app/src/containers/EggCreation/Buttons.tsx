@@ -33,14 +33,21 @@ export default function Buttons({
     return <LoadingButton color="white" />;
   }
   if (!user.uid) {
-    return <Button name="Login" onClick={() => openModal(ModalTypes.Login)} />;
+    return (
+      <Button
+        name="Login / Signup"
+        size="flex2"
+        width="60%"
+        onClick={() => openModal(ModalTypes.Login)}
+      />
+    );
   }
 
   if (viewState === ViewStates.Blank) {
     return (
       <label className="upload-label">
         <input ref={inputRef} onChange={uploadPattern} type="file" />
-        Upload
+        Upload An Image
       </label>
     );
   }
