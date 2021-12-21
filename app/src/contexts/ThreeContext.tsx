@@ -119,7 +119,6 @@ const ThreeProvider = ({
   const loadGLTF = useCallback(
     (path: string, scene: THREE.Scene, scale = 1) => {
       const loader = new GLTFLoader();
-      console.log("trying to load egg");
       loader.load(path, (object: GLTF) => {
         // object.scene.scale.set(0.1, 0.1, 0.1);
         object.scene.scale.set(scale, scale, scale);
@@ -134,7 +133,6 @@ const ThreeProvider = ({
         });
         // This could be removed and they could just be loaded first
         scene.add(object.scene);
-        console.log("egg is loaded");
         dispatch({
           type: "ADD_ENITITIES",
           entities: [{ object, name: "egg" }],

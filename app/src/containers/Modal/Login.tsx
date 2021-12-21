@@ -1,5 +1,5 @@
 import Button from "../../components/Button";
-import { useModalToggle } from "../../contexts/ModalContext";
+import { useModalData, useModalToggle } from "../../contexts/ModalContext";
 import "react-phone-number-input/style.css";
 import PhoneInput from "react-phone-number-input";
 import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
@@ -10,6 +10,9 @@ import LoadingButton from "../../components/Button/LoadingButton";
 import ChevronLeft from "../../components/icons/ChevronLeft";
 import LoginButton from "../../components/Button/LoginButton";
 import DiscordButton from "../Wallet/DiscordButton";
+import Smiler from "../../components/icons/Smiler";
+import Number from "../../components/icons/Number";
+import { auth, onSignIn } from "../../firebase";
 
 type PhoneProps = {
   phone: string;
@@ -69,9 +72,7 @@ const Confirm = ({
 }: ConfirmProps) => {
   return (
     <div>
-      <div className="modal__description">
-        Enter the 6 digit code that was just texted to you below!
-      </div>
+      <div className="modal__description">Enter the 6 digit code</div>
 
       <div className="modal__input-container">
         <input
@@ -105,6 +106,11 @@ enum Step {
   Confirm,
 }
 
+export enum PhoneAuth {
+  SignIn,
+  Link,
+}
+
 const initialStep = Step.PhoneOrDiscord;
 // const initialPhoneNumber = "+14159671642";
 const initialPhoneNumber = "";
@@ -121,6 +127,20 @@ export default function Login() {
   const [state, setState] = useState(initialStep);
   const [step, setStep] = useState(initialStep);
   const [error, setError] = useState("");
+
+  const { data } = useModalData();
+
+  const [phoneAuth, setPhoneAuth] = useState<PhoneAuth>(PhoneAuth.SignIn);
+  useEffect(() => {
+    if (data && data.skipToStep) {
+      setStep(data.skipToStep);
+      setState(data.skipToStep);
+    }
+    if (data && data.phoneAuth) {
+      setPhoneAuth(data.phoneAuth);
+    }
+  }, [data]);
+
   useEffect(() => {
     if ((window as any).recaptchaVerifier) return;
     (window as any).recaptchaVerifier = new firebase.auth.RecaptchaVerifier(
@@ -182,22 +202,36 @@ export default function Login() {
       return;
     }
     setLoading(true);
-    confirmationResult
-      .confirm(code)
-      .then((result) => {
-        if (!result.user) {
-          return console.error("user is missing");
-        }
+    const credential = firebase.auth.PhoneAuthProvider.credential(
+      confirmationResult.verificationId,
+      code
+    );
+    if (phoneAuth === PhoneAuth.Link) {
+      auth.currentUser?.linkWithCredential(credential).then((result) => {
+        onSignIn();
         setLoading(false);
-        // login(result.user);
         toggleModal();
-      })
-      .catch((err) => {
-        if (err.code === "auth/invalid-verification-code") {
-          setError("Hmm that isn't the right code-- try again?");
-        }
-        setLoading(false);
       });
+    }
+
+    if (phoneAuth === PhoneAuth.SignIn) {
+      confirmationResult
+        .confirm(code)
+        .then((result) => {
+          if (!result.user) {
+            return console.error("user is missing");
+          }
+          setLoading(false);
+          // login(result.user);
+          toggleModal();
+        })
+        .catch((err) => {
+          if (err.code === "auth/invalid-verification-code") {
+            setError("Hmm that isn't the right code-- try again?");
+          }
+          setLoading(false);
+        });
+    }
   };
 
   return (
@@ -207,22 +241,27 @@ export default function Login() {
           <ChevronLeft />
         </div>
       )}
-      <div className="modal__title">Login</div>
+      <div className="modal__title">
+        <div>Welcome </div>
+        <div style={{ width: 30, height: 30, paddingLeft: 20 }}>
+          <Smiler />
+        </div>
+      </div>
       <BiAnim state={state} changeView={() => setStep(state)}>
         <div className="">
           <React.Fragment>
             {step === Step.PhoneOrDiscord && (
               <div>
-                <div className="modal__block">
-                  Sign in with Discord or your Phone number
+                <div className="modal__block" style={{ fontSize: "1.5rem" }}>
+                  It's egg time!
                 </div>
-                <Button
-                  name="Login with your Phone"
-                  size="flex2"
-                  margin="10px 0px"
-                  onClick={() => setState(Step.Phone)}
-                />
-                <DiscordButton name="Login with Discord" size="flex2" />
+                <div
+                  style={{ marginTop: 10 }}
+                  className="modal__button-container--stacked"
+                >
+                  <LoginButton onClick={() => setState(Step.Phone)} />
+                  <DiscordButton name="Sign in with Discord" size="flex2" />
+                </div>
               </div>
             )}
             {step === Step.Phone && (

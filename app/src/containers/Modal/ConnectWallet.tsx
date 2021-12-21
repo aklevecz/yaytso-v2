@@ -20,10 +20,7 @@ export default function ConnectWallet() {
           <div className="modal__block">
             <div>
               You must have a wallet connected in order to claim an NFT
-              <div
-                className="wallet__connect-container"
-                style={{ textAlign: "center", margin: 20 }}
-              >
+              <div className="wallet__connect-container">
                 {window.ethereum && (
                   <Button
                     name="Connect Metamask"

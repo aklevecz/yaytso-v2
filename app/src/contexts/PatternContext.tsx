@@ -389,6 +389,31 @@ export const useDraw = () => {
       });
     };
 
+    const drawDot = (x: number, y: number) => {
+      const ctx = canvas.getContext("2d")!;
+
+      ctx.beginPath();
+      ctx.arc(x, y, lineWidth, 0, 2 * Math.PI);
+
+      ctx.fillStyle = colorString;
+      ctx.fill();
+      const eggMask = document.getElementById(EGG_MASK) as HTMLImageElement;
+      createEggMask(
+        eggMask,
+        canvas,
+        canvas.width,
+        canvas.height,
+        state.repetitions
+      );
+      const pattern = createTexture(canvas, state.repetitions);
+      dispatch({
+        type: "SET_PATTERN",
+        canvas,
+        pattern,
+        canvasPreview: canvas,
+      });
+    };
+
     const onMove = (e: any) => {
       mouseMoved = true;
       setMouse(e);
@@ -418,12 +443,13 @@ export const useDraw = () => {
       // animate();
     };
 
-    const PRESSED_TIME_MS = 400;
+    const PRESSED_TIME_MS = 100;
     const onUp = (e: any) => {
       const downDelta = new Date().getTime() - timeDown.getTime();
       if (!mouseMoved && downDelta > PRESSED_TIME_MS) {
         const { x, y } = normalizedPos();
-        if (prevMouse.x && prevMouse.y) drawPoint(x, y);
+        console.log(x, y);
+        drawDot(x, y);
       }
       mousePos.x = 0;
       mousePos.y = 0;

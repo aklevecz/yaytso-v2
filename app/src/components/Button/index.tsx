@@ -6,6 +6,7 @@ type Props = {
   className?: string;
   size?: Sizes;
   id?: string;
+  fontSize?: number | string;
   width?: number | string;
   height?: number | string;
   maxWidth?: number | string;
@@ -23,6 +24,7 @@ export default function Button({
   className,
   size,
   id,
+  fontSize,
   width,
   height,
   maxWidth,
@@ -38,7 +40,16 @@ export default function Button({
       id={id}
       className={`btn ${className} ${size} ${disabled ? "disabled" : ""}`}
       onClick={onClick}
-      style={{ margin, padding, width, height, maxWidth, display, background }}
+      style={{
+        margin,
+        padding,
+        width,
+        height,
+        maxWidth,
+        display,
+        background,
+        fontSize,
+      }}
       disabled={disabled}
     >
       {name ? name : children}

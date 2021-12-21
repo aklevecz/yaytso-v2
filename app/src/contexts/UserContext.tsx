@@ -96,13 +96,13 @@ const UserProvider = ({
     auth.onAuthStateChanged(async (user) => {
       if (!user) {
         console.log("not authed");
+        dispatch({ type: "SET_LOADING", loading: false });
       } else {
         if (!state.user.uid) {
           await login(user);
-          subscribeToUser(user.uid, dispatch);
+          subscribeToUser(user.uid, dispatch).then(() => {});
         }
       }
-      dispatch({ type: "SET_LOADING", loading: false });
     });
   };
 

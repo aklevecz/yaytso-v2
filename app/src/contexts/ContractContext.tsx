@@ -165,11 +165,9 @@ const ContractProvider = ({
     if (!wallet.chainId || !wallet.provider) {
       return;
     }
-    console.log("wallet change");
     const network = idToNetwork[wallet.chainId];
     const provider = wallet.provider;
     // }
-    console.log("contract change", network);
     const yaytsoContract = initContract("yaytso", network, provider);
     const cartonContract = initContract("carton", network, provider);
 

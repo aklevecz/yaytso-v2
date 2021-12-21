@@ -1,18 +1,27 @@
 import Button, { Sizes } from ".";
-import { useOpenModal } from "../../contexts/ModalContext";
-import { ModalTypes } from "../../contexts/types";
+import Number from "../icons/Number";
+import IconWrapper from "./IconWrapper";
+import InnerButtonContainer from "./InnerButtonContainer";
 
 type Props = {
   size?: Sizes;
+  onClick: () => void;
+  text?: string;
 };
 
-export default function LoginButton({ size }: Props) {
-  const openModal = useOpenModal();
+export default function LoginButton({
+  size = "flex2",
+  text = "Sign in with your phone",
+  onClick,
+}: Props) {
   return (
-    <Button
-      name="Login with Phone"
-      onClick={() => openModal(ModalTypes.Login)}
-      size={size}
-    />
+    <Button size={size} margin="10px auto" display="block" onClick={onClick}>
+      <InnerButtonContainer>
+        <IconWrapper>
+          <Number />
+        </IconWrapper>
+        <div>{text}</div>
+      </InnerButtonContainer>
+    </Button>
   );
 }

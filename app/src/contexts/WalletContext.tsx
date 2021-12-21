@@ -245,10 +245,7 @@ export const useCreateWallet = () => {
 };
 
 export const useYaytsoSVGs = () => {
-  const [fetching, setFetching] = useState(true);
-  // REFACTOR
   const [startAt, setStartAt] = useState(0);
-  const [svgToNFT, setSvgToNFT] = useState<any[]>([]);
   const context = useContext(WalletContext);
   if (context === undefined) {
     throw new Error("Wallet Context error in YaytsoSVGs hook");
@@ -256,37 +253,14 @@ export const useYaytsoSVGs = () => {
 
   const { dispatch, state, updateYaytsos } = context;
 
-  const { yaytsoCIDS, yaytsoMeta, metaFetched } = state;
+  const { yaytsoMeta, metaFetched } = state;
 
   useEffect(() => {
-    updateYaytsos(2, startAt);
+    updateYaytsos(100, startAt);
   }, []);
-
-  // REFACTOR
-  // useEffect(() => {
-  //   if (yaytsoCIDS.length === 0) {
-  //     setFetching(false);
-  //     return;
-  //   }
-  //   const svgMap: any[] = [];
-  //   const svgPromises = yaytsoCIDS.map((yaytsoCID, i) => {
-  //     svgMap.push({
-  //       nft: yaytsoMeta[i].nft,
-  //       name: yaytsoMeta[i].name,
-  //     });
-  //     return fetch(ipfsLink(yaytsoCID.svgCID)).then((r) => r.text());
-  //   });
-  //   Promise.all(svgPromises).then((svgs) => {
-  //     setFetching(false);
-  //     dispatch({ type: "SET_SVGs", yaytsoSVGs: svgs });
-  //     setSvgToNFT(svgMap);
-  //   });
-  // }, [yaytsoCIDS]);
 
   return {
     svgs: state.yaytsoSVGs,
-    fetching,
-    svgToNFT,
     yaytsoMeta,
     metaFetched,
   };

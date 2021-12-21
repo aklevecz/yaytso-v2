@@ -60,12 +60,11 @@ export default function Small({
   useEffect(() => {
     setTimeout(() => setWait(false), 2000);
   }, []);
-  console.log(wait, "WAITING");
   return (
     <ThreeProvider>
       <>
         {wait && (
-          <div style={{ height: 200 }}>
+          <div style={{ height: 267 }}>
             <DotTyping />
           </div>
         )}

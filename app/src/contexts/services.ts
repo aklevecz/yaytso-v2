@@ -6,7 +6,22 @@ export const subscribeToUser = async (userId: string, dispatch: any) => {
     .collection(Collections.Users)
     .doc(userId)
     .onSnapshot((doc) => {
-      dispatch({ type: "UPDATE_USER", user: doc.data() });
+      const data = doc.data();
+      if (data) {
+        const user = Object.keys(data).reduce(
+          (acc: { [key: string]: string }, cv) => {
+            let key = cv;
+            if (cv === "phone_number") {
+              key = "phone";
+            }
+            acc[key] = data[cv];
+            return acc;
+          },
+          {}
+        );
+        dispatch({ type: "UPDATE_USER", user });
+        dispatch({ type: "SET_LOADING", loading: false });
+      }
     });
 };
 

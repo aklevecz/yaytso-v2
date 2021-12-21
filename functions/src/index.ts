@@ -48,14 +48,22 @@ export const onSignIn = functions.https.onCall(async (_, context) => {
     uid,
     token: { phone_number },
   } = context.auth;
-  let user = (await db.collection(Collections.Users).doc(uid).get()).data();
+  const userRef = db.collection(Collections.Users).doc(uid);
+  let user = (await userRef.get()).data();
+  // New user
   if (!user) {
     const newUserObject = {
       phone_number: phone_number ? phone_number : "",
       hasEggvatar: false,
     };
-    db.collection(Collections.Users).doc(uid).set(newUserObject);
+    userRef.set(newUserObject);
     user = newUserObject;
+  }
+  // Connecting phone number
+  console.log(context.auth);
+  console.log(phone_number);
+  if (user && !user.phone_number && phone_number) {
+    userRef.update({ phone_number });
   }
   return user;
 });
