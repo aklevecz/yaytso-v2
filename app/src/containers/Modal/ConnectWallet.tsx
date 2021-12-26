@@ -11,7 +11,6 @@ export default function ConnectWallet() {
   const { wallet } = useWallet();
   const { metamaskConnect, isConnected } = useMetaMask();
   const { startProvider } = useWalletConnect();
-  console.log(wallet);
   return (
     <div>
       {!wallet.connected && (

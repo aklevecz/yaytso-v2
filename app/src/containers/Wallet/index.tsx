@@ -11,10 +11,9 @@ export default function Wallet() {
   const user = useUser();
   const userLoading = useLoading();
   const { scrollY } = useViewportScroll();
-  const marginTop = useTransform(scrollY, [50, 350], [10, -230]);
+  const marginTop = useTransform(scrollY, [100, 350], [10, -230]);
 
   const isSignedIn = Boolean(user.uid);
-  console.log(userLoading);
   return (
     <div className="wallet__root">
       <Eggvatar user={user} />

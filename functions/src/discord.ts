@@ -82,6 +82,34 @@ const addToGuild = (userId: string, access_token: string, role: string) => {
   }).catch(console.log);
 };
 
+const createMessage = (content: string) => {
+  const testChannel = "917833356757041172";
+  fetch(`${baseUrl}/channels/${testChannel}/messages`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bot ${botToken}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      content: "hi",
+      embeds: [
+        {
+          title: "EGG",
+          description: "AN EGG",
+          image: {
+            url: "https://gateway.pinata.cloud/ipfs/bafkreigbk5vgau4v7wg2iht5khxxt7cumwqxbnxslpbjw565pm6upwulke",
+          },
+        },
+      ],
+    }),
+  }).then(console.log);
+};
+
+export const dMessage = functions.https.onRequest((_, res) => {
+  createMessage("hi");
+  res.send("Hi");
+});
+
 export const auth = functions.https.onCall(async (data, context) => {
   const { code } = data;
   const tokens = await fetchToken(code);

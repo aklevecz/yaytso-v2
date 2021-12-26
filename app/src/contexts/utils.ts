@@ -1,6 +1,5 @@
 import { CanvasTexture, RepeatWrapping } from "three";
 import { NAV_CLASS_NAME } from "../constants";
-import { REPEAT_CANVAS_ID } from "../containers/EggCreation/constants";
 
 export const idToNetwork: { [key: number]: string } = {
   1: "mainnet",
@@ -63,14 +62,11 @@ export const drawToPreview = (
   width = 200,
   height = 200
 ) => {
-  // const img = new Image();
-  // img.src = imgDataURL;
-  // img.onload = (e) => {
   const ctx = canvas.getContext("2d")!;
   ctx.drawImage(img, 0, 0, width, height);
-  // };
 };
 
+const CANVAS_DIMS = 1080;
 export const createCanvas = (
   imgDataURL: string
 ): Promise<{ canvas: HTMLCanvasElement; img: HTMLImageElement }> => {
@@ -85,12 +81,12 @@ export const createCanvas = (
       }
       const { width, height } = img;
       const aspect = width / height;
-      const canvasDim = { width: 1080, height: 1080 };
+      const canvasDim = { width: CANVAS_DIMS, height: CANVAS_DIMS };
       if (aspect > 1) {
-        canvasDim.width = width > 1080 ? 1080 : width;
+        canvasDim.width = width > CANVAS_DIMS ? CANVAS_DIMS : width;
         canvasDim.height = width / aspect;
       } else if (aspect < 1) {
-        canvasDim.height = height > 1080 ? 1080 : height;
+        canvasDim.height = height > CANVAS_DIMS ? CANVAS_DIMS : height;
         canvasDim.width = height * aspect;
       }
       ctx.canvas.width = canvasDim.width;
@@ -137,7 +133,8 @@ export const createEggMask = (
   copyCanvas: HTMLCanvasElement,
   width: number,
   height: number,
-  repetitions: number
+  repetitions: number,
+  callback: (value: unknown) => void
 ) => {
   const tinyCanvas = document.createElement("canvas");
   const tinyCtx = tinyCanvas.getContext("2d")!;
@@ -165,6 +162,7 @@ export const createEggMask = (
   repeatCtx.fillStyle = rPattern;
   repeatCtx.fillRect(0, 0, width, height);
   eggMask.setAttribute("xlink:href", repeatCanvas.toDataURL());
+  callback(true);
 };
 
 export const createTexture = (
@@ -181,7 +179,6 @@ export const createTexture = (
 
 const windowHeight = window.innerHeight;
 export const getFullContainerHeight = () => {
-  // const windowHeight = window.innerHeight;
   const navEl = document.querySelector(`.${NAV_CLASS_NAME}`) as HTMLDivElement;
   let fullHeight = 0;
   if (navEl) {

@@ -28,7 +28,7 @@ import ConnectWallet from "./ConnectWallet";
 const modalMap = {
   info: { component: <Info />, maxState: 0 },
   cartonContent: { component: <CartonContent />, maxState: 0 },
-  eggMaker: { component: <EggMaker />, maxState: 1 },
+  eggMaker: { component: <EggMaker />, maxState: 0 },
   login: { component: <Login />, maxState: 1 },
   mint: {
     component: <Mint />,

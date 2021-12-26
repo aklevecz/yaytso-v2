@@ -34,6 +34,7 @@ export default function Egg() {
     updating,
     canvas,
     repetitions,
+    drawEggMask,
   } = useUpdatePattern();
   const { customEgg, clearEgg } = useCustomEgg();
   const openModal = useOpenModal();
@@ -52,7 +53,8 @@ export default function Egg() {
 
   useEffect(() => {
     if (
-      (pattern && customEgg.name && customEgg.description) ||
+      (pattern && customEgg.name) ||
+      // && customEgg.description
       (pattern && !user.hasEggvatar)
     ) {
       setShowPreview(true);
@@ -88,6 +90,7 @@ export default function Egg() {
   const { name, description } = customEgg;
 
   const onExport = () => {
+    drawEggMask();
     setViewState(ViewStates.Creating);
     exportYaytso(scene, customEgg, user.uid, (metaCID, svgCID, gltfCID) => {
       setViewState(ViewStates.Success);
@@ -104,6 +107,7 @@ export default function Egg() {
   };
 
   const onEggvatar = () => {
+    drawEggMask();
     setViewState(ViewStates.Creating);
     exportYaytso(
       scene,

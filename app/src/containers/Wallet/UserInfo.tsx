@@ -32,38 +32,49 @@ export default function UserInfo({ wallet, user, disconnect }: Props) {
   const { scrollY } = useViewportScroll();
   const marginLeft = useTransform(
     scrollY,
-    [50, 100],
-    [10, window.innerWidth + 200]
+    [150, 200],
+    [0, window.innerWidth + 200]
   );
+
+  const isNotPhone = !user.phone;
+  const isNotDiscord = !user.discord;
+  const isUser = user.uid;
+
   return (
     <div>
-      <motion.div style={{ marginLeft }} className="wallet__user-info">
-        <Web3User
-          wallet={wallet}
-          disconnect={disconnect}
-          onNetworkChange={onNetworkChange}
-          network={network}
-          metamaskConnect={metamaskConnect}
-          startProvider={startProvider}
-          isConnected={isConnected}
-        />
-        <Web2User user={user} />
+      <motion.div style={{ marginLeft }}>
+        <div className="wallet__user-info">
+          <Web3User
+            wallet={wallet}
+            disconnect={disconnect}
+            onNetworkChange={onNetworkChange}
+            network={network}
+            metamaskConnect={metamaskConnect}
+            startProvider={startProvider}
+            isConnected={isConnected}
+          />
+          <Web2User user={user} />
+        </div>
+        {isUser && (isNotDiscord || isNotPhone) && (
+          <div className="wallet__add-auth__container">
+            {isNotDiscord && (
+              <DiscordButton name="Connect your Discord" size="flex2" />
+            )}
+            {isNotPhone && (
+              <LoginButton
+                size="flex2"
+                text="Connect your Phone #"
+                onClick={() => {
+                  openModal(ModalTypes.Login, {
+                    skipToStep: 1,
+                    phoneAuth: PhoneAuth.Link,
+                  });
+                }}
+              />
+            )}
+          </div>
+        )}
       </motion.div>
-      {user.uid && !user.discord && (
-        <DiscordButton name="Connect your Discord" size="flex2" />
-      )}
-      {user.uid && !user.phone && (
-        <LoginButton
-          size="flex2"
-          text="Connect your Phone #"
-          onClick={() => {
-            openModal(ModalTypes.Login, {
-              skipToStep: 1,
-              phoneAuth: PhoneAuth.Link,
-            });
-          }}
-        />
-      )}
     </div>
   );
 }
@@ -168,14 +179,21 @@ interface Web3ConnectProps {
   startProvider: () => void;
 }
 const Web3Connect = ({ metamaskConnect, startProvider }: Web3ConnectProps) => (
-  <div
-    className="wallet__connect-container"
-    style={{ textAlign: "center", margin: 20 }}
-  >
+  <div className="wallet__connect-container">
     {window.ethereum && (
-      <Button name="Connect Metamask" size="flex2" onClick={metamaskConnect} />
+      <Button
+        name="Connect Metamask"
+        size="flex2"
+        width="90%"
+        onClick={metamaskConnect}
+      />
     )}
 
-    <Button name="Connect Wallet" size="flex2" onClick={startProvider} />
+    <Button
+      name="Connect Wallet"
+      size="flex2"
+      width="90%"
+      onClick={startProvider}
+    />
   </div>
 );

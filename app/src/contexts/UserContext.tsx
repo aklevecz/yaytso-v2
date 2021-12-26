@@ -95,10 +95,10 @@ const UserProvider = ({
   const checkAuth = async () => {
     auth.onAuthStateChanged(async (user) => {
       if (!user) {
-        console.log("not authed");
         dispatch({ type: "SET_LOADING", loading: false });
       } else {
         if (!state.user.uid) {
+          dispatch({ type: "SET_LOADING", loading: true });
           await login(user);
           subscribeToUser(user.uid, dispatch).then(() => {});
         }

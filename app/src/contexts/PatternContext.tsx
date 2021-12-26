@@ -1,6 +1,5 @@
 import {
   createContext,
-  RefObject,
   useContext,
   useEffect,
   useReducer,
@@ -8,13 +7,9 @@ import {
 } from "react";
 import { RGBColor } from "react-color";
 import { CanvasTexture, RepeatWrapping } from "three";
-import {
-  EGG_MASK,
-  REPEAT_CANVAS_ID,
-} from "../containers/EggCreation/constants";
+import { EGG_MASK } from "../containers/EggCreation/constants";
 import {
   createCanvas,
-  createCanvasCropped,
   createEggMask,
   createTexture,
   drawToPreview,
@@ -224,14 +219,14 @@ export const useUpdatePattern = () => {
       );
 
       // This could just be created at export -- but there is some sanity in the redudancy at the moment
-      const eggMask = document.getElementById("egg-mask") as HTMLImageElement;
-      createEggMask(
-        eggMask,
-        canvas,
-        canvas.width,
-        canvas.height,
-        state.repetitions
-      );
+      // const eggMask = document.getElementById("egg-mask") as HTMLImageElement;
+      // createEggMask(
+      //   eggMask,
+      //   canvas,
+      //   canvas.width,
+      //   canvas.height,
+      //   state.repetitions
+      // );
 
       const pattern = createTexture(canvas, state.repetitions);
       dispatch({ type: "SET_PATTERN", canvas, pattern, canvasPreview });
@@ -245,14 +240,7 @@ export const useUpdatePattern = () => {
     if (!state.canvas || !state.canvasPreview) {
       return;
     }
-    const eggMask = document.getElementById(EGG_MASK) as HTMLImageElement;
-    createEggMask(
-      eggMask,
-      state.canvas,
-      state.canvas.width,
-      state.canvas.height,
-      state.repetitions
-    );
+
     const pattern = createTexture(state.canvas, state.repetitions);
     dispatch({
       type: "SET_PATTERN",
@@ -267,6 +255,23 @@ export const useUpdatePattern = () => {
   const updatePatternRepetitions = (repetitions: number) =>
     dispatch({ type: "SET_REPETITIONS", repetitions });
 
+  const drawEggMask = () => {
+    return new Promise((resolve, reject) => {
+      if (!state.canvas) {
+        return reject();
+      }
+      const eggMask = document.getElementById("egg-mask") as HTMLImageElement;
+      createEggMask(
+        eggMask,
+        state.canvas,
+        state.canvas.width,
+        state.canvas.height,
+        state.repetitions,
+        resolve
+      );
+    });
+  };
+
   return {
     clearPattern,
     uploadPattern,
@@ -275,6 +280,7 @@ export const useUpdatePattern = () => {
     updating,
     canvas: state.canvas,
     repetitions: state.repetitions,
+    drawEggMask,
   };
 };
 
@@ -372,21 +378,14 @@ export const useDraw = () => {
 
       ctx.fillStyle = colorString;
       ctx.fill();
-      const eggMask = document.getElementById(EGG_MASK) as HTMLImageElement;
-      createEggMask(
-        eggMask,
-        canvas,
-        canvas.width,
-        canvas.height,
-        state.repetitions
-      );
-      const pattern = createTexture(canvas, state.repetitions);
-      dispatch({
-        type: "SET_PATTERN",
-        canvas,
-        pattern,
-        canvasPreview: canvas,
-      });
+
+      // const pattern = createTexture(canvas, state.repetitions);
+      // dispatch({
+      //   type: "SET_PATTERN",
+      //   canvas,
+      //   pattern,
+      //   canvasPreview: canvas,
+      // });
     };
 
     const drawDot = (x: number, y: number) => {
@@ -397,21 +396,14 @@ export const useDraw = () => {
 
       ctx.fillStyle = colorString;
       ctx.fill();
-      const eggMask = document.getElementById(EGG_MASK) as HTMLImageElement;
-      createEggMask(
-        eggMask,
-        canvas,
-        canvas.width,
-        canvas.height,
-        state.repetitions
-      );
-      const pattern = createTexture(canvas, state.repetitions);
-      dispatch({
-        type: "SET_PATTERN",
-        canvas,
-        pattern,
-        canvasPreview: canvas,
-      });
+
+      // const pattern = createTexture(canvas, state.repetitions);
+      // dispatch({
+      //   type: "SET_PATTERN",
+      //   canvas,
+      //   pattern,
+      //   canvasPreview: canvas,
+      // });
     };
 
     const onMove = (e: any) => {
@@ -459,6 +451,13 @@ export const useDraw = () => {
       drawing = false;
       // cancelAnimationFrame(frame);
       frame = 0;
+      const pattern = createTexture(canvas, state.repetitions);
+      dispatch({
+        type: "SET_PATTERN",
+        canvas,
+        pattern,
+        canvasPreview: canvas,
+      });
     };
 
     canvas.addEventListener("mousemove", onMove);
