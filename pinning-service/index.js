@@ -56,9 +56,7 @@ const db = admin.firestore();
 
   app.post("/", upload.any(), async (req, res) => {
     const { name, desc, uid } = req.body;
-    // console.log(name, desc);
-    // const gltf = req.files[0];
-    // const svg = req.files[1];
+
     const files = req.files.reduce((pv, cv) => {
       return { ...pv, [cv.fieldname]: cv.buffer };
     }, {});
@@ -68,7 +66,7 @@ const db = admin.firestore();
     const pngCID = await store(png.buffer);
 
     const sliceAmt = dev ? 2 : 4;
-    const byteArray = new CID(svgCID).bytes.slice(sliceAmt);
+    const byteArray = new CID(pngCID).bytes.slice(sliceAmt);
     var arr = [];
     for (var p in Object.getOwnPropertyNames(byteArray)) {
       arr[p] = byteArray[p];
@@ -118,6 +116,7 @@ const db = admin.firestore();
       uid,
       metaCID,
       svgCID,
+      pngCID,
       gltfCID,
       byteArray,
       description: metadata.description,

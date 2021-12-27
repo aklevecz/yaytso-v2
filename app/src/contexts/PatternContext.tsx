@@ -480,6 +480,6 @@ export const useDraw = () => {
       canvas.removeEventListener("touchend", onUp);
     };
   }, [canvas, state.repetitions, lineWidth, color]);
-
+  console.log(state);
   return { lineWidth, updateLineWidth, color, updateColor, clearDrawing };
 };

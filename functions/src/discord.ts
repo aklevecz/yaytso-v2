@@ -82,7 +82,13 @@ const addToGuild = (userId: string, access_token: string, role: string) => {
   }).catch(console.log);
 };
 
-const createMessage = (content: string) => {
+type Embed = {
+  title: string;
+  description: string;
+  image: { url: string };
+};
+
+const createMessage = (content: string, embeds: Embed[]) => {
   const testChannel = "917833356757041172";
   fetch(`${baseUrl}/channels/${testChannel}/messages`, {
     method: "POST",
@@ -91,22 +97,22 @@ const createMessage = (content: string) => {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      content: "hi",
-      embeds: [
-        {
-          title: "EGG",
-          description: "AN EGG",
-          image: {
-            url: "https://gateway.pinata.cloud/ipfs/bafkreigbk5vgau4v7wg2iht5khxxt7cumwqxbnxslpbjw565pm6upwulke",
-          },
-        },
-      ],
+      content,
+      embeds,
     }),
   }).then(console.log);
 };
 
 export const dMessage = functions.https.onRequest((_, res) => {
-  createMessage("hi");
+  createMessage("hi", [
+    {
+      title: "EGG",
+      description: "AN EGG",
+      image: {
+        url: "https://gateway.pinata.cloud/ipfs/bafkreigbk5vgau4v7wg2iht5khxxt7cumwqxbnxslpbjw565pm6upwulke",
+      },
+    },
+  ]);
   res.send("Hi");
 });
 

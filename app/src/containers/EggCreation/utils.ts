@@ -60,6 +60,7 @@ export const saveYaytso = async (
   patternHash: string,
   metaCID: string,
   svgCID: string,
+  pngCID: string,
   gltfCID: string
 ) => {
   return db
@@ -72,6 +73,7 @@ export const saveYaytso = async (
       patternHash,
       metaCID,
       svgCID,
+      pngCID,
       gltfCID,
       nft: false,
       isEggvatar: uid === name,

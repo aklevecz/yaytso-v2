@@ -60,6 +60,7 @@ export const exportYaytso = async (
         }
         const svgUrl = URL.createObjectURL(data.get("svg"));
         const patternHash = ethers.utils.hexlify(arr);
+        console.log(r);
         const response = await saveYaytso(
           userId,
           name,
@@ -67,6 +68,7 @@ export const exportYaytso = async (
           patternHash,
           r.metaCID,
           r.svgCID,
+          r.pngCID,
           r.gltfCID
         );
         if (response) {
