@@ -16,6 +16,7 @@ export enum ModalTypes {
   Receipt = "receipt",
   Claim = "claim",
   ConnectWallet = "connectWallet",
+  CreateEggNotLoggedIn = "createEggNotLoggedIn",
 }
 
 export type Position = {

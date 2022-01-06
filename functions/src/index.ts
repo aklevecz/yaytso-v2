@@ -25,8 +25,17 @@ const YAYTSO_ADDRESS = isEmulator
   ? YAYTSO_RINKEBY_ADDRESS
   : YAYTSO_MAIN_ADDRESS;
 
+enum ContractEvent {
+  YaytsoLaid = "YaytsoLaid",
+}
+
 import yaytsoInterface from "./Yaytso.json";
-import { giveUseryaytsoCreatorRole } from "./discord";
+import {
+  Channel,
+  createEmbed,
+  createMessage,
+  giveUseryaytsoCreatorRole,
+} from "./discord";
 const yaytsoContract = new ethers.Contract(
   YAYTSO_ADDRESS,
   yaytsoInterface.abi,
@@ -60,14 +69,13 @@ export const onSignIn = functions.https.onCall(async (_, context) => {
     user = newUserObject;
   }
   // Connecting phone number
-  console.log(context.auth);
-  console.log(phone_number);
   if (user && !user.phone_number && phone_number) {
     userRef.update({ phone_number });
   }
   return user;
 });
 
+// This could be merged with the trigger below
 export const onCreateEggvatar = functions.https.onCall(
   async (data, context) => {
     if (!context.auth) {
@@ -83,6 +91,14 @@ export const onCreateEggvatar = functions.https.onCall(
     return true;
   }
 );
+
+export const onYaytsoCreated = functions.firestore
+  .document(`${Collections.Yaytsos}/{yaytsoId}`)
+  .onCreate((snap, context) => {
+    const yaytso = snap.data();
+    const embed = createEmbed(yaytso.name, yaytso.description, yaytso.pngCID);
+    createMessage("A new egg has been created!", [embed], Channel.EggStream);
+  });
 
 export const egg = functions.https.onRequest(async (request, response) => {
   const eggId = request.path.split("/")[2];
@@ -116,11 +132,19 @@ export const onTx = functions.https.onRequest(async (request, response) => {
     const receipt = await provider.getTransactionReceipt(hash);
     const log = yaytsoContract.interface.parseLog(receipt.logs[1]);
     const tokenId = log.args[1].toString();
-    if (txLog.walletAddress === fromAddress && log.name === "YaytsoLaid") {
+    if (
+      txLog.walletAddress === fromAddress &&
+      log.name === ContractEvent.YaytsoLaid
+    ) {
       const yaytsoMetaCid = txLog.yaytsoMetaCid;
       const yaytsoRef = db.collection(Collections.Yaytsos).doc(yaytsoMetaCid);
       yaytsoRef.update({ nft: true }).then(async () => {
-        const yaytso = (await yaytsoRef.get()).data();
+        const yaytso = (await yaytsoRef.get()).data()!;
+        createMessage(
+          "A Yaytso has been NFT'd!",
+          [createEmbed(yaytso.name, yaytso.description, yaytso.pngCID)],
+          Channel.NftStream
+        );
         db.collection(Collections.NFTS)
           .doc(tokenId)
           .set({ tokenId, ...yaytso });

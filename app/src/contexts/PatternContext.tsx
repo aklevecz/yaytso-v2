@@ -51,8 +51,11 @@ const initialState = {
   repetitions: 1,
 };
 
+// REFACTOR
+// CANVAS PREVIEW AND CANVAS ARE SUPER CONFUSING
+// CANVAS PREVIEW IS ACTUALLY WHAT IS USED
 const PatternContext = createContext<
-  { state: State; dispatch: Dispatch } | undefined
+  { state: State; dispatch: Dispatch; updateTexture: () => void } | undefined
 >(undefined);
 
 const reducer = (state: State, action: Action) => {
@@ -118,7 +121,21 @@ const PatternProvider = ({
     }
   }, [state.canvasPreview]);
 
-  const value = { state, dispatch };
+  const updateTexture = () => {
+    if (!state.canvasPreview) {
+      return;
+    }
+    const canvas = state.canvasPreview;
+    const pattern = createTexture(canvas, state.repetitions);
+    dispatch({
+      type: "SET_PATTERN",
+      pattern,
+      canvas: canvas,
+      canvasPreview: canvas,
+    });
+  };
+
+  const value = { state, dispatch, updateTexture };
   return (
     <PatternContext.Provider value={value}>{children}</PatternContext.Provider>
   );
@@ -175,15 +192,7 @@ export const useUpdatePattern = () => {
     throw new Error("must be within its provider: Pattern");
   }
 
-  const { dispatch, state } = context;
-
-  // useEffect(() => {
-  //   if (!canvasPreview) {
-  //     console.log("missing preview");
-  //     return;
-  //   }
-  //   dispatch({ type: "INIT_PREVIEW", canvasPreview });
-  // }, [canvasPreview]);
+  const { dispatch, state, updateTexture } = context;
 
   const uploadPattern = (e: React.FormEvent<HTMLInputElement>) => {
     const files = (e.target as HTMLInputElement).files;
@@ -218,18 +227,9 @@ export const useUpdatePattern = () => {
         canvasPreview.height
       );
 
-      // This could just be created at export -- but there is some sanity in the redudancy at the moment
-      // const eggMask = document.getElementById("egg-mask") as HTMLImageElement;
-      // createEggMask(
-      //   eggMask,
-      //   canvas,
-      //   canvas.width,
-      //   canvas.height,
-      //   state.repetitions
-      // );
-
       const pattern = createTexture(canvas, state.repetitions);
       dispatch({ type: "SET_PATTERN", canvas, pattern, canvasPreview });
+      // updateTexture();
       dispatch({ type: "SET_IMG_UPLOAD", canvasImgUpload: canvas });
       setUpdating(false);
     };
@@ -307,9 +307,8 @@ export const useDraw = () => {
     throw new Error("must be within its provider: Pattern");
   }
 
-  const { dispatch, state } = context;
+  const { dispatch, state, updateTexture } = context;
   const { canvasPreview: canvas } = state;
-
   const updateLineWidth = (width: number) => setLineWidth(width);
 
   const updateColor = (color: RGBColor) => {
@@ -325,9 +324,7 @@ export const useDraw = () => {
     ctx.fillStyle = "white";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     if (state.canvasImgUpload) {
-      ctx.drawImage(state.canvasImgUpload, 0, 0, canvas.width, canvas.height);
-      const pattern = createTexture(canvas, state.repetitions);
-      dispatch({ type: "SET_PATTERN", pattern, canvas, canvasPreview: canvas });
+      updateTexture();
     } else {
       dispatch({ type: "CLEAR_PATTERN" });
     }
@@ -342,8 +339,6 @@ export const useDraw = () => {
 
     let mouseDown = false;
     let mouseMoved = false;
-
-    let drawing = false;
 
     let timeDown = new Date();
 
@@ -378,14 +373,6 @@ export const useDraw = () => {
 
       ctx.fillStyle = colorString;
       ctx.fill();
-
-      // const pattern = createTexture(canvas, state.repetitions);
-      // dispatch({
-      //   type: "SET_PATTERN",
-      //   canvas,
-      //   pattern,
-      //   canvasPreview: canvas,
-      // });
     };
 
     const drawDot = (x: number, y: number) => {
@@ -396,16 +383,9 @@ export const useDraw = () => {
 
       ctx.fillStyle = colorString;
       ctx.fill();
-
-      // const pattern = createTexture(canvas, state.repetitions);
-      // dispatch({
-      //   type: "SET_PATTERN",
-      //   canvas,
-      //   pattern,
-      //   canvasPreview: canvas,
-      // });
     };
 
+    const PRESSED_TIME_MS = 100;
     const onMove = (e: any) => {
       mouseMoved = true;
       setMouse(e);
@@ -415,32 +395,24 @@ export const useDraw = () => {
       }
       prevMouse.x = x;
       prevMouse.y = y;
+      const downDelta = new Date().getTime() - timeDown.getTime();
+      if (downDelta > PRESSED_TIME_MS) {
+        updateTexture();
+        timeDown = new Date();
+      }
     };
 
-    // clean this up
-    let frame = 0;
     const onDown = (e: any) => {
       timeDown = new Date();
       setMouse(e);
       mouseDown = true;
       mouseMoved = false;
-      drawing = true;
-      // function animate() {
-      //   if (drawing) {
-      //     frame = requestAnimationFrame(animate);
-      //   }
-      //   const { x, y } = normalizedPos();
-      //   if (prevMouse.x && prevMouse.y) drawPoint(x, y);
-      // }
-      // animate();
     };
 
-    const PRESSED_TIME_MS = 100;
     const onUp = (e: any) => {
       const downDelta = new Date().getTime() - timeDown.getTime();
       if (!mouseMoved && downDelta > PRESSED_TIME_MS) {
         const { x, y } = normalizedPos();
-        console.log(x, y);
         drawDot(x, y);
       }
       mousePos.x = 0;
@@ -448,16 +420,7 @@ export const useDraw = () => {
       prevMouse.x = 0;
       prevMouse.y = 0;
       mouseDown = false;
-      drawing = false;
-      // cancelAnimationFrame(frame);
-      frame = 0;
-      const pattern = createTexture(canvas, state.repetitions);
-      dispatch({
-        type: "SET_PATTERN",
-        canvas,
-        pattern,
-        canvasPreview: canvas,
-      });
+      updateTexture();
     };
 
     canvas.addEventListener("mousemove", onMove);
@@ -480,6 +443,5 @@ export const useDraw = () => {
       canvas.removeEventListener("touchend", onUp);
     };
   }, [canvas, state.repetitions, lineWidth, color]);
-  console.log(state);
   return { lineWidth, updateLineWidth, color, updateColor, clearDrawing };
 };
