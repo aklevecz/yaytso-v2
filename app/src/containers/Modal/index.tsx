@@ -24,6 +24,7 @@ import Receipt from "./Receipt";
 import { useHistory } from "react-router";
 import Claim from "./Claim";
 import ConnectWallet from "./ConnectWallet";
+import CreateEggNotLoggedIn from "./CreateEggNotLoggedIn";
 
 const modalMap = {
   info: { component: <Info />, maxState: 0 },
@@ -68,6 +69,10 @@ const modalMap = {
   },
   connectWallet: {
     component: <ConnectWallet />,
+    maxState: 0,
+  },
+  createEggNotLoggedIn: {
+    component: <CreateEggNotLoggedIn />,
     maxState: 0,
   },
 };

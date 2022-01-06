@@ -17,6 +17,13 @@ const baseUrl = "https://discord.com/api";
 const clientId = "917496007913246731";
 const guildId = "829945948745498664";
 
+export enum Channel {
+  OwnerRoom = "917833356757041172",
+  EggStream = "921097758365061142",
+  NftStream = "928751011504476210",
+  Test = "928768327688523828",
+}
+
 const env = isEmulator ? devConfig : functions.config();
 
 const clientSecret = env.discord.client_secret;
@@ -88,31 +95,46 @@ type Embed = {
   image: { url: string };
 };
 
-const createMessage = (content: string, embeds: Embed[]) => {
-  const testChannel = "917833356757041172";
-  fetch(`${baseUrl}/channels/${testChannel}/messages`, {
-    method: "POST",
-    headers: {
-      Authorization: `Bot ${botToken}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      content,
-      embeds,
-    }),
-  }).then(console.log);
+const IPFS_HOST =
+  // isEmulator
+  // ? "http://localhost:8080"
+  // :
+  "https://gateway.pinata.cloud";
+
+export const createEmbed = (
+  title: string,
+  description: string,
+  cid: string
+) => ({ title, description, image: { url: `${IPFS_HOST}/ipfs/${cid}` } });
+
+export const createMessage = (
+  content: string,
+  embeds: Embed[],
+  channel: Channel
+) => {
+  fetch(
+    `${baseUrl}/channels/${!isEmulator ? channel : Channel.Test}/messages`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bot ${botToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        content,
+        embeds,
+      }),
+    }
+  ).then(() => {});
 };
 
 export const dMessage = functions.https.onRequest((_, res) => {
-  createMessage("hi", [
-    {
-      title: "EGG",
-      description: "AN EGG",
-      image: {
-        url: "https://gateway.pinata.cloud/ipfs/bafkreigbk5vgau4v7wg2iht5khxxt7cumwqxbnxslpbjw565pm6upwulke",
-      },
-    },
-  ]);
+  const embed = createEmbed(
+    "EGG",
+    "AN EGG",
+    "bafybeigzvyxxwskg4xclrdqgqqbpivjhq5d4f3oblfcgt4vsaeonvu4jmy"
+  );
+  createMessage("hi", [embed], Channel.OwnerRoom);
   res.send("Hi");
 });
 
@@ -155,21 +177,38 @@ export const auth = functions.https.onCall(async (data, context) => {
     return { discordConnected: true };
   } else {
     // Not signed in
-    let user = await admin
-      .auth()
-      .getUserByEmail(discordUser.email)
-      .catch(() => console.log("no user reocrd"));
+    let user;
+    if (discordUser.email) {
+      user = await admin
+        .auth()
+        .getUserByEmail(discordUser.email)
+        .catch(() => console.log("no user reocrd"));
+    } else {
+      user = await admin
+        .auth()
+        .getUser(discordUser.id)
+        .catch(() => console.log("no user record"));
+    }
+
     addToGuild(discordUser.id, tokens.access_token, "");
     let loginToken = "";
     if (user) {
     } else {
-      user = await admin.auth().createUser({ email: discordUser.email });
+      const userParams: any = {
+        uid: discordUser.id,
+        displayName: discordUser.username + "#" + discordUser.discriminator,
+      };
+      if (discordUser.email) {
+        userParams.email = discordUser.email;
+      }
+      user = await admin.auth().createUser(userParams);
       const userRef = db.collection(Collections.Users).doc(user.uid);
       userRef.set({
         email: discordUser.email,
         discord: true,
         discordId: discordUser.id,
         discordUsername: discordUser.username,
+        discordDiscriminator: discordUser.discriminator,
       });
     }
     loginToken = await admin.auth().createCustomToken(user.uid);

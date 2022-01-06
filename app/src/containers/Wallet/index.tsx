@@ -11,7 +11,7 @@ export default function Wallet() {
   const user = useUser();
   const userLoading = useLoading();
   const { scrollY } = useViewportScroll();
-  const marginTop = useTransform(scrollY, [100, 350], [10, -230]);
+  const marginTop = useTransform(scrollY, [200, 350], [0, -230]);
 
   const isSignedIn = Boolean(user.uid);
   return (

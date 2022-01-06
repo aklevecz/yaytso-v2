@@ -32,7 +32,7 @@ export default function UserInfo({ wallet, user, disconnect }: Props) {
   const { scrollY } = useViewportScroll();
   const marginLeft = useTransform(
     scrollY,
-    [150, 200],
+    [200, 250],
     [0, window.innerWidth + 200]
   );
 
