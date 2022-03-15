@@ -33,13 +33,13 @@ const NoEggs = () => (
   </div>
 );
 
+const PAGE_LIMIT = 5;
 export default function Eggs({ wallet }: Props) {
   const { yaytsoMeta, metaFetched } = useYaytsoSVGs();
   const [page, setPage] = useState(0);
   const [yaytsos, setYaytsos] = useState<YaytsoMetaWeb2[]>([]);
 
   const nextPage = () => setPage(page + 1);
-  const PAGE_LIMIT = 2;
   useEffect(() => {
     const yaytsos = yaytsoMeta.slice(0, page * PAGE_LIMIT + PAGE_LIMIT);
     setYaytsos(yaytsos);

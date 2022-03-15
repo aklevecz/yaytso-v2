@@ -1,7 +1,18 @@
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
+const adminConfig = require("./admin.json");
+admin.initializeApp({ credential: admin.credential.cert(adminConfig) });
 import * as ethers from "ethers";
 import { template } from "./template";
+import yaytsoInterface from "./Yaytso.json";
+import {
+  Channel,
+  createEmbed,
+  createMessage,
+  giveUseryaytsoCreatorRole,
+} from "./discord";
+import SpatialHashGrid from "./spatialHashGrid";
+import { Collections } from "./types";
 
 const cors = require("cors")({
   origin: true,
@@ -9,8 +20,6 @@ const cors = require("cors")({
 
 const isEmulator = process.env.FUNCTIONS_EMULATOR;
 
-const adminConfig = require("./admin.json");
-admin.initializeApp({ credential: admin.credential.cert(adminConfig) });
 const db = admin.firestore();
 const env = isEmulator ? require("./dev.json") : functions.config();
 
@@ -29,25 +38,11 @@ enum ContractEvent {
   YaytsoLaid = "YaytsoLaid",
 }
 
-import yaytsoInterface from "./Yaytso.json";
-import {
-  Channel,
-  createEmbed,
-  createMessage,
-  giveUseryaytsoCreatorRole,
-} from "./discord";
 const yaytsoContract = new ethers.Contract(
   YAYTSO_ADDRESS,
   yaytsoInterface.abi,
   provider
 );
-export enum Collections {
-  Users = "Users",
-  Yaytsos = "YAYTSOS",
-  TxLogs = "TxLogs",
-  NFTS = "NFTS",
-  Guestlist = "Guestlist",
-}
 
 export const onSignIn = functions.https.onCall(async (_, context) => {
   if (!context.auth) {
@@ -81,11 +76,11 @@ export const onCreateEggvatar = functions.https.onCall(
     if (!context.auth) {
       return { error: "user is not signed in" };
     }
-    const { metaCID, svgCID, gltfCID } = data;
+    const { metaCID, svgCID, gltfCID, pngCID } = data;
     const userRef = db.collection(Collections.Users).doc(context.auth.uid);
     userRef.update({
       hasEggvatar: true,
-      eggvatar: { metaCID, svgCID, gltfCID },
+      eggvatar: { metaCID, svgCID, gltfCID, pngCID },
     });
 
     return true;
@@ -102,6 +97,8 @@ export const onYaytsoCreated = functions.firestore
 
 export const egg = functions.https.onRequest(async (request, response) => {
   const eggId = request.path.split("/")[2];
+
+  // CHANGE TO PNG CID
   const egg = await db
     .collection(Collections.Yaytsos)
     .where("svgCID", "==", eggId)
@@ -173,14 +170,25 @@ export const guestlist = functions.https.onRequest(
       if (request.method === "GET") {
         const code = request.query.code as string;
         const secret = request.query.ss as string;
+        const email = request.query.email as string;
+        if (email) {
+          db.collection(Collections.Guestlist)
+            .doc("MONA")
+            .collection("emails")
+            .doc(email)
+            .set({ email });
+        }
         if (code) {
           const guestlistRef = db.collection(Collections.Guestlist).doc(code);
           const guestlist = (await guestlistRef.get()).data();
+          // If not claimed yet, send back the secret
           if (guestlist && guestlist.claimed === false) {
-            guestlistRef.update({ claimed: true });
+            guestlistRef.update({ claimed: true, email });
             return response
               .status(200)
-              .send({ winner: true, secret: guestlist.secret });
+              .send({ winner: true, secret: guestlist.secret, email });
+
+            // If claimed, check the secret sent in the request
           } else if (secret) {
             if (guestlist && guestlist.secret === secret) {
               return response.status(200).send({
@@ -189,6 +197,7 @@ export const guestlist = functions.https.onRequest(
                 email: guestlist.email,
               });
             }
+          } else {
           }
         }
       }
@@ -211,3 +220,4 @@ export const guestlist = functions.https.onRequest(
 );
 
 export * as discord from "./discord";
+export * as carton from "./carton";

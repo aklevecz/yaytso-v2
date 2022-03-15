@@ -137,3 +137,7 @@ export const txLog = (
     .doc(txHash)
     .set({ txHash, yaytsoMetaCid, walletAddress, userId, completed: false });
 };
+
+export const fetchAllYaytsos = () => {
+  return db.collection(Collections.Yaytso).get();
+};

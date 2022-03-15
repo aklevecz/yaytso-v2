@@ -1,5 +1,6 @@
-import { CanvasTexture, RepeatWrapping } from "three";
+import { CanvasTexture, RepeatWrapping, MirroredRepeatWrapping } from "three";
 import { NAV_CLASS_NAME } from "../constants";
+import blankEgg from "../assets/blankEgg.png";
 
 export const idToNetwork: { [key: number]: string } = {
   1: "mainnet",
@@ -16,7 +17,7 @@ export const networkToId = {
 export const ipfsToHttps = (uri: string) => uri.replace("ipfs", "https");
 
 export const getMarker = (selector: string): any => {
-  const MAX_TRIES = 500;
+  const MAX_TRIES = 100;
   let tries = 0;
   return new Promise((resolve, __) => {
     const pollMarker = (): any => {
@@ -24,7 +25,7 @@ export const getMarker = (selector: string): any => {
       const markerDom = document.querySelector(selector) as HTMLImageElement;
       if (!markerDom && tries < MAX_TRIES) {
         tries++;
-        return setTimeout(pollMarker, 50);
+        return setTimeout(pollMarker, 200);
       }
       return resolve(markerDom);
     };
@@ -73,7 +74,13 @@ export const createCanvas = (
   return new Promise((resolve, __) => {
     const img = new Image();
     img.src = imgDataURL;
+    // var regex = /^data:.+\/(.+);base64,(.*)$/;
+    // var matches = imgDataURL.match(regex);
+    // var ext = matches![1];
+    // var data = matches![2];
+
     img.onload = (e) => {
+      console.log("loaded");
       const canvas = document.createElement("canvas");
       const ctx = canvas.getContext("2d");
       if (!ctx) {
@@ -84,10 +91,11 @@ export const createCanvas = (
       const canvasDim = { width: CANVAS_DIMS, height: CANVAS_DIMS };
       if (aspect > 1) {
         canvasDim.width = width > CANVAS_DIMS ? CANVAS_DIMS : width;
-        canvasDim.height = width / aspect;
+        canvasDim.height = canvasDim.width / aspect;
       } else if (aspect < 1) {
         canvasDim.height = height > CANVAS_DIMS ? CANVAS_DIMS : height;
-        canvasDim.width = height * aspect;
+        canvasDim.width = canvasDim.height * aspect;
+        console.log(height, aspect);
       }
       ctx.canvas.width = canvasDim.width;
       ctx.canvas.height = canvasDim.height;
@@ -138,31 +146,78 @@ export const createEggMask = (
 ) => {
   const tinyCanvas = document.createElement("canvas");
   const tinyCtx = tinyCanvas.getContext("2d")!;
-  const tinyWidth = width / repetitions;
-  const tinyHeight = height / repetitions;
-  tinyCtx.canvas.width = tinyWidth;
-  tinyCtx.canvas.height = tinyHeight;
-  tinyCtx.drawImage(
-    copyCanvas,
-    0,
-    0,
-    width,
-    height,
-    0,
-    0,
-    tinyWidth,
-    tinyHeight
-  );
-  const repeatCanvas = document.createElement("canvas");
-  repeatCanvas.width = width;
-  repeatCanvas.height = height;
-  const repeatCtx = repeatCanvas.getContext("2d")!;
 
-  const rPattern = repeatCtx.createPattern(tinyCanvas, "repeat")!;
-  repeatCtx.fillStyle = rPattern;
-  repeatCtx.fillRect(0, 0, width, height);
-  eggMask.setAttribute("xlink:href", repeatCanvas.toDataURL());
-  callback(true);
+  const blankEggImg = new Image();
+  blankEggImg.onload = () => {
+    const tinyWidth = width / repetitions;
+    const tinyHeight = height / repetitions;
+    tinyCtx.canvas.width = tinyWidth;
+    tinyCtx.canvas.height = tinyHeight;
+
+    const imgSize = Math.min(copyCanvas.width, copyCanvas.height);
+    const left = (copyCanvas.width - imgSize) / 2;
+    const top = (copyCanvas.height - imgSize) / 2;
+
+    tinyCtx.drawImage(
+      copyCanvas,
+      left,
+      top,
+      imgSize,
+      imgSize,
+      0,
+      0,
+      tinyWidth,
+      tinyHeight
+    );
+
+    // tinyCtx.drawImage(
+    //   copyCanvas,
+    //   0,
+    //   0,
+    //   // NO CROP
+    //   copyCanvas.width,
+    //   copyCanvas.height,
+    //   0,
+    //   0,
+    //   tinyWidth,
+    //   tinyWidth
+    // );
+    const repeatCanvas = document.createElement("canvas");
+    repeatCanvas.width = width;
+    repeatCanvas.height = height;
+    repeatCanvas.id = "repeater";
+    repeatCanvas.style.width = "100%";
+    repeatCanvas.style.height = "100%";
+    const repeatCtx = repeatCanvas.getContext("2d")!;
+
+    repeatCtx.drawImage(
+      blankEggImg,
+      0,
+      0,
+      blankEggImg.width,
+      blankEggImg.height,
+      0,
+      0,
+      width,
+      height
+    );
+    repeatCtx.globalCompositeOperation = "source-in";
+
+    const rPattern = repeatCtx.createPattern(tinyCanvas, "repeat")!;
+    repeatCtx.fillStyle = rPattern;
+    repeatCtx.fillRect(0, 0, width, height);
+
+    callback(repeatCanvas);
+
+    // BAD
+    document.getElementById("help")!.appendChild(repeatCanvas);
+    // eggMask.setAttribute("xlink:href", repeatCanvas.toDataURL());
+    // eggMask.onload = () => {
+    //   callback(true);
+    // };
+    // callback(true);
+  };
+  blankEggImg.src = blankEgg;
 };
 
 export const createTexture = (
@@ -173,7 +228,11 @@ export const createTexture = (
   texture.wrapS = RepeatWrapping;
   texture.wrapT = RepeatWrapping;
   texture.flipY = false;
-  texture.repeat.set(repetitions, repetitions);
+  const repeatY =
+    canvas.width > canvas.height ? repetitions : repetitions * 0.5;
+  const repeatX =
+    canvas.height > canvas.width ? repetitions : repetitions * 0.5;
+  texture.repeat.set(repeatX, repeatY);
   return texture;
 };
 

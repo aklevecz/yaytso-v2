@@ -46,6 +46,26 @@
     },
     "ui": {
       "enabled": true
+    },
+    "database": {
+      "port": 9000
     }
-  }
+  },
+  "indexes": [
+    {
+      "collectionGroup": "YAYTSOS",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "uid",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "name",
+          "order": "ASCENDING"
+        }
+      ]
+    }
+  ],
+  "fieldOverrides": []
 }

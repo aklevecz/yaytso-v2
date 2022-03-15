@@ -35,16 +35,16 @@ export default function Winner({ search, isWinner }: Props) {
   const disabled = validateEmail(email);
   return (
     <div className="guestlist__container">
-      {!done && (
-        <>
-          <div className="guestlist__heading" style={{ background: "#64ff24" }}>
-            You won!
-          </div>
-          <div className="guestlist__text">
-            You will be on the guestlist for Peggy Gou & friends @ 1015 Folsom
-            for NYE!
-          </div>
-          <div className="guestlist__text">
+      {/* {!done && ( */}
+      <>
+        <div className="guestlist__heading" style={{ background: "#64ff24" }}>
+          You won!
+        </div>
+        <div className="guestlist__text">
+          You will be on the guestlist for MONA X Volta on a day of your choice!
+        </div>
+        <div className="guestlist__text">I will contact you shortly :)</div>
+        {/* <div className="guestlist__text">
             Leave your email below & I will contact you with additional details
             :)
           </div>
@@ -64,15 +64,15 @@ export default function Winner({ search, isWinner }: Props) {
             ) : (
               <LoadingButton color="white" />
             )}
-          </div>
-        </>
-      )}
-      {done && (
+          </div> */}
+      </>
+      {/* )} */}
+      {/* {done && (
         <>
           <div className="guestlist__heading">See you there :)</div>
           <img style={{ marginTop: 16 }} src={baoImg} />
         </>
-      )}
+      )} */}
     </div>
   );
 }

@@ -2,8 +2,8 @@ import * as functions from "firebase-functions";
 import devConfig from "./dev.json";
 import fetch from "isomorphic-fetch";
 import * as admin from "firebase-admin";
-import { db } from "./db";
-import { Collections } from ".";
+// import { db } from "./db";
+import { Collections } from "./types";
 import { isAddressCreator } from "./utils";
 // import { isAddressCreator } from "./utils";
 
@@ -25,7 +25,7 @@ export enum Channel {
 }
 
 const env = isEmulator ? devConfig : functions.config();
-
+const db = admin.firestore();
 const clientSecret = env.discord.client_secret;
 const botToken = env.discord.bot_token;
 

@@ -14,6 +14,7 @@ import {
   createTexture,
   drawToPreview,
 } from "./utils";
+import heic2any from "heic2any";
 
 type Action =
   | {
@@ -194,12 +195,18 @@ export const useUpdatePattern = () => {
 
   const { dispatch, state, updateTexture } = context;
 
-  const uploadPattern = (e: React.FormEvent<HTMLInputElement>) => {
+  const uploadPattern = async (e: React.FormEvent<HTMLInputElement>) => {
     const files = (e.target as HTMLInputElement).files;
     if (files === null || files.length === 0) {
       return;
     }
-    const file = files[0];
+    let file = files[0];
+    if (file.name.toLowerCase().includes("heic")) {
+      (file as any) = await heic2any({
+        blob: file,
+        toType: "image/png",
+      });
+    }
     setUpdating(true);
     const reader = new FileReader();
     reader.onload = async (e: ProgressEvent<FileReader>) => {
@@ -226,8 +233,9 @@ export const useUpdatePattern = () => {
         canvasPreview.width,
         canvasPreview.height
       );
-
+      console.log(canvas);
       const pattern = createTexture(canvas, state.repetitions);
+      console.log(canvas);
       dispatch({ type: "SET_PATTERN", canvas, pattern, canvasPreview });
       // updateTexture();
       dispatch({ type: "SET_IMG_UPLOAD", canvasImgUpload: canvas });
@@ -258,14 +266,18 @@ export const useUpdatePattern = () => {
   const drawEggMask = () => {
     return new Promise((resolve, reject) => {
       if (!state.canvas) {
-        return reject();
+        return reject("No canvas");
       }
       const eggMask = document.getElementById("egg-mask") as HTMLImageElement;
+
+      // OVERRIDE THE DIMS UNT
       createEggMask(
         eggMask,
         state.canvas,
-        state.canvas.width,
-        state.canvas.height,
+        // state.canvas.width,
+        // state.canvas.height,
+        1080,
+        1080,
         state.repetitions,
         resolve
       );
@@ -315,7 +327,7 @@ export const useDraw = () => {
     setColor(color);
   };
 
-  const clearDrawing = () => {
+  const clearDrawing = async () => {
     if (!canvas) {
       return;
     }
@@ -324,7 +336,23 @@ export const useDraw = () => {
     ctx.fillStyle = "white";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     if (state.canvasImgUpload) {
-      updateTexture();
+      if (!state.canvasPreview) {
+        return;
+      }
+      drawToPreview(
+        state.canvasImgUpload as any,
+        state.canvasPreview,
+        state.canvasPreview.width,
+        state.canvasPreview.height
+      );
+      const pattern = createTexture(state.canvasPreview, state.repetitions);
+      dispatch({
+        type: "SET_PATTERN",
+        canvas: state.canvasPreview,
+        pattern,
+        canvasPreview: state.canvasPreview,
+      });
+      // updateTexture();
     } else {
       dispatch({ type: "CLEAR_PATTERN" });
     }
@@ -431,7 +459,6 @@ export const useDraw = () => {
 
     canvas.addEventListener("touchstart", onDown);
     canvas.addEventListener("touchend", onUp);
-
     return () => {
       canvas.removeEventListener("mousemove", onMove);
       canvas.removeEventListener("touchmove", onMove);

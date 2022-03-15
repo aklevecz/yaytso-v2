@@ -24,7 +24,7 @@ export default function Claim() {
   const [view, setView] = useState<View>(View.Initial);
   const { claimYaytso, txState } = useCartonContract();
   const {
-    data: { signature, boxId, nonce, gltfCID, metaCID, legacy },
+    data: { signature, boxId, nonce, metadata, gltfCID, metaCID, legacy },
   } = useModalData();
 
   const onClaim = () => {
@@ -53,7 +53,9 @@ export default function Claim() {
             ) : (
               ""
             )}
-            {txState === 0 && <Small gltfCid={gltfCID} legacy={legacy} />}
+            {txState === 0 && (
+              <Small metadata={metadata} gltfCid={gltfCID} legacy={legacy} />
+            )}
           </div>
           <div className="modal__button-container">
             {txState === 0 && <Button name="Claim" onClick={onClaim} />}
@@ -65,7 +67,7 @@ export default function Claim() {
           <div className="modal__title">YAYY</div>
           <div className="modal__block" style={{ flexDirection: "column" }}>
             <div>This is now your egg!</div>
-            <Small gltfCid={gltfCID} legacy={legacy} />
+            <Small metadata={metadata} gltfCid={gltfCID} legacy={legacy} />
           </div>
           <div className="modal__button-container">
             <Button name="Yay!" onClick={onYay} />
