@@ -1,13 +1,11 @@
 import { useHistory } from "react-router";
 import Button from "../../components/Button";
-import Small from "../../components/Egg/Small";
 import TagText from "../../components/Text/Tag";
 import { useOpenModal } from "../../contexts/ModalContext";
 import { ModalTypes, WalletState, YaytsoMetaWeb2 } from "../../contexts/types";
 import EggImg from "./EggImg";
 import { useInView } from "react-intersection-observer";
-import { useEffect } from "react";
-import DotTyping from "../../components/Loading/DotTyping";
+import { useEffect, useState } from "react";
 
 type Props = {
   metadata: YaytsoMetaWeb2;
@@ -18,13 +16,19 @@ export default function EggItem({ metadata, wallet }: Props) {
   const { ref, inView, entry } = useInView({
     threshold: 0,
   });
+  const [viewed, setViewed] = useState(false);
+  useEffect(() => {
+    if (inView) {
+      setViewed(true);
+    }
+  }, [inView]);
+
   const history = useHistory();
   const openModal = useOpenModal();
   const onClick = () => openModal(ModalTypes.Mint, { metadata });
   const navigateToEgg = () => history.push(`/egg/${metadata.svgCID}`);
   const hasWallet = wallet.eth && wallet.address;
   const isNFT = metadata.nft;
-
   return (
     <div
       className="wallet__egg-wrapper"
@@ -42,12 +46,16 @@ export default function EggItem({ metadata, wallet }: Props) {
         </TagText>
       </div>
       {/* <div dangerouslySetInnerHTML={{ __html: svg }} /> */}
-      {/* <EggImg cid={metadata.svgCID} navigateToEgg={navigateToEgg} /> */}
-      {inView && (
+      <EggImg
+        cid={metadata.svgCID}
+        name={metadata.name}
+        navigateToEgg={navigateToEgg}
+      />
+      {/* {viewed && (
         <div onClick={navigateToEgg}>
-          <Small gltfCid={metadata.gltfCID} legacy={false} />
+          <Small gltfCid={metadata.gltfCID} legacy={Boolean(metadata.legacy)} />
         </div>
-      )}
+      )} */}
       {/* {!inView && <DotTyping />} */}
       {hasWallet && !isNFT && (
         <Button

@@ -4,6 +4,7 @@ import loadingAnimation from "../../assets/loading-anim.json";
 import Button from "../../components/Button";
 import Small from "../../components/Egg/Small";
 import { useCartonInfo } from "../../contexts/CartonContext";
+import { useUserLocation, useUserPosition } from "../../contexts/MapContext";
 import {
   useModalData,
   useModalToggle,
@@ -12,6 +13,7 @@ import {
 import { updateCarton } from "../../contexts/services";
 import { ModalTypes } from "../../contexts/types";
 import { fadeIn } from "../../contexts/utils";
+import { haversineDistance } from "../../utils";
 
 const defaultOptions = {
   loop: true,
@@ -22,12 +24,36 @@ const defaultOptions = {
   },
 };
 
+enum HowClose {
+  Far,
+  Close,
+  Claimable,
+}
+
+const closeMap = {
+  [HowClose.Far]: "You are far from this egg",
+  [HowClose.Close]: "You are getting close to this egg!",
+  [HowClose.Claimable]:
+    "You are so close to the egg! Find the poster with the claim QR code!",
+};
+
+const colorMap = {
+  [HowClose.Far]: "red",
+  [HowClose.Close]: "orange",
+  [HowClose.Claimable]: "lime",
+};
+
+const MAX_DISTANCE_M = 50;
+
 export default function CartonContent() {
   const [img, setImg] = useState("");
   const viewRef = useRef<HTMLDivElement>(null);
-  const { toggleModal, closeModal } = useModalToggle();
+  const { toggleModal, closeModal, open } = useModalToggle();
   const { data } = useModalData();
   const { isLocked, yaytso, getYaytsoImage, isOwner } = useCartonInfo(data);
+  const userLocation = useUserPosition();
+
+  const [isClose, setIsClose] = useState<undefined | HowClose>(undefined);
 
   const openModal = useOpenModal();
 
@@ -37,6 +63,21 @@ export default function CartonContent() {
   //     setImg(yaytosImg);
   //   }
   // };
+  useEffect(() => {
+    if (!open) {
+      return;
+    }
+    const distance = haversineDistance(userLocation, data.position) - 5;
+    if (distance > MAX_DISTANCE_M + MAX_DISTANCE_M * 3) {
+      setIsClose(HowClose.Far);
+    }
+    if (distance < MAX_DISTANCE_M + MAX_DISTANCE_M * 2) {
+      setIsClose(HowClose.Close);
+    }
+    if (distance < MAX_DISTANCE_M) {
+      setIsClose(HowClose.Claimable);
+    }
+  }, [userLocation, data, open]);
 
   useEffect(() => {
     setImg("");
@@ -60,7 +101,6 @@ export default function CartonContent() {
 
   const loading = !yaytso;
   if (yaytso) {
-    console.log(yaytso.id <= 42);
   }
   // if (!yaytso || !img) {
   //   return (
@@ -70,6 +110,24 @@ export default function CartonContent() {
   //     </div>
   //   );
   // }
+
+  const onOk = () => {
+    toggleModal();
+    // They would need to find the carton QR code
+    // unless there are cartons that don't need to be physically found
+    // and the complete signature is server side
+
+    // if (isClose) {
+    //   openModal(ModalTypes.Claim, {
+    //     signature,
+    //     boxId,
+    //     nonce,
+    //     gltfCID: yaytsoMeta && yaytsoMeta.gltfCID,
+    //     metaCID: yaytsoMeta && yaytsoMeta.metaCID,
+    //     legacy: yaytsoMeta && yaytsoMeta.legacy,
+    //   });
+    // }
+  };
   return (
     <>
       {loading && (
@@ -90,22 +148,25 @@ export default function CartonContent() {
           <div className="modal__block">
             {yaytso && (
               <Small
+                metadata={yaytso}
                 gltfCid={yaytso.animation_url.replace("ipfs://", "")}
                 legacy={yaytso.id <= 42}
               />
             )}
-            {/* {img && (
-                <div
-                  className="modal__svg-container"
-                  dangerouslySetInnerHTML={{ __html: img }}
-                />
-              )} */}
-            {/* <div className="modal__description">
-                {yaytso && yaytso.description}
-              </div> */}
+          </div>
+          <div className="modal__block">
+            <span
+              style={{
+                padding: 10,
+                background: "black",
+                color: isClose !== undefined ? colorMap[isClose] : "bloack",
+              }}
+            >
+              {isClose !== undefined && closeMap[isClose]}
+            </span>
           </div>
           <div className="modal__button-container">
-            <Button name="Ok" onClick={toggleModal} />
+            <Button name="Ok" onClick={onOk} />
             {isOwner && (
               <Button
                 name="Make QR"

@@ -13,6 +13,8 @@ import { fetchYaytso, subscribeToYaytso } from "./services";
 import { ipfsLink } from "../utils";
 import { YaytsoMetaWeb2 } from "./types";
 
+import localforage from "localforage";
+
 type LoadedObject = THREE.Mesh | THREE.Group | GLTF;
 
 type Entity = {
@@ -120,6 +122,7 @@ const ThreeProvider = ({
     (path: string, scene: THREE.Scene, scale = 1) => {
       const loader = new GLTFLoader();
       loader.load(path, (object: GLTF) => {
+        console.log(path);
         // object.scene.scale.set(0.1, 0.1, 0.1);
         object.scene.scale.set(scale, scale, scale);
         object.scene.position.y -= 0.0;
@@ -292,7 +295,31 @@ export const useThreePatternUpdater = () => {
     model.traverse((o: any) => {
       if (o.isMesh) {
         const egg = o;
+        // const fragmentShader = `#ifdef GL_ES
+        // precision mediump float;
+        // #endif
+
+        // uniform vec2 u_resolution;
+
+        // void main() {
+        //   vec2 st = gl_FragCoord.xy/u_resolution;
+        //   gl_FragColor = vec4(st.x,st.y,0.0,1.0);
+        // }`;
+        // const uniforms = {
+        //   u_resolution: {
+        //     value: new THREE.Vector3(
+        //       state.renderer?.domElement.width,
+        //       state.renderer?.domElement.height,
+        //       1
+        //     ),
+        //   },
+        // };
+        // const shaderMaterial = new THREE.ShaderMaterial({
+        //   fragmentShader,
+        //   uniforms,
+        // });
         const eggMaterial = egg.material as THREE.MeshBasicMaterial;
+        // egg.material = shaderMaterial;
         if (pattern) {
           eggMaterial.map = pattern;
           // eggMaterial.color = new THREE.Color(1, 1, 1);
@@ -340,16 +367,39 @@ export const useFetchedYaytso = (metaCID: string) => {
 
   useEffect(() => {
     if (state.scene && metadata) {
-      const gltfUrl = ipfsLink(metadata.gltfCID);
+      const gltfName = `${metadata.name}.gltf`;
       const scale = metadata.legacy ? 0.1 : 0.7;
-      loadGLTF(gltfUrl, state.scene, scale);
+
+      localforage.getItem(gltfName).then((blob) => {
+        if (blob) {
+          const gltf = URL.createObjectURL(blob as Blob);
+          loadGLTF(gltf, state.scene!, scale);
+        } else {
+          const gltfUrl = ipfsLink(metadata.gltfCID);
+          fetch(gltfUrl)
+            .then((r) => {
+              return r.blob();
+            })
+            .then((blob) => {
+              console.log(metadata);
+              const gltf = URL.createObjectURL(blob);
+              loadGLTF(gltf, state.scene!, scale);
+              localforage.setItem(gltfName, blob);
+            });
+        }
+      });
     }
   }, [state.scene, metadata]);
 
   return { metadata, entities: state.entities };
 };
 
-export const useGltfCid = (cid: string, legacy: boolean) => {
+// This metadata has a different structure for some reason -- at least in the fill carton flow
+export const useGltfCid = (
+  metadata: YaytsoMetaWeb2,
+  cid: string,
+  legacy: boolean
+) => {
   const context = useContext(ThreeContext);
   const [loaded, setLoaded] = useState(false);
   if (context === undefined) {
@@ -359,10 +409,31 @@ export const useGltfCid = (cid: string, legacy: boolean) => {
 
   useEffect(() => {
     if (state.scene) {
-      const gltfUrl = ipfsLink(cid);
+      console.log(metadata);
+      const gltfName = `${metadata.name}.gltf`;
+      // const gltfUrl = ipfsLink(cid);
       const scale = legacy ? 0.07 : 0.7;
-      loadGLTF(gltfUrl, state.scene, scale);
-      setLoaded(true);
+      // loadGLTF(gltfUrl, state.scene, scale);
+      // setLoaded(true);
+
+      localforage.getItem(gltfName).then((blob) => {
+        if (blob) {
+          const gltf = URL.createObjectURL(blob as Blob);
+          loadGLTF(gltf, state.scene!, scale);
+        } else {
+          const gltfUrl = ipfsLink(cid);
+          fetch(gltfUrl)
+            .then((r) => {
+              return r.blob();
+            })
+            .then((blob) => {
+              console.log(metadata);
+              const gltf = URL.createObjectURL(blob);
+              loadGLTF(gltf, state.scene!, scale);
+              localforage.setItem(gltfName, blob);
+            });
+        }
+      });
     }
   }, [state.scene, cid]);
   return { loaded, entities: state.entities };

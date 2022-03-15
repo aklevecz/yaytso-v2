@@ -19,6 +19,7 @@ import Modal from "./containers/Modal";
 import { MapProvider } from "./contexts/MapContext";
 import Callback from "./containers/Callback";
 import Guestlist from "./containers/Guestlist";
+import All from "./containers/All";
 
 const noOverFlow = ["map", "", "egg"];
 
@@ -66,6 +67,9 @@ const AppComponents = () => {
         <ThreeProvider>
           <Guestlist />
         </ThreeProvider>
+      </Route>
+      <Route path="/all">
+        <All />
       </Route>
       <Route path="/">
         <PatternProvider>

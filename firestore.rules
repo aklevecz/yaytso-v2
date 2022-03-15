@@ -7,6 +7,9 @@ service cloud.firestore {
     match /CARTONS/{document=**} {
       allow read, write: if true;
     }
+    match /Grid/{cellId}/CARTONS/{document=**} {
+      allow read: if true;
+    }
     match /YAYTSOS/{document=**} {
       allow read, write: if true;
     }

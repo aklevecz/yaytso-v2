@@ -1,9 +1,14 @@
 import { useEffect, useState } from "react";
 import LayoutFullHeight from "../../components/Layout/FullHeight";
 import { useCartons } from "../../contexts/CartonContext";
-import { useCreateCartonMarker, useMap } from "../../contexts/MapContext";
+import {
+  useCreateCartonMarker,
+  useMap,
+  useUserLocation,
+} from "../../contexts/MapContext";
 import { useOpenModal } from "../../contexts/ModalContext";
 import { ModalTypes } from "../../contexts/types";
+import { useUser } from "../../contexts/UserContext";
 import { useMetaMask, useWalletConnect } from "../../contexts/WalletContext";
 import Overlay from "../Overlay";
 
@@ -25,15 +30,18 @@ const Position = ({ lat, lng }: { lat: number; lng: number }) => (
 );
 
 export default function Map() {
+  const user = useUser();
   const [view, setView] = useState<Views>(Views.Hunter);
   const {
     map,
     mapContainer,
     hideMarkers,
     initMap,
+    removeMap,
     loading,
     fetchAvailableCartons,
   } = useMap();
+  // useUserLocation();
   useWalletConnect();
   useMetaMask();
 
@@ -44,6 +52,9 @@ export default function Map() {
 
   useEffect(() => {
     initMap();
+    return () => {
+      removeMap();
+    };
   }, [initMap]);
 
   useEffect(() => {
@@ -83,6 +94,11 @@ export default function Map() {
   return (
     <>
       <LayoutFullHeight>
+        {/* <div
+          style={{ position: "absolute", top: 10, left: "50%", color: "red" }}
+        >
+          {user.uid}
+        </div> */}
         <div
           style={{ width: "100%", height: "100%", overflow: "hidden" }}
           ref={mapContainer}

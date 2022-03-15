@@ -2,12 +2,12 @@ import { ethers } from "ethers";
 import { Scene } from "three";
 import { GLTFExporter } from "three/examples/jsm/exporters/GLTFExporter";
 import { Egg } from "../../contexts/types";
-import { EGGVG } from "./constants";
+import { EGGVG, EGG_MASK } from "./constants";
 import { createBlobs, saveYaytso, svgToImgBlob } from "./utils";
 
 export const PIN_URL =
   process.env.NODE_ENV === "development"
-    ? "http://localhost:8082"
+    ? `http://${window.location.hostname}:8082`
     : "https://pin.yaytso.art";
 
 export const pinBlobs = (data: FormData) => {
@@ -26,7 +26,12 @@ export const exportYaytso = async (
   scene: Scene | undefined,
   customEgg: Egg,
   userId: string,
-  successCallBack: (metaCID: string, svgCID: string, gltfCID: string) => void
+  successCallBack: (
+    metaCID: string,
+    svgCID: string,
+    gltfCID: string,
+    pngCID: string
+  ) => void
 ) => {
   const exporter = new GLTFExporter();
   if (!scene) {
@@ -42,17 +47,16 @@ export const exportYaytso = async (
   exporter.parse(
     scene,
     async (sceneGLTF) => {
+      const { blob, canvas }: any = await svgToImgBlob();
+      console.log("blob made");
+      const eggMask = document.getElementById(EGG_MASK)!;
+      eggMask.setAttribute("xlink:href", canvas.toDataURL());
+
       const eggVG = document.getElementById(EGGVG);
-      const imgBlob = await svgToImgBlob(eggVG);
-      const data: any = createBlobs(
-        sceneGLTF,
-        eggVG,
-        imgBlob,
-        description,
-        name
-      );
+      const data: any = createBlobs(sceneGLTF, eggVG, blob, description, name);
       data.append("uid", userId);
       const r = await pinBlobs(data);
+      console.log(r);
       if (r.success) {
         var arr: any = [];
         for (var p in Object.getOwnPropertyNames(r.byteArray)) {
@@ -60,7 +64,6 @@ export const exportYaytso = async (
         }
         const svgUrl = URL.createObjectURL(data.get("svg"));
         const patternHash = ethers.utils.hexlify(arr);
-        console.log(r);
         const response = await saveYaytso(
           userId,
           name,
@@ -72,7 +75,7 @@ export const exportYaytso = async (
           r.gltfCID
         );
         if (response) {
-          successCallBack(r.metaCID, r.svgCID, r.gltfCID);
+          successCallBack(r.metaCID, r.svgCID, r.gltfCID, r.pngCID);
         } else {
           console.error("save failed");
         }

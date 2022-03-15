@@ -16,6 +16,10 @@ import { ModalTypes } from "../../contexts/types";
 import LayoutFullHeight from "../../components/Layout/FullHeight";
 import { onCreateEggvatar } from "../../firebase";
 import EggPreview from "./EggPreview";
+import { svgToImgBlob } from "./utils";
+
+import baoImg from "../../assets/bao.png";
+import blankEgg from "../../assets/blankEgg.png";
 
 export default function Egg() {
   const [viewState, setViewState] = useState<ViewStates>(ViewStates.Blank);
@@ -89,8 +93,8 @@ export default function Egg() {
 
   const { name, description } = customEgg;
 
-  const onExport = () => {
-    drawEggMask();
+  const onExport = async () => {
+    await drawEggMask();
     setViewState(ViewStates.Creating);
     exportYaytso(scene, customEgg, user.uid, (metaCID, svgCID, gltfCID) => {
       setViewState(ViewStates.Success);
@@ -106,16 +110,17 @@ export default function Egg() {
     });
   };
 
-  const onEggvatar = () => {
-    drawEggMask();
+  const onEggvatar = async () => {
+    await drawEggMask();
     setViewState(ViewStates.Creating);
     exportYaytso(
       scene,
       { name: user.uid, description: `An eggvatar` },
       user.uid,
-      (metaCID, svgCID, gltfCID) => {
+      (metaCID, svgCID, gltfCID, pngCID) => {
+        console.log("success");
         setViewState(ViewStates.Success);
-        onCreateEggvatar({ metaCID, svgCID, gltfCID });
+        onCreateEggvatar({ metaCID, svgCID, gltfCID, pngCID });
         openModal(ModalTypes.ExportReceipt, {
           metaCID,
           svgCID,
@@ -129,8 +134,57 @@ export default function Egg() {
     );
   };
 
+  // useEffect(() => {
+  //   const canvas = document.getElementById("test-mask")! as HTMLCanvasElement;
+  //   const ctx = canvas.getContext("2d")!;
+  //   const baoI = new Image();
+  //   const eggI = new Image();
+
+  //   eggI.onload = () => {
+  //     ctx.drawImage(
+  //       eggI,
+  //       0,
+  //       0,
+  //       eggI.width,
+  //       eggI.height,
+  //       0,
+  //       0,
+  //       canvas.width,
+  //       canvas.height
+  //     );
+  //     ctx.globalCompositeOperation = "source-in";
+  //     baoI.onload = () => {
+  //       ctx.drawImage(
+  //         baoI,
+  //         0,
+  //         0,
+  //         baoI.width,
+  //         baoI.height,
+  //         0,
+  //         0,
+  //         canvas.width,
+  //         canvas.height
+  //       );
+  //     };
+  //   };
+  //   baoI.src = baoImg;
+  //   eggI.src = blankEgg;
+  // });
+
   return (
     <LayoutFullHeight>
+      <div
+        id="help"
+        style={{
+          position: "absolute",
+          top: 0,
+          right: 0,
+          width: 200,
+          height: 200,
+          background: "red",
+          display: process.env.NODE_ENV === "development" ? "none" : "none",
+        }}
+      />
       <div className="egg__container">
         {pattern && (
           <div className="slider__container">
@@ -172,8 +226,22 @@ export default function Egg() {
             updating={updating}
           />
         </div>
-        <EggMask visible={false} svgId={EGGVG} imgId={EGG_MASK} />
-
+        <div
+          onClick={() => {
+            drawEggMask();
+            // svgToImgBlob(document.getElementById(EGGVG));
+          }}
+          style={{
+            position: "absolute",
+            right: 0,
+            top: 500,
+            width: 200,
+            background: "red",
+            display: process.env.NODE_ENV === "development" ? "block" : "none",
+          }}
+        >
+          <EggMask visible={true} svgId={EGGVG} imgId={EGG_MASK} />
+        </div>
         {/* <canvas width={200} height={200} id={REPEAT_CANVAS_ID} style={{ position: "absolute", top: 200, left: 0, border: "1px solid black" }} /> */}
       </div>
       {/* <button style={{ position: "absolute", top: 10, left: 10 }} onClick={() => openModal(ModalTypes.Mint, { metadata: {} })}>export</button> */}

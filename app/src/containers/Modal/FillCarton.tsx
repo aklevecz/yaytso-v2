@@ -18,6 +18,7 @@ import { batchFetchNFTs } from "../../contexts/services";
 import posterTemplate from "../../assets/poster_template.png";
 import { YaytsoMetaWeb2 } from "../../contexts/types";
 import Small from "../../components/Egg/Small";
+import { cartonCreateClaim } from "../../firebase";
 
 const PickYaytso = ({
   ok,
@@ -45,12 +46,17 @@ const PickYaytso = ({
           className="yaytsoId__container"
           style={{ display: yaytsosLoaded ? "flex" : "none" }}
         >
-          {yaytsos.map((yaytso) => (
-            <div key={yaytso.patternHash} onClick={() => pickYaytso(yaytso.id)}>
-              <div style={{ position: "absolute" }}>{yaytso.id}</div>
-              <img src={ipfsLink(yaytso.svgCID)} />
-            </div>
-          ))}
+          {yaytsos.map((yaytso) => {
+            return (
+              <div
+                key={yaytso.patternHash}
+                onClick={() => pickYaytso(yaytso.id)}
+              >
+                <div style={{ position: "absolute" }}>{yaytso.id}</div>
+                <img src={ipfsLink(yaytso.svgCID)} />
+              </div>
+            );
+          })}
         </div>
       </div>
       <div className="modal__button-container">
@@ -127,9 +133,10 @@ export default function FillCarton() {
       getOwnersYaytsos().then(({ yaytsoIds, error }) => {
         if (error) {
           closeModal();
-          return alert("must connect wlalet");
+          return alert("must connect wallet");
         }
         if (yaytsoIds.length === 0) setLoading(false);
+        console.log(yaytsoIds);
         batchFetchNFTs(yaytsoIds).then((nfts: any) => {
           setYaytsos(nfts);
           setLoading(false);
@@ -211,9 +218,24 @@ export default function FillCarton() {
   };
 
   const createSignature = () => {
+    const splitKey = (signature: string) => {
+      const signatureMiddle = signature.length / 2;
+      const key1 = signature.slice(0, signatureMiddle);
+      const key2 = signature.slice(signatureMiddle, signature.length);
+      return { key1, key2 };
+    };
     signMessage(carton.boxId, carton.nonce).then(({ signedMessage }) => {
-      setHuntKey(signedMessage);
+      const { key1, key2 } = splitKey(signedMessage);
+      console.log(signedMessage);
+      console.log(key1, key2);
+      setHuntKey(key1);
       setView(Views.CreateQR);
+      cartonCreateClaim({
+        key1,
+        key2,
+        cartonId: carton.boxId,
+        yaytsoId: pickedYaytso.id,
+      });
     });
   };
 
@@ -262,7 +284,7 @@ export default function FillCarton() {
               width * 0.2
             );
           };
-          qrImage.src = URL.createObjectURL(blob);
+          qrImage.src = URL.createObjectURL(blob!);
 
           const eggImg = new Image();
           eggImg.setAttribute("crossOrigin", "anonymous");
@@ -331,7 +353,11 @@ export default function FillCarton() {
           </div>
           <div className="modal__block">
             {/* <img style={{ background: "#e5e4e4" }} src={pickedYaytso.img} /> */}
-            <Small gltfCid={pickedYaytso.gltf} legacy={pickedYaytso.id <= 42} />
+            <Small
+              metadata={pickedYaytso}
+              gltfCid={pickedYaytso.gltf}
+              legacy={pickedYaytso.id <= 42}
+            />
           </div>
           <div className="modal__button-container">
             <Button
@@ -345,13 +371,19 @@ export default function FillCarton() {
       )}
       {view === Views.FillCarton && (
         <div>
-          <div className="modal__title">
-            Fill carton with{" "}
-            <span style={{ color: "red" }}>{pickedYaytso.name}</span>
+          <div style={{ flexWrap: "wrap" }} className="modal__title">
+            <div style={{ flex: "0 0 100%" }}>Fill carton with</div>
+            <div
+              style={{ marginLeft: 5, color: "red" }}
+            >{`${pickedYaytso.name}`}</div>
           </div>
           <div className="modal__block">
             {/* <img style={{ background: "#e5e4e4" }} src={pickedYaytso.img} /> */}
-            <Small gltfCid={pickedYaytso.gltf} legacy={pickedYaytso.id <= 42} />
+            <Small
+              metadata={pickedYaytso}
+              gltfCid={pickedYaytso.gltf}
+              legacy={pickedYaytso.id <= 42}
+            />
           </div>
           <div className="modal__button-container">
             <Button name="Fill Carton" onClick={fillCarton} />

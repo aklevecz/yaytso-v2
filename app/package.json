@@ -18,6 +18,8 @@
     "ethers": "^5.4.0",
     "firebase": "^8.6.8",
     "framer-motion": "^4.1.17",
+    "heic2any": "^0.0.3",
+    "localforage": "^1.10.0",
     "qr-code-styling": "^1.6.0-rc.1",
     "react": "^17.0.2",
     "react-color": "^2.19.3",

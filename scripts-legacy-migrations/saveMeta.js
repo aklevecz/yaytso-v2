@@ -2,13 +2,7 @@ const metaDatas = require("./meta-data.json");
 const uris = require("./nft-uri.json");
 const CID = require("cids");
 const ethers = require("ethers");
-
-const admin = require("firebase-admin/app");
-const serviceAccount = require("./firebase-admin.json");
-const { getFirestore } = require("firebase-admin/firestore");
-
-const app = admin.initializeApp({ credential: admin.cert(serviceAccount) });
-const db = getFirestore(app);
+const { db } = require("./firebase");
 
 metaDatas.forEach((metaData, i) => {
   const data = JSON.parse(metaData);
