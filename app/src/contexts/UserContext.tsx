@@ -81,7 +81,6 @@ const UserProvider = ({
 
   const login = async (user: firebase.User) => {
     const { phoneNumber, uid, refreshToken } = user;
-    console.log(user);
     // if (!phoneNumber) {
     //   return console.error("phone number is missing");
     // }

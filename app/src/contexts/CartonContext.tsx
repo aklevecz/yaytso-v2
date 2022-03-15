@@ -9,8 +9,8 @@ import {
 import { CARTONS, db } from "../firebase";
 import { ipfsLink } from "../utils";
 import { useCartonContract, useYaytsoContract } from "./ContractContext";
-import { updateCarton } from "./services";
-import { Carton, YaytsoMeta } from "./types";
+import { useUserLocation } from "./MapContext";
+import { Carton } from "./types";
 import { ipfsToHttps } from "./utils";
 
 type Action = { type: "updateCartons"; cartons: Array<Carton> };
@@ -27,7 +27,12 @@ const initialState = {
 };
 
 const CartonContext = createContext<
-  { state: State; dispatch: Dispatch } | undefined
+  | {
+      state: State;
+      dispatch: Dispatch;
+      updateCartons: (cartons: Array<Carton>) => void;
+    }
+  | undefined
 >(undefined);
 
 const reducer = (state: State, action: Action) => {
@@ -45,21 +50,26 @@ const CartonProvider = ({
   children: JSX.Element | JSX.Element[];
 }) => {
   const [state, dispatch] = useReducer(reducer, initialState);
-
+  // const userLocation = useUserLocation();
+  // console.log(userLocation);
   useEffect(() => {
     // NOTE: SHOULD BE AREA SPECIFIC OR SOMETHING
-    db.collection(CARTONS).onSnapshot((querySnapshot) => {
-      const cartons: Array<Carton> = [];
-      querySnapshot.forEach((doc) => {
-        const { lat, lng, yaytsoId, locked } = doc.data();
-        const id = parseInt(doc.id);
-        cartons.push({ lat, lng, locked, yaytsoId, id });
-      });
-      dispatch({ type: "updateCartons", cartons });
-    });
+    // db.collection(CARTONS).onSnapshot((querySnapshot) => {
+    //   const cartons: Array<Carton> = [];
+    //   querySnapshot.forEach((doc) => {
+    //     const { lat, lng, yaytsoId, locked } = doc.data();
+    //     const id = parseInt(doc.id);
+    //     cartons.push({ lat, lng, locked, yaytsoId, id });
+    //   });
+    //   dispatch({ type: "updateCartons", cartons });
+    // });
   }, []);
 
-  const value = { state, dispatch };
+  const updateCartons = (cartons: Array<Carton>) => {
+    dispatch({ type: "updateCartons", cartons });
+  };
+
+  const value = { state, dispatch, updateCartons };
   return (
     <CartonContext.Provider value={value}>{children}</CartonContext.Provider>
   );
@@ -184,5 +194,16 @@ export const useCartonInfo = (data: { cartonId: number }) => {
   }, [data && data.cartonId]);
   // **********
 
-  return { isLocked, yaytso, getYaytsoImage, isOwner };
+  return { carton, isLocked, yaytso, getYaytsoImage, isOwner };
+};
+
+export const useUpdateCartons = () => {
+  const context = useContext(CartonContext);
+
+  if (context === undefined) {
+    throw new Error("Carton Context error in UpdateCartons hook");
+  }
+
+  const { updateCartons } = context;
+  return updateCartons;
 };

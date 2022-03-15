@@ -29,6 +29,8 @@ export type MarkerType = "cartons" | "users" | "create";
 export type Marker = {
   type: string;
   marker: google.maps.Marker;
+  id?: string;
+  isUser?: boolean;
 };
 
 export type Carton = {

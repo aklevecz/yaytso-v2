@@ -13,6 +13,7 @@ export default function Egg({ meta }: { meta: YaytsoMetaWeb2 }) {
   const { initScene } = useThreeScene();
   // const { metadata, entities } = useFetchedYaytso(eggId);
   const { loaded, entities } = useGltfCid(
+    meta,
     meta.gltfCID,
     meta.legacy ? meta.legacy : false
   );

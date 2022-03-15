@@ -25,20 +25,29 @@ import { ModalTypes, YaytsoMetaWeb2 } from "../../contexts/types";
 import LoadingButton from "../../components/Button/LoadingButton";
 
 import "../../styles/claim.css";
+import { useCartonInfo } from "../../contexts/CartonContext";
+import { useUserLocation } from "../../contexts/MapContext";
+import { haversineDistance } from "../../utils";
+
+const CLAIMABLE_DISTANCE_M = 10;
 
 export default function Claim() {
   const [fetching, setFetching] = useState(false);
+  const [claimable, setClaimable] = useState<undefined | boolean>(undefined);
   const [error, setError] = useState("");
   const { signature, boxId, nonce } =
     useParams<{ signature: string; boxId: string; nonce: string }>();
   const history = useHistory();
   const user = useUser();
+  const { userLocation, getUserLocation } = useUserLocation();
   const { wallet } = useWallet();
   const { getTokenOfBox, claimYaytso, txState } = useCartonContract();
+  const { carton } = useCartonInfo({ cartonId: parseInt(boxId) });
   const { getYaytsoURI } = useYaytsoContract();
   const openModal = useOpenModal();
   const [yaytsoUri, setYaytsoUri] = useState("");
   const [yaytsoMeta, setYaytsoMeta] = useState<YaytsoMetaWeb2 | null>(null);
+
   const onClaim = () => {
     if (!wallet.address) {
       openModal(ModalTypes.ConnectWallet);
@@ -47,6 +56,7 @@ export default function Claim() {
         signature,
         boxId,
         nonce,
+        metadata: yaytsoMeta,
         gltfCID: yaytsoMeta && yaytsoMeta.gltfCID,
         metaCID: yaytsoMeta && yaytsoMeta.metaCID,
         legacy: yaytsoMeta && yaytsoMeta.legacy,
@@ -55,16 +65,13 @@ export default function Claim() {
   };
 
   useEffect(() => {
+    getUserLocation();
     setFetching(true);
-    console.log(boxId);
     getTokenOfBox(parseInt(boxId)).then((tokenId) => {
-      console.log(parseInt(tokenId));
       if (parseInt(tokenId)) {
         getYaytsoURI(tokenId).then((uri) => {
-          console.log(uri);
           const cid = uri.replace("ipfs://", "");
           fetchYaytso(cid).then((yaytso) => {
-            console.log(yaytso.data());
             // setYaytsoUri(yaytso.data()!.svgCID.replace("ipfs://", ""));
             setYaytsoMeta(yaytso.data()! as YaytsoMetaWeb2);
             setFetching(false);
@@ -76,9 +83,20 @@ export default function Claim() {
     });
   }, []);
 
+  useEffect(() => {
+    if (carton && carton.lat && userLocation.lat) {
+      const d = haversineDistance(
+        { lat: parseFloat(carton.lat), lng: parseFloat(carton.lng) },
+        userLocation
+      );
+      setClaimable(d < CLAIMABLE_DISTANCE_M);
+    }
+  }, [userLocation, carton]);
+
   useWalletConnect();
   useMetaMask();
-  console.log(yaytsoMeta);
+  console.log(claimable);
+  // Refactor the button container -- absolute positioning is weird
   return (
     <LayoutFullHeight>
       <>{yaytsoMeta && <Egg meta={yaytsoMeta} />}</>
@@ -89,9 +107,23 @@ export default function Claim() {
           </div>
         )}
       </>
-      <div className="egg-view__mint-button-container">
-        {yaytsoMeta && <Button name="Claim" onClick={onClaim} />}
-        {fetching && !error && <LoadingButton color="white" />}
+      <div style={{ width: 300 }} className="egg-view__mint-button-container">
+        {yaytsoMeta && claimable && (
+          <Button size="s" name="Claim" onClick={onClaim} />
+        )}
+        {yaytsoMeta && !claimable && claimable !== undefined && (
+          <div
+            style={{
+              fontSize: "2rem",
+              fontWeight: "bold",
+              textAlign: "center",
+            }}
+          >
+            You are too far away to claim!
+          </div>
+        )}
+        {(fetching && !error) ||
+          (claimable === undefined && <LoadingButton color="white" />)}
       </div>
     </LayoutFullHeight>
   );

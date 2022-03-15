@@ -1,28 +1,48 @@
 import { db, YAYTSOS } from "../../firebase";
 
-export const svgToImgBlob = async (svg: any): Promise<Blob> => {
+// Needs to be renamed or deprecated
+export const svgToImgBlob = async (
+  svg?: any
+): Promise<{ blob: Blob; canvas: HTMLCanvasElement }> => {
   return new Promise((resolve) => {
-    const canvas = document.createElement("canvas");
-    canvas.width = 1080;
-    canvas.height = 1080;
-    const ctx = canvas.getContext("2d")!;
-    var xml = new XMLSerializer().serializeToString(svg);
+    // const canvas = document.createElement("canvas");
+    // // document.getElementById("help")?.appendChild(canvas);
+    // canvas.width = 1080;
+    // canvas.height = 1080;
+    // canvas.style.width = "100%";
+    // canvas.style.height = "100%";
+    // const ctx = canvas.getContext("2d")!;
+    // var xml = new XMLSerializer().serializeToString(svg);
+    // var svg64 = btoa(xml);
+    // var b64Start = "data:image/svg+xml;base64,";
 
-    var svg64 = btoa(xml);
-    var b64Start = "data:image/svg+xml;base64,";
+    // var image64 = b64Start + svg64;
+    // var img = new Image();
+    // img.src = image64;
+    // // REFACTOR
+    // setTimeout(() => {
+    //   ctx.drawImage(img, 0, 0, 1080, 1080);
+    //   canvas.toBlob((blob) => {
+    //     if (blob) {
+    //       resolve(blob);
+    //     }
+    //   });
+    // }, 1000);
+    // img.onload = function () {
+    //   ctx.drawImage(img, 0, 0, 1080, 1080);
+    //   canvas.toBlob((blob) => {
+    //     if (blob) {
+    //       resolve(blob);
+    //     }
+    //   });
+    // };
 
-    var image64 = b64Start + svg64;
-    var img = new Image();
-    img.src = image64;
-
-    img.onload = function () {
-      ctx.drawImage(img, 0, 0, 1080, 1080);
-      canvas.toBlob((blob) => {
-        if (blob) {
-          resolve(blob);
-        }
-      });
-    };
+    const canvas = document.getElementById("repeater") as HTMLCanvasElement;
+    canvas.toBlob((blob) => {
+      if (blob) {
+        resolve({ blob, canvas });
+      }
+    });
   });
 };
 

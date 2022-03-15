@@ -6,7 +6,6 @@ export default function Right() {
   const { getUserLocation, createUserMarker, userLocation, recenter } =
     useUserLocation();
   const { loading, map } = useMap();
-
   // useEffect(() => {
   //   if (map) {
   //     getUserLocation();

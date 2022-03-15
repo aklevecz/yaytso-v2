@@ -2,18 +2,25 @@ import { useEffect, useRef, useState } from "react";
 import DotTyping from "../../components/Loading/DotTyping";
 import {
   ThreeProvider,
-  useFetchedYaytso,
   useGltfCid,
   useThreeScene,
 } from "../../contexts/ThreeContext";
 import { YaytsoMetaWeb2 } from "../../contexts/types";
 
-const Scene = ({ gltfCid, legacy }: { gltfCid: string; legacy: boolean }) => {
+const Scene = ({
+  metadata,
+  gltfCid,
+  legacy,
+}: {
+  metadata: YaytsoMetaWeb2;
+  gltfCid: string;
+  legacy: boolean;
+}) => {
   const sceneContainer = useRef<HTMLDivElement | null>(null);
   const { initScene } = useThreeScene();
   // const { metadata, entities } = useFetchedYaytso(eggId);
   // TODO ADD LOGIC FOR SMALL LEGACY EGG
-  const { loaded, entities } = useGltfCid(gltfCid, legacy);
+  const { loaded, entities } = useGltfCid(metadata, gltfCid, legacy);
   useEffect(() => {
     if (!sceneContainer.current) {
       return;
@@ -50,9 +57,11 @@ const Scene = ({ gltfCid, legacy }: { gltfCid: string; legacy: boolean }) => {
 
 // This is the meta data for some reason should be id and fetch from the blockchain
 export default function Small({
+  metadata,
   gltfCid,
   legacy,
 }: {
+  metadata: YaytsoMetaWeb2;
   gltfCid: string;
   legacy: boolean;
 }) {
@@ -69,7 +78,12 @@ export default function Small({
           </div>
         )}
       </>
-      <> {!wait && <Scene gltfCid={gltfCid} legacy={legacy} />}</>
+      <>
+        {" "}
+        {!wait && (
+          <Scene metadata={metadata} gltfCid={gltfCid} legacy={legacy} />
+        )}
+      </>
     </ThreeProvider>
   );
 }

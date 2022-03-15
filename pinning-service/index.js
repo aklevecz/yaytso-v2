@@ -61,10 +61,11 @@ const db = admin.firestore();
       return { ...pv, [cv.fieldname]: cv.buffer };
     }, {});
     const { gltf, svg, png } = files;
+
     const gltfCID = await store(gltf.buffer);
     const svgCID = await store(svg.buffer);
     const pngCID = await store(png.buffer);
-
+    console.log(svgCID);
     const sliceAmt = dev ? 2 : 4;
     const byteArray = new CID(pngCID).bytes.slice(sliceAmt);
     var arr = [];
@@ -82,6 +83,8 @@ const db = admin.firestore();
       "__HASH__",
       gltfCID
     );
+
+    // SHOULD BE IMG?
     metadata.external_url = metadata.external_url.replace("__HASH__", svgCID);
     metadata.name = name;
     metadata.description = metadata.description
@@ -91,6 +94,7 @@ const db = admin.firestore();
     let meta_id;
     const metaString = JSON.stringify(metadata);
     meta_id = await store(metaString);
+    console.log(meta_id);
     const metaCID = meta_id;
 
     // console.log(metaCID);

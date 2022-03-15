@@ -10,9 +10,16 @@ export default function Wallet() {
   const { wallet, disconnect } = useWallet();
   const user = useUser();
   const userLoading = useLoading();
-  const { scrollY } = useViewportScroll();
-  const marginTop = useTransform(scrollY, [200, 350], [0, -230]);
-
+  const { scrollY, scrollYProgress } = useViewportScroll();
+  // const marginTop = useTransform(scrollY, [200, 350], [0, -230]);
+  const marginTop = useTransform(
+    scrollY,
+    [
+      window.innerHeight - window.innerHeight * 0.5,
+      window.innerHeight + window.innerHeight * 0.5,
+    ],
+    [0, -230]
+  );
   const isSignedIn = Boolean(user.uid);
   return (
     <div className="wallet__root">

@@ -14,6 +14,7 @@ import {
 } from "../../contexts/WalletContext";
 import { BiAnim } from "./Transitions";
 import LoadingButton from "../../components/Button/LoadingButton";
+import { useUserLocation } from "../../contexts/MapContext";
 
 const CTA = () => (
   <div>
@@ -64,7 +65,7 @@ const txDescriptions = {
   [TxStatus.Failed]: "",
 };
 const txIcons = {
-  [TxStatus.Waiting]: <Pen />,
+  [TxStatus.Waiting]: <Pen fill="black" />,
   [TxStatus.Minting]: <Gear />,
   [TxStatus.Completed]: <Carton />,
   [TxStatus.Failed]: <></>,
@@ -119,8 +120,8 @@ export default function CreateCarton() {
   } = useModalData();
   const [step, setStep] = useState(givenStep ? givenStep : Steps.CTA);
   const [txStatus, setTxStats] = useState<TxStatus | null>(null);
-  const { toggleModal, closeModal } = useModalToggle();
-  const { modalState, onModalNext } = useModalToggle();
+  const { toggleModal, closeModal, modalState } = useModalToggle();
+  // const { userLocation: pos } = useUserLocation();
   useWalletConnect();
   useMetaMask();
   const { wallet } = useWallet();

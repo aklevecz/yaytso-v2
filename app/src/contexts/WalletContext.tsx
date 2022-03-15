@@ -176,6 +176,7 @@ const WalletProvider = ({
           patternHash,
           nft,
           isEggvatar,
+          legacy,
         } = data.data();
         if (isEggvatar) {
           dispatch({
@@ -204,6 +205,7 @@ const WalletProvider = ({
           metaCID,
           uid: user.uid,
           isEggvatar,
+          legacy,
         });
       });
       dispatch({ type: "SET_META", yaytsoMeta });

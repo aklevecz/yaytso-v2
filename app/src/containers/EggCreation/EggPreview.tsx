@@ -58,7 +58,7 @@ const EggPreview = forwardRef<HTMLCanvasElement, Props>(
         <div className="egg__details">
           {!showPreview && (
             <div className="egg__pen-wrapper" onClick={openPreview}>
-              <Pen />
+              <Pen fill="white" />
             </div>
           )}
           <canvas

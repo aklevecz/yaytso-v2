@@ -7,7 +7,7 @@ import DiscordButton, { discordColor } from "./DiscordButton";
 import { User } from "../../contexts/UserContext";
 import LogoutButton from "../../components/Button/LogoutButton";
 import { useMetaMask, useWalletConnect } from "../../contexts/WalletContext";
-import React from "react";
+import React, { useEffect } from "react";
 import Discord from "../../components/icons/Discord";
 import DisabledWrapper from "../../components/icons/DisabledWrapper";
 import Number from "../../components/icons/Number";
@@ -29,12 +29,26 @@ export default function UserInfo({ wallet, user, disconnect }: Props) {
   const onNetworkChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     updateNetwork(e.target.value);
   };
-  const { scrollY } = useViewportScroll();
+  const { scrollY, scrollYProgress } = useViewportScroll();
+  // const marginLeft = useTransform(
+  //   scrollY,
+  //   [200, 250],
+  //   [0, window.innerWidth + 200]
+  // );
+
   const marginLeft = useTransform(
     scrollY,
-    [200, 250],
+    [
+      window.innerHeight - window.innerHeight * 0.5,
+      window.innerHeight + window.innerHeight * 0.5,
+    ],
     [0, window.innerWidth + 200]
   );
+
+  // useEffect(() => {
+  //   console.log(window.innerHeight);
+  //   scrollY.onChange(console.log);
+  // }, []);
 
   const isNotPhone = !user.phone;
   const isNotDiscord = !user.discord;

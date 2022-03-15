@@ -12,7 +12,7 @@ import CartonInterface from "../ethereum/contracts/Carton.sol/Carton.json";
 import { useWallet } from "./WalletContext";
 import { addCarton, saveNFT, txLog, updateYaytso } from "./services";
 import { YaytsoMetaWeb2 } from "./types";
-import { Collections, db } from "../firebase";
+import { cartongRetrieveClaim, Collections, db } from "../firebase";
 import { TxStatus } from "../containers/Modal/CreateCarton";
 import { idToNetwork } from "./utils";
 import { useUser } from "./UserContext";
@@ -297,7 +297,7 @@ export const useCartonContract = () => {
   };
 
   const claimYaytso = async (
-    signature: string,
+    key1: string,
     boxId: string,
     nonce: string,
     callback: () => void
@@ -310,6 +310,8 @@ export const useCartonContract = () => {
       console.error("missing signer");
       return;
     }
+    const key2 = (await cartongRetrieveClaim({ key1 })).data;
+    const signature = key1 + key2;
     setTxState(TxStates.Waiting);
     const cartonSigner = cartonContract.connect(signer);
     const tx = await cartonSigner.claimYaytso(boxId, nonce, signature);
@@ -545,8 +547,9 @@ export const useYaytsoContract = () => {
           tokenId,
         });
         setTxState(TxStates.Completed);
-        // await updateYaytso(metaCID, { nft: true });
-        // await saveNFT(tokenId, meta);
+        await updateYaytso(metaCID, { nft: true });
+        meta.legacy = false;
+        await saveNFT(tokenId, meta);
       } else {
         // setTxState(TxStates.Failed);
       }
