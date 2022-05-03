@@ -150,7 +150,8 @@ export default function CartonContent() {
               <Small
                 metadata={yaytso}
                 gltfCid={yaytso.animation_url.replace("ipfs://", "")}
-                legacy={yaytso.id <= 42}
+                // legacy={yaytso.id <= 42}
+                legacy={false}
               />
             )}
           </div>

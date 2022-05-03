@@ -1,1 +1,8 @@
-a few eggs before bao bowl need updated metadata because of broken pngs
+two polygon NFTs
+
+differentiate cartons from mainnet to polygon
+differentiate nfts from mainnet to polygon
+differentiate txs from mainnet to polygon
+
+newly created polygon NFTs will overwrite the mainnet ones in the firestore db
+ - needs to be different db keys

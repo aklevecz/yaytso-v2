@@ -19,7 +19,7 @@ task("accounts", "Prints the list of accounts", async () => {
  * @type import('hardhat/config').HardhatUserConfig
  */
 const INFURA_KEY = process.env.INFURA_KEY;
-const pp = process.env.RINKEBY_PP;
+const pp = process.env.MAIN_PP;
 
 module.exports = {
   solidity: "0.6.2",

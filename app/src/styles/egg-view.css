@@ -38,3 +38,41 @@
 .egg-view__mint-button-container button {
   flex: 0 0 42%;
 }
+
+.egg-view__bottom-container {
+  position: absolute;
+  bottom: 0;
+  display: flex;
+  width: 100%;
+  justify-content: center;
+  align-items: center;
+}
+
+.egg-view__nft-button-container {
+  width: 100%;
+}
+
+.nft-tag {
+  color: white;
+  background: black;
+  font-weight: bold;
+  font-size: 2.5rem;
+  text-align: center;
+  padding: 12px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.opensea-link {
+  color: white;
+  background: #2081e2;
+  margin: auto;
+  text-align: center;
+  width: 100%;
+  display: block;
+  text-decoration: none;
+  padding: 1rem;
+  box-sizing: border-box;
+  font-weight: bold;
+  font-size: 1.5rem;
+}

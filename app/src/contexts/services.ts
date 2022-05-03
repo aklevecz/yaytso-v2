@@ -85,9 +85,19 @@ export const subscribeToYaytso = (
     // .doc(metaCID)
     .where("svgCID", "==", metaCID)
     .onSnapshot((doc) => {
-      doc.forEach((d) => {
+      doc.forEach(async (d) => {
         const data = d.data();
-        callback(data);
+        let tokenId = "";
+        if (data.nft) {
+          const query = await db
+            .collection(Collections.NFT)
+            .where("svgCID", "==", data.svgCID)
+            .get();
+          query.forEach((nft) => {
+            tokenId = nft.id;
+          });
+        }
+        callback({ ...data, tokenId });
       });
     });
 

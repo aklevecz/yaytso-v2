@@ -26,7 +26,7 @@ const YAYTSO_RINKEBY_ADDRESS = "0x6fE0E0672C967dA6F7927150b9f8CEb028021cFf";
 const CARTON_RINKEBY_ADDRESS = "0x2004Ec13Fe8BF6d19Ace9FC687D98Ad1a210386c";
 
 const YAYTSO_POLYGON_ADDRESS = "0x37847a40B038094046B1C767ddf9A536C924A55f";
-const CARTON_POLYGON_ADDRESS = YAYTSO_POLYGON_ADDRESS;
+const CARTON_POLYGON_ADDRESS = "0x852569b7e4140Db9026d4901F5206FBdDD0C3f64";
 
 const NETWORK = process.env.NODE_ENV === "development" ? "rinkeby" : "mainnet";
 export const CHAIN_ID = NETWORK === "rinkeby" ? 4 : 1;
@@ -54,8 +54,6 @@ const contractNetworkMap: {
     polygon: { interface: CartonInterface, address: CARTON_POLYGON_ADDRESS },
   },
 };
-
-console.log(CARTON_ADDRESS);
 
 type Action =
   | {
@@ -120,10 +118,12 @@ const ContractProvider = ({
       network: string,
       provider: ethers.providers.BaseProvider | ethers.providers.Web3Provider
     ) => {
+      // fallback to NETWORK
+      const net = network ? network : NETWORK;
       const {
         address,
         interface: { abi },
-      } = contractNetworkMap[contract][network];
+      } = contractNetworkMap[contract][net];
       return new ethers.Contract(address, abi, provider);
     },
     []
@@ -131,10 +131,7 @@ const ContractProvider = ({
 
   useEffect(() => {
     const network = state.network;
-    const provider:
-      | ethers.providers.Web3Provider
-      | ethers.providers.BaseProvider = state.provider;
-
+    const provider = wallet.provider ? wallet.provider : state.provider;
     const yaytsoContract = initContract("yaytso", network, provider);
     const cartonContract = initContract("carton", network, provider);
 
@@ -156,6 +153,7 @@ const ContractProvider = ({
     });
   }, [initContract, state.provider, state.network]);
 
+  // I THINK THIS USEEFFECT GETS OVERWRITTEN BY ANYTHING ABOVE
   useEffect(() => {
     // let network = state.network;
     // let provider:
@@ -268,17 +266,28 @@ export const useCartonContract = () => {
     }
     setTxState(TxStates.Waiting);
     const cartonSigner = cartonContract.connect(signer);
-    console.log(boxId, walletAddress, tokenId);
+
+    // MATIC TX FEES SHIM
+    let options = {};
+    const network = await signer.provider!.getNetwork();
+    if (network && network.chainId === 137) {
+      await cartonSigner.estimateGas
+        .fillBox(boxId, walletAddress, tokenId)
+        .then((b: any) => console.log(b.toString()));
+      const fees = await fetch(
+        "https://gasstation-mainnet.matic.network/v2"
+      ).then((response) => response.json());
+      const fee = ethers.BigNumber.from(
+        Math.floor(fees.standard.maxFee * 10 ** 9)
+      );
+      options = {
+        // gasLimit: 53843,
+        gasPrice: fee,
+      };
+    }
+    // MATIC TX FEES SHIM
     const tx = await cartonSigner
-      .fillBox(
-        boxId,
-        walletAddress,
-        tokenId
-        //   , {
-        //   gasPrice: 100000000000,
-        //   gasLimit: 850000,
-        // }
-      )
+      .fillBox(boxId, walletAddress, tokenId, options)
       .catch(console.log);
     console.log(tx);
     setTxState(TxStates.Minting);
@@ -286,7 +295,8 @@ export const useCartonContract = () => {
     for (const event of receipt.events) {
       if (event.event === "BoxFilled") {
         const nonce = parseInt(event.args.nonce);
-        db.collection(Collections.Cartons)
+        await db
+          .collection(Collections.Cartons)
           .doc(`${boxId}`)
           .update({ locked: true, yaytsoId: tokenId, nonce });
         setTxState(TxStates.Completed);
@@ -438,9 +448,28 @@ export const useYaytsoContract = () => {
     setTxState(TxStates.Waiting);
     const yaytsoSigner = state.yaytsoContract.connect(wallet.signer);
     state.yaytsoContract.getApproved(yaytsoId).then(console.log);
+
+    // MATIC TX FEES SHIM
+    let options = {};
+    const network = await wallet.signer.provider!.getNetwork();
+    if (network && network.chainId === 137) {
+      const fees = await fetch(
+        "https://gasstation-mainnet.matic.network/v2"
+      ).then((response) => response.json());
+      const fee = ethers.BigNumber.from(
+        Math.floor(fees.standard.maxFee * 10 ** 9)
+      );
+      options = {
+        gasLimit: 53843,
+        gasPrice: fee,
+      };
+    }
+    // MATIC TX FEES SHIM
+
     const tx = await yaytsoSigner.approve(
       state.cartonContract.address,
-      yaytsoId
+      yaytsoId,
+      options
     );
     setTxState(TxStates.Minting);
     const receipt = await tx.wait();
@@ -483,8 +512,9 @@ export const useYaytsoContract = () => {
         message: "You need to have an Ethereum wallet connected!",
       };
     }
-
+    console.log(wallet, yaytsoContract);
     const yaytsos = await yaytsoContract.yaytsosOfOwner(wallet.address);
+    console.log(yaytsos);
     const yaytsoIds = yaytsos.map((yaytso: any) => parseInt(yaytso));
     console.log(yaytsoIds);
     return { yaytsoIds };

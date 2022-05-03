@@ -11,7 +11,6 @@ import {
   createMessage,
   giveUseryaytsoCreatorRole,
 } from "./discord";
-import SpatialHashGrid from "./spatialHashGrid";
 import { Collections } from "./types";
 
 const cors = require("cors")({

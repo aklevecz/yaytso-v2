@@ -109,6 +109,7 @@ export default function FillCarton() {
     getBoxData,
     txState: cartonTxState,
     reset: cartonTxReset,
+    contract: cartonContract,
   } = useCartonContract();
   const [yaytsoIds, setYaytsoIds] = useState([]);
   const [yaytsos, setYaytsos] = useState<YaytsoMetaWeb2[]>([]);
@@ -196,7 +197,11 @@ export default function FillCarton() {
             gltf: meta.animation_url.replace("ipfs://", ""),
           });
           checkCartonIsApproved(id).then((address) => {
-            if (address === CARTON_ADDRESS) {
+            const contractAddress = cartonContract
+              ? cartonContract.address
+              : CARTON_ADDRESS;
+            // if (address === CARTON_ADDRESS) {
+            if (address === contractAddress) {
               setView(Views.FillCarton);
               // setView(Views.ApproveYaytso);
             } else {
@@ -226,8 +231,6 @@ export default function FillCarton() {
     };
     signMessage(carton.boxId, carton.nonce).then(({ signedMessage }) => {
       const { key1, key2 } = splitKey(signedMessage);
-      console.log(signedMessage);
-      console.log(key1, key2);
       setHuntKey(key1);
       setView(Views.CreateQR);
       cartonCreateClaim({
@@ -356,7 +359,9 @@ export default function FillCarton() {
             <Small
               metadata={pickedYaytso}
               gltfCid={pickedYaytso.gltf}
-              legacy={pickedYaytso.id <= 42}
+              // legacy={pickedYaytso.id <= 42}
+              // FOR POLYGON TESTING
+              legacy={false}
             />
           </div>
           <div className="modal__button-container">
@@ -382,7 +387,8 @@ export default function FillCarton() {
             <Small
               metadata={pickedYaytso}
               gltfCid={pickedYaytso.gltf}
-              legacy={pickedYaytso.id <= 42}
+              // legacy={pickedYaytso.id <= 42}
+              legacy={false}
             />
           </div>
           <div className="modal__button-container">

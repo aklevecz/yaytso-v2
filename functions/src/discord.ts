@@ -204,7 +204,7 @@ export const auth = functions.https.onCall(async (data, context) => {
       user = await admin.auth().createUser(userParams);
       const userRef = db.collection(Collections.Users).doc(user.uid);
       userRef.set({
-        email: discordUser.email,
+        email: discordUser.email ? discordUser.email : "",
         discord: true,
         discordId: discordUser.id,
         discordUsername: discordUser.username,

@@ -524,12 +524,16 @@ export const useUserLocation = () => {
 
   useEffect(() => {
     // hash this or something
+    console.log(state.userGrid, gridRef.current);
+    const userGrid = state.userGrid ? state.userGrid : [1, 0];
     if (
-      state.userGrid &&
-      JSON.stringify(state.userGrid) !== JSON.stringify(gridRef.current)
+      // state.userGrid &&
+      JSON.stringify(userGrid) !== JSON.stringify(gridRef.current)
     ) {
+      console.log("hi");
       gridRef.current = state.userGrid;
-      const cellId = `${state.userGrid[0]}-${state.userGrid[1]}`;
+      const cellId = `${userGrid[0]}-${userGrid[1]}`;
+      console.log(cellId);
       db.collection(Collections.Grid)
         .doc(cellId)
         .collection(Collections.Cartons)

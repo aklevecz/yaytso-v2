@@ -12,7 +12,7 @@ const ListItemContainer = ({
       textOverflow: "ellipsis",
       overflow: "hidden",
       whiteSpace: "nowrap",
-      margin: 10
+      margin: 10,
     }}
   >
     {children}
@@ -50,10 +50,18 @@ export default function EggInfo() {
 
   const { data } = useModalData();
   const { name, description, metaCID, svgCID } = data.metadata;
+  console.log(data);
   return (
     <div>
       <div className="modal__title">Egg Info</div>
-      <div style={{ display: "grid", gridTemplateColumns: "50% 1fr", alignItems: "center", padding: "10px 10px 35px" }}>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "50% 1fr",
+          alignItems: "center",
+          padding: "10px 10px 35px",
+        }}
+      >
         <div>
           <ListItem label={"Name"} value={name} />
           <ListItem label={"Description"} value={description} />

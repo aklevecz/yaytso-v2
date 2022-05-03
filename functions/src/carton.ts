@@ -64,6 +64,7 @@ export const onCartonCreated = functions.firestore
       });
   });
 
+// This is to update the hash?
 export const onCartonUpdate = functions.firestore
   .document(`${Collections.Cartons}/{cartonId}`)
   .onUpdate(async (change, context) => {

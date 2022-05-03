@@ -11,6 +11,7 @@ import DotTyping from "../../components/Loading/DotTyping";
 import { deleteYaytso } from "../../contexts/services";
 import { useMetaMask, useWalletConnect } from "../../contexts/WalletContext";
 import { useUser } from "../../contexts/UserContext";
+import { YAYTSO_ADDRESS } from "../../contexts/ContractContext";
 
 export default function Egg() {
   const { eggId } = useParams<{ eggId: string }>();
@@ -102,20 +103,19 @@ export default function Egg() {
               />
             </Fragment>
           )}
+        </div>
+        <div className="egg-view__bottom-container">
           {metadata && metadata.nft && (
-            <div
-              style={{
-                color: "white",
-                background: "black",
-                fontWeight: "bold",
-                fontSize: "2.5rem",
-                width: "80%",
-                textAlign: "center",
-                padding: 12,
-                maxWidth: 200,
-              }}
-            >
-              NFT
+            <div className="egg-view__nft-button-container">
+              <a
+                className="opensea-link"
+                href={`https://${
+                  process.env.NODE_ENV === "development" ? "testnets." : ""
+                }opensea.io/assets/${YAYTSO_ADDRESS}/${metadata.tokenId}`}
+              >
+                See on OpenSea
+              </a>
+              <div className="nft-tag">NFT</div>
             </div>
           )}
         </div>
