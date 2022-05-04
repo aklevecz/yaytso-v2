@@ -28,12 +28,18 @@ const CARTON_RINKEBY_ADDRESS = "0x2004Ec13Fe8BF6d19Ace9FC687D98Ad1a210386c";
 const YAYTSO_POLYGON_ADDRESS = "0x37847a40B038094046B1C767ddf9A536C924A55f";
 const CARTON_POLYGON_ADDRESS = "0x852569b7e4140Db9026d4901F5206FBdDD0C3f64";
 
-const NETWORK = process.env.NODE_ENV === "development" ? "rinkeby" : "mainnet";
-export const CHAIN_ID = NETWORK === "rinkeby" ? 4 : 1;
-export let YAYTSO_ADDRESS =
-  NETWORK === "rinkeby" ? YAYTSO_RINKEBY_ADDRESS : YAYTSO_MAIN_ADDRESS;
-export let CARTON_ADDRESS =
-  NETWORK === "rinkeby" ? CARTON_RINKEBY_ADDRESS : CARTON_MAIN_ADDRESS;
+// const NETWORK = process.env.NODE_ENV === "development" ? "rinkeby" : "mainnet";
+const NETWORK = "matic";
+
+// export const CHAIN_ID = NETWORK === "rinkeby" ? 4 : 1;
+export const CHAIN_ID = 137;
+// export let YAYTSO_ADDRESS =
+//   NETWORK === "rinkeby" ? YAYTSO_RINKEBY_ADDRESS : YAYTSO_MAIN_ADDRESS;
+// export let CARTON_ADDRESS =
+//   NETWORK === "rinkeby" ? CARTON_RINKEBY_ADDRESS : CARTON_MAIN_ADDRESS;
+
+export let YAYTSO_ADDRESS = YAYTSO_POLYGON_ADDRESS;
+export let CARTON_ADDRESS = CARTON_POLYGON_ADDRESS;
 
 const contractMap: { [key: string]: { interface: any; address: string } } = {
   yaytso: { interface: YaytsoInterface, address: YAYTSO_ADDRESS },
@@ -46,12 +52,12 @@ const contractNetworkMap: {
   yaytso: {
     rinkeby: { interface: YaytsoInterface, address: YAYTSO_RINKEBY_ADDRESS },
     mainnet: { interface: YaytsoInterface, address: YAYTSO_MAIN_ADDRESS },
-    polygon: { interface: YaytsoInterface, address: YAYTSO_POLYGON_ADDRESS },
+    matic: { interface: YaytsoInterface, address: YAYTSO_POLYGON_ADDRESS },
   },
   carton: {
     rinkeby: { interface: CartonInterface, address: CARTON_RINKEBY_ADDRESS },
     mainnet: { interface: CartonInterface, address: CARTON_MAIN_ADDRESS },
-    polygon: { interface: CartonInterface, address: CARTON_POLYGON_ADDRESS },
+    matic: { interface: CartonInterface, address: CARTON_POLYGON_ADDRESS },
   },
 };
 
@@ -72,16 +78,21 @@ type State = {
   network: string;
 };
 
-const provider =
-  // process.env.NODE_ENV === "development"
-  false
-    ? new ethers.providers.JsonRpcProvider()
-    : ethers.providers.getDefaultProvider(NETWORK, {
-        infura: process.env.REACT_APP_INFURA_KEY,
-        alchemy: process.env.REACT_APP_ALCHEMY_KEY,
-        etherscan: process.env.REACT_APP_ETHERSCAN_KEY,
-      });
-
+// const provider =
+//   // process.env.NODE_ENV === "development"
+//   false
+//     ? new ethers.providers.JsonRpcProvider()
+//     : ethers.providers.getDefaultProvider(NETWORK, {
+//         infura: process.env.REACT_APP_INFURA_KEY,
+//         alchemy: process.env.REACT_APP_ALCHEMY_KEY,
+//         etherscan: process.env.REACT_APP_ETHERSCAN_KEY,
+//       });
+console.log(process.env.REACT_APP_ALCHEMY_POLYGON_KEY);
+const provider = new ethers.providers.AlchemyProvider(
+  "matic",
+  process.env.REACT_APP_ALCHEMY_POLYGON_KEY
+);
+console.log(provider);
 const initialState = {
   yaytsoContract: undefined,
   cartonContract: undefined,
@@ -119,7 +130,9 @@ const ContractProvider = ({
       provider: ethers.providers.BaseProvider | ethers.providers.Web3Provider
     ) => {
       // fallback to NETWORK
+      console.log(network, NETWORK);
       const net = network ? network : NETWORK;
+
       const {
         address,
         interface: { abi },

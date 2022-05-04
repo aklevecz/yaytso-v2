@@ -1,14 +1,16 @@
 import localforage from "localforage";
 import { useEffect, useRef, useState } from "react";
+import { delay } from "../../contexts/utils";
 import { ipfsLink } from "../../utils";
 
 type Props = {
   cid: string;
   name: string;
   navigateToEgg: () => void;
+  listIndex: number;
 };
 
-export default function EggImg({ cid, name, navigateToEgg }: Props) {
+export default function EggImg({ cid, name, navigateToEgg, listIndex }: Props) {
   const imgRef = useRef<HTMLImageElement>(null);
   const [loaded, setLoaded] = useState(false);
   useEffect(() => {
@@ -19,13 +21,15 @@ export default function EggImg({ cid, name, navigateToEgg }: Props) {
           setLoaded(true);
           imgRef.current.src = URL.createObjectURL(blob);
         } else {
-          fetch(ipfsLink(cid))
-            .then((r) => r.text())
-            .then((svgString) => {
-              const blob = new Blob([svgString], { type: "image/svg+xml" });
-              imgRef.current!.src = URL.createObjectURL(blob);
-              localforage.setItem(eggId, blob);
-            });
+          delay(500 * listIndex, () => {}).then(() => {
+            fetch(ipfsLink(cid))
+              .then((r) => r.text())
+              .then((svgString) => {
+                const blob = new Blob([svgString], { type: "image/svg+xml" });
+                imgRef.current!.src = URL.createObjectURL(blob);
+                localforage.setItem(eggId, blob);
+              });
+          });
         }
       }
     });

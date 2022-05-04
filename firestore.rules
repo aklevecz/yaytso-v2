@@ -10,10 +10,19 @@ service cloud.firestore {
     match /Grid/{cellId}/CARTONS/{document=**} {
       allow read: if true;
     }
+    match /CARTONS_POLY/{document=**} {
+      allow read, write: if true;
+    }
+    match /Grid/{cellId}/CARTONS_POLY/{document=**} {
+      allow read: if true;
+    }
     match /YAYTSOS/{document=**} {
       allow read, write: if true;
     }
     match /NFTS/{document=**} {
+      allow read, write: if true;
+    }
+    match /NFTS_POLY/{document=**} {
       allow read, write: if true;
     }
     match /TxLogs/{document=**} {

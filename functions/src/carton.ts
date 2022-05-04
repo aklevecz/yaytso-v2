@@ -53,7 +53,6 @@ export const onCartonCreated = functions.firestore
     carton.id = snap.id;
     const cellId = getCellId(carton);
     const cellRef = gridRef.doc(cellId);
-
     await cellRef.set({ hash: "is cell data" });
     await cellRef
       .collection(Collections.Cartons)
@@ -68,11 +67,12 @@ export const onCartonCreated = functions.firestore
 export const onCartonUpdate = functions.firestore
   .document(`${Collections.Cartons}/{cartonId}`)
   .onUpdate(async (change, context) => {
+    console.log(change);
+    console.log(context);
     const carton = change.after.data();
     carton.id = change.after.id;
     const cellId = getCellId(carton);
     const cellRef = gridRef.doc(cellId);
-
     await cellRef.set({ hash: "is a hash" });
     await cellRef
       .collection(Collections.Cartons)

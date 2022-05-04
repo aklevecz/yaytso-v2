@@ -31,11 +31,15 @@ if (process.env.NODE_ENV === "development") {
 const userLocationsRef = realtime.ref("userLocations/");
 export enum Collections {
   Users = "Users",
-  Cartons = "CARTONS",
+  // Cartons = "CARTONS",
+  Cartons = "CARTONS_POLY",
   Yaytso = "YAYTSOS",
-  NFT = "NFTS",
+  // NFT = "NFTS",
+  NFT = "NFTS_POLY",
   TxLogs = "TxLogs",
   Grid = "Grid",
+  // CartonClaims = "CartonClaims",
+  CartonClaims = "CartonClaims_POLY",
 }
 
 const CARTONS = "CARTONS";

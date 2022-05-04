@@ -9,7 +9,7 @@ export default function SelectNetwork({ onNetworkChange, network }: Props) {
       <select onChange={onNetworkChange} name="networks" value={network}>
         <option value="rinkeby">Rinkeby</option>
         <option value="mainnet">Mainnet</option>
-        <option value="polygon">Polygon</option>
+        <option value="matic">Polygon</option>
       </select>
     </div>
   );

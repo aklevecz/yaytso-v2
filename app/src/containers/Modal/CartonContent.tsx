@@ -88,6 +88,7 @@ export default function CartonContent() {
     // Should be server side or something
     isLocked(data.cartonId).then((locked) => {
       if (!locked) {
+        console.log("is not locked so updating");
         updateCarton(data.cartonId, { locked, yaytsoId: 0 });
         closeModal();
       }

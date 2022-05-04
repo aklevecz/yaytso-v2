@@ -22,11 +22,17 @@ const isEmulator = process.env.FUNCTIONS_EMULATOR;
 const db = admin.firestore();
 const env = isEmulator ? require("./dev.json") : functions.config();
 
-const provider = ethers.providers.getDefaultProvider("rinkeby", {
-  infura: env.provider_keys.infura,
-  alchemy: env.provider_keys.alchemy,
-  etherscan: env.provider_keys.etherscan,
-});
+// const provider = ethers.providers.getDefaultProvider("homestead", {
+//   infura: env.provider_keys.infura,
+//   alchemy: env.provider_keys.alchemy,
+//   etherscan: env.provider_keys.etherscan,
+// });
+
+const provider = new ethers.providers.AlchemyProvider(
+  "matic",
+  env.provider_keys.alchemy_poly
+);
+
 const YAYTSO_RINKEBY_ADDRESS = "0x6fE0E0672C967dA6F7927150b9f8CEb028021cFf";
 const YAYTSO_MAIN_ADDRESS = "0x155b65c62e2bf8214d1e3f60854df761b9aa92b3";
 const YAYTSO_ADDRESS = isEmulator
@@ -117,7 +123,7 @@ export const egg = functions.https.onRequest(async (request, response) => {
 
 // webhook from alchemy
 export const onTx = functions.https.onRequest(async (request, response) => {
-  const { activity } = request.body;
+  const { activity } = request.body.event;
   const { hash, fromAddress } = activity[0];
   const txLogRef = db.collection(Collections.TxLogs).doc(hash);
   const txLog = (await txLogRef.get()).data();

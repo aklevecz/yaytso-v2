@@ -6,6 +6,7 @@ export const Bold = ({ children }: { children: JSX.Element | string }) => (
   <span style={{ fontWeight: "bold" }}>{children}</span>
 );
 const RINKEBY_ETHERSCAN = "https://rinkeby.etherscan.io/tx";
+const POLYSCAN_URL = "https://polygonscan.com/tx";
 
 // TODO: type
 export default function Receipt() {
@@ -32,7 +33,7 @@ export default function Receipt() {
             </div>
             <a
               className="mint__receipt__tx-hash"
-              href={`${RINKEBY_ETHERSCAN}/${transactionHash}`}
+              href={`${POLYSCAN_URL}/${transactionHash}`}
             >
               {transactionHash}
             </a>

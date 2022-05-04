@@ -10,9 +10,10 @@ import { useEffect, useState } from "react";
 type Props = {
   metadata: YaytsoMetaWeb2;
   wallet: WalletState;
+  listIndex: number;
 };
 
-export default function EggItem({ metadata, wallet }: Props) {
+export default function EggItem({ metadata, wallet, listIndex }: Props) {
   const { ref, inView, entry } = useInView({
     threshold: 0,
   });
@@ -50,6 +51,7 @@ export default function EggItem({ metadata, wallet }: Props) {
         cid={metadata.svgCID}
         name={metadata.name}
         navigateToEgg={navigateToEgg}
+        listIndex={listIndex}
       />
       {/* {viewed && (
         <div onClick={navigateToEgg}>

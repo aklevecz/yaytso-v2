@@ -67,7 +67,12 @@ export default function Eggs({ wallet }: Props) {
         {!hasEggs && <NoEggs />}
         {yaytsos.map((metadata, i) => {
           return (
-            <EggItem key={`yaytso${i}`} metadata={metadata} wallet={wallet} />
+            <EggItem
+              key={`yaytso${i}`}
+              metadata={metadata}
+              wallet={wallet}
+              listIndex={i}
+            />
           );
         })}
       </div>{" "}

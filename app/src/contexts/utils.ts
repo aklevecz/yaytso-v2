@@ -5,13 +5,13 @@ import blankEgg from "../assets/blankEgg.png";
 export const idToNetwork: { [key: number]: string } = {
   1: "mainnet",
   4: "rinkeby",
-  137: "polygon",
+  137: "matic",
 };
 
 export const networkToId = {
   mainnet: 1,
   rinkeby: 4,
-  polygon: 137,
+  matic: 137,
 };
 
 export const ipfsToHttps = (uri: string) => uri.replace("ipfs", "https");
