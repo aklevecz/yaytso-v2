@@ -128,6 +128,8 @@ export default function Login() {
   const [step, setStep] = useState(initialStep);
   const [error, setError] = useState("");
 
+  const [rId, setrId] = useState(Math.random());
+
   const { data } = useModalData();
 
   const [phoneAuth, setPhoneAuth] = useState<PhoneAuth>(PhoneAuth.SignIn);
@@ -144,7 +146,7 @@ export default function Login() {
   useEffect(() => {
     if ((window as any).recaptchaVerifier) return;
     (window as any).recaptchaVerifier = new firebase.auth.RecaptchaVerifier(
-      "submit-phone",
+      "submit-phone" + rId,
       {
         size: "invisible",
         callback: (response: any) => {
@@ -207,6 +209,7 @@ export default function Login() {
       code
     );
     if (phoneAuth === PhoneAuth.Link) {
+      console.log("link");
       auth.currentUser?.linkWithCredential(credential).then((result) => {
         onSignIn();
         setLoading(false);
@@ -215,6 +218,7 @@ export default function Login() {
     }
 
     if (phoneAuth === PhoneAuth.SignIn) {
+      console.log("sending confirm");
       confirmationResult
         .confirm(code)
         .then((result) => {
@@ -286,7 +290,7 @@ export default function Login() {
           <div className="modal__error">{error && error}</div>
         </div>
       </BiAnim>
-      <span id="submit-phone" />
+      <span id={"submit-phone" + rId} />
     </div>
   );
 }

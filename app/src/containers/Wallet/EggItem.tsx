@@ -29,7 +29,16 @@ export default function EggItem({ metadata, wallet, listIndex }: Props) {
   const onClick = () => openModal(ModalTypes.Mint, { metadata });
   const navigateToEgg = () => history.push(`/egg/${metadata.svgCID}`);
   const hasWallet = wallet.eth && wallet.address;
-  const isNFT = metadata.nft;
+  // const isNFT = metadata.nft;
+  // const isNFT = metadata.nft_poly;
+  // console.log(wallet);
+  const nfts = {
+    polygon: metadata.nft_poly,
+    ethereum: metadata.nft,
+  };
+  const isNFT =
+    (wallet.chainId === 137 && nfts.polygon) ||
+    (wallet.chainId === 1 && nfts.ethereum);
   return (
     <div
       className="wallet__egg-wrapper"

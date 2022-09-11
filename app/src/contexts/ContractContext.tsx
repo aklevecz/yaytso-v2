@@ -19,27 +19,28 @@ import { useUser } from "./UserContext";
 
 const YAYTSO_HARDHAT_ADDRESS = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
 
-const YAYTSO_MAIN_ADDRESS = "0x155b65c62e2bf8214d1e3f60854df761b9aa92b3";
+export const YAYTSO_MAIN_ADDRESS = "0x155b65c62e2bf8214d1e3f60854df761b9aa92b3";
 const CARTON_MAIN_ADDRESS = "0x7c05cf1a1608eE23652014FB12Cb614F3325CFB5";
 
 const YAYTSO_RINKEBY_ADDRESS = "0x6fE0E0672C967dA6F7927150b9f8CEb028021cFf";
 const CARTON_RINKEBY_ADDRESS = "0x2004Ec13Fe8BF6d19Ace9FC687D98Ad1a210386c";
 
-const YAYTSO_POLYGON_ADDRESS = "0x37847a40B038094046B1C767ddf9A536C924A55f";
+export const YAYTSO_POLYGON_ADDRESS =
+  "0x37847a40B038094046B1C767ddf9A536C924A55f";
 const CARTON_POLYGON_ADDRESS = "0x852569b7e4140Db9026d4901F5206FBdDD0C3f64";
 
 // const NETWORK = process.env.NODE_ENV === "development" ? "rinkeby" : "mainnet";
-const NETWORK = "matic";
+const NETWORK = "mainnet";
 
 // export const CHAIN_ID = NETWORK === "rinkeby" ? 4 : 1;
-export const CHAIN_ID = 137;
+// export const CHAIN_ID = 137;
 // export let YAYTSO_ADDRESS =
 //   NETWORK === "rinkeby" ? YAYTSO_RINKEBY_ADDRESS : YAYTSO_MAIN_ADDRESS;
 // export let CARTON_ADDRESS =
 //   NETWORK === "rinkeby" ? CARTON_RINKEBY_ADDRESS : CARTON_MAIN_ADDRESS;
 
-export let YAYTSO_ADDRESS = YAYTSO_POLYGON_ADDRESS;
-export let CARTON_ADDRESS = CARTON_POLYGON_ADDRESS;
+export let YAYTSO_ADDRESS = YAYTSO_MAIN_ADDRESS;
+export let CARTON_ADDRESS = CARTON_MAIN_ADDRESS;
 
 const contractMap: { [key: string]: { interface: any; address: string } } = {
   yaytso: { interface: YaytsoInterface, address: YAYTSO_ADDRESS },
@@ -89,8 +90,8 @@ type State = {
 //       });
 console.log(process.env.REACT_APP_ALCHEMY_POLYGON_KEY);
 const provider = new ethers.providers.AlchemyProvider(
-  "matic",
-  process.env.REACT_APP_ALCHEMY_POLYGON_KEY
+  "mainnet",
+  process.env.REACT_APP_ALCHEMY_KEY
 );
 console.log(provider);
 const initialState = {
@@ -509,6 +510,8 @@ export const useYaytsoContract = () => {
       return;
     }
     // const patternHash = wallet.yaytsoMeta[yaytsoId].patternHash;
+    console.log(yaytsoContract);
+    console.log(patternHash);
     const isDupe = await yaytsoContract
       .checkDupe(patternHash)
       .catch(console.log);
@@ -590,7 +593,11 @@ export const useYaytsoContract = () => {
           tokenId,
         });
         setTxState(TxStates.Completed);
-        await updateYaytso(metaCID, { nft: true });
+        if ((await contractSigner.provider.getNetwork()).chainId === 137) {
+          await updateYaytso(metaCID, { nft_poly: true });
+        } else {
+          await updateYaytso(metaCID, { nft: true });
+        }
         meta.legacy = false;
         await saveNFT(tokenId, meta);
       } else {

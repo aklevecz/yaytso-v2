@@ -422,7 +422,8 @@ export const useGltfCid = (
           loadGLTF(gltf, state.scene!, scale);
         } else {
           const gltfUrl = ipfsLink(cid);
-          fetch(gltfUrl)
+          // fetch(gltfUrl)
+          fetch(`https://ipfs.io/ipfs/${cid}`)
             .then((r) => {
               return r.blob();
             })

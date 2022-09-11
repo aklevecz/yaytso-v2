@@ -14,6 +14,7 @@ type Action =
   | { type: "SET_LOADING"; loading: boolean }
   | { type: "UPDATE_EGG"; params: EggParams }
   | { type: "UPDATE_USER"; user: any }
+  | { type: "SET_UNSUB"; unsub: any }
   | { type: "LOGIN"; user: User }
   | { type: "LOGOUT" };
 
@@ -36,6 +37,20 @@ type State = {
   egg: Egg;
   user: User;
   loading: boolean;
+  unsub: any;
+};
+
+const blankState = {
+  egg: { name: "", description: "", recipient: "" },
+  user: {
+    phone: "",
+    uid: "",
+    refreshToken: "",
+    hasEggvatar: false,
+    eggvatar: null,
+  },
+  unsub: null,
+  loading: true,
 };
 
 const initialState = {
@@ -47,6 +62,7 @@ const initialState = {
     hasEggvatar: false,
     eggvatar: null,
   },
+  unsub: null,
   loading: true,
 };
 
@@ -65,8 +81,10 @@ const reducer = (state: State, action: Action) => {
       return { ...state, user: action.user };
     case "UPDATE_USER":
       return { ...state, user: { ...state.user, ...action.user } };
+    case "SET_UNSUB":
+      return { ...state, unsub: action.unsub };
     case "LOGOUT":
-      return initialState;
+      return blankState;
     default:
       return state;
   }
@@ -85,6 +103,7 @@ const UserProvider = ({
     //   return console.error("phone number is missing");
     // }
     const { hasEggvatar } = (await onSignIn()).data;
+    console.log("got data");
     dispatch({
       type: "UPDATE_USER",
       user: { phone: phoneNumber, uid, refreshToken, hasEggvatar },
@@ -97,9 +116,12 @@ const UserProvider = ({
         dispatch({ type: "SET_LOADING", loading: false });
       } else {
         if (!state.user.uid) {
+          console.log("logging in");
           dispatch({ type: "SET_LOADING", loading: true });
           await login(user);
-          subscribeToUser(user.uid, dispatch).then(() => {});
+          console.log("logged");
+          const unsub = await subscribeToUser(user.uid, dispatch);
+          dispatch({ type: "SET_UNSUB", unsub });
         }
       }
     });
@@ -162,11 +184,13 @@ export const useLogin = () => {
     throw new Error("User Context error in useLogin hook");
   }
 
-  const { login, dispatch } = context;
+  const { login, dispatch, state } = context;
 
-  const logout = () => {
+  const logout = async () => {
+    await state.unsub();
     auth.signOut();
     dispatch({ type: "LOGOUT" });
+    window.location.reload();
   };
   return { login, logout };
 };

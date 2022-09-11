@@ -161,6 +161,7 @@ const WalletProvider = ({
   }, []);
 
   // At some point the db query might need a dynamic limit, but no one has enough eggs yet
+  // QUERYING THE DB
   const updateYaytsos = (limit = 100, startAt = 0) =>
     fetchUserYaytsos(user.uid, limit, startAt).then((snapshot) => {
       let yaytsoCIDS: YaytsoCID[] = [];
@@ -175,6 +176,7 @@ const WalletProvider = ({
           description,
           patternHash,
           nft,
+          nft_poly,
           isEggvatar,
           legacy,
         } = data.data();
@@ -190,6 +192,7 @@ const WalletProvider = ({
               description,
               patternHash,
               nft,
+              nft_poly,
               isEggvatar,
             },
           });
@@ -200,6 +203,7 @@ const WalletProvider = ({
           description,
           patternHash,
           nft,
+          nft_poly,
           svgCID,
           gltfCID,
           metaCID,
@@ -342,8 +346,23 @@ export const useWalletConnect = () => {
 
   const startProvider = useCallback(async () => {
     console.log("STARTING PROVIDER");
+    // const maticProvider = new WalletConnectProvider({
+    //   host: `https://rpc-mumbai.matic.today`,
+    //   callbacks: {
+    //     onConnect: console.log("connected"),
+    //     onDisconnect: console.log("disconnected!"),
+    //   },
+    // });
     const walletConnectProvider = new WalletConnectProvider({
-      infuraId: process.env.REACT_APP_INFURA_KEY,
+      // infuraId: process.env.REACT_APP_INFURA_KEY,
+      rpc: {
+        1:
+          "https://eth-mainnet.g.alchemy.com/v2/" +
+          process.env.REACT_APP_ALCHEMY_KEY,
+        137:
+          "https://polygon-mainnet.g.alchemy.com/v2/" +
+          process.env.REACT_APP_ALCHEMY_POLYGON_KEY,
+      },
       // chainId: CHAIN_ID,
     });
     setWalletConnectProvider(walletConnectProvider);

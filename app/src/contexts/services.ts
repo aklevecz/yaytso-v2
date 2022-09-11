@@ -1,6 +1,7 @@
 // FIREBASE SERVICES
 import { Collections, db, YAYTSOS } from "../firebase";
 
+// TO DO: This shouldn't pass down dispatch, just do the state in the context
 export const subscribeToUser = async (userId: string, dispatch: any) => {
   return db
     .collection(Collections.Users)
@@ -88,6 +89,8 @@ export const subscribeToYaytso = (
       doc.forEach(async (d) => {
         const data = d.data();
         let tokenId = "";
+        let polygonTokenId = "";
+        // if (data.nft) {
         if (data.nft) {
           const query = await db
             .collection(Collections.NFT)
@@ -97,7 +100,16 @@ export const subscribeToYaytso = (
             tokenId = nft.id;
           });
         }
-        callback({ ...data, tokenId });
+        if (data.nft_poly || data.nft) {
+          const query = await db
+            .collection(Collections.NFTPoly)
+            .where("svgCID", "==", data.svgCID)
+            .get();
+          query.forEach((nft) => {
+            polygonTokenId = nft.id;
+          });
+        }
+        callback({ ...data, tokenId, polygonTokenId });
       });
     });
 

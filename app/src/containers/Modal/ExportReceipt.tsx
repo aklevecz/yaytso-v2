@@ -70,6 +70,7 @@ export default function ExportReceipt() {
           width="1080"
           height="1080"
           id="export-canvas-preview"
+          style={{ width: "100%", height: "auto", margin: "auto" }}
           ref={canvasRef}
         />
         <TagText>{description}</TagText>

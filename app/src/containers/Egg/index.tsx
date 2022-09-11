@@ -11,7 +11,11 @@ import DotTyping from "../../components/Loading/DotTyping";
 import { deleteYaytso } from "../../contexts/services";
 import { useMetaMask, useWalletConnect } from "../../contexts/WalletContext";
 import { useUser } from "../../contexts/UserContext";
-import { YAYTSO_ADDRESS } from "../../contexts/ContractContext";
+import {
+  YAYTSO_ADDRESS,
+  YAYTSO_MAIN_ADDRESS,
+  YAYTSO_POLYGON_ADDRESS,
+} from "../../contexts/ContractContext";
 
 export default function Egg() {
   const { eggId } = useParams<{ eggId: string }>();
@@ -64,6 +68,19 @@ export default function Egg() {
     });
   };
   console.log(metadata);
+  // const isNFT = metadata.nft;
+  const isNFT = metadata.nft_poly || metadata.nft;
+
+  const openseaLinks = {
+    polygon: "",
+    mainnet: "",
+  };
+  if (metadata.nft_poly) {
+    openseaLinks.polygon = `https://opensea.io/assets/matic/${YAYTSO_POLYGON_ADDRESS}/${metadata.polygonTokenId}`;
+  }
+  if (metadata.nft) {
+    openseaLinks.mainnet = `https://opensea.io/assets/ethereum/${YAYTSO_MAIN_ADDRESS}/${metadata.tokenId}`;
+  }
   return (
     <LayoutFullHeight>
       <div className="egg-view__container">
@@ -89,7 +106,7 @@ export default function Egg() {
           {metadata && metadata.description}
         </div>
         <div className="egg-view__mint-button-container">
-          {metadata && !metadata.nft && isOwner && (
+          {metadata && !isNFT && isOwner && (
             <Fragment>
               <Button
                 name="Mint into NFT"
@@ -105,13 +122,25 @@ export default function Egg() {
           )}
         </div>
         <div className="egg-view__bottom-container">
-          {metadata && metadata.nft && (
+          {openseaLinks.mainnet && (
             <div className="egg-view__nft-button-container">
               <a
                 className="opensea-link"
-                href={`https://${
-                  process.env.NODE_ENV === "development" ? "testnets." : ""
-                }opensea.io/assets/${YAYTSO_ADDRESS}/${metadata.tokenId}`}
+                href={openseaLinks.mainnet}
+                target="_blank"
+              >
+                See on OpenSea
+              </a>
+              <div className="nft-tag">NFT</div>
+            </div>
+          )}
+          {openseaLinks.polygon && (
+            <div className="egg-view__nft-button-container">
+              <a
+                className="opensea-link"
+                href={openseaLinks.polygon}
+                style={{ background: "purple" }}
+                target="_blank"
               >
                 See on OpenSea
               </a>

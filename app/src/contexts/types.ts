@@ -68,6 +68,8 @@ export type YaytsoMetaWeb2 = {
   isEggvatar: boolean;
   legacy?: boolean;
   tokenId?: string;
+  nft_poly?: boolean;
+  polygonTokenId?: string;
 };
 
 export type YaytsoCID = {

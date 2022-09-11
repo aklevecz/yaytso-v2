@@ -28,14 +28,15 @@ if (process.env.NODE_ENV === "development") {
   auth.useEmulator("http://localhost:9099");
   realtime.useEmulator("localhost", 9000);
 }
+
 const userLocationsRef = realtime.ref("userLocations/");
 export enum Collections {
   Users = "Users",
   // Cartons = "CARTONS",
   Cartons = "CARTONS_POLY",
   Yaytso = "YAYTSOS",
-  // NFT = "NFTS",
-  NFT = "NFTS_POLY",
+  NFT = "NFTS",
+  NFTPoly = "NFTS_POLY",
   TxLogs = "TxLogs",
   Grid = "Grid",
   // CartonClaims = "CartonClaims",

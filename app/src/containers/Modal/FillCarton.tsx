@@ -53,7 +53,8 @@ const PickYaytso = ({
                 onClick={() => pickYaytso(yaytso.id)}
               >
                 <div style={{ position: "absolute" }}>{yaytso.id}</div>
-                <img src={ipfsLink(yaytso.svgCID)} />
+                {/* <img src={ipfsLink(yaytso.svgCID)} /> */}
+                <img src={`https://ipfs.io/ipfs/${yaytso.svgCID}`} />
               </div>
             );
           })}

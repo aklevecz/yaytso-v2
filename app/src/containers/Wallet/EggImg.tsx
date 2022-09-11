@@ -21,8 +21,9 @@ export default function EggImg({ cid, name, navigateToEgg, listIndex }: Props) {
           setLoaded(true);
           imgRef.current.src = URL.createObjectURL(blob);
         } else {
-          delay(500 * listIndex, () => {}).then(() => {
-            fetch(ipfsLink(cid))
+          delay(0 * listIndex, () => {}).then(() => {
+            // fetch(ipfsLink(cid))
+            fetch(`https://ipfs.io/ipfs/${cid}`)
               .then((r) => r.text())
               .then((svgString) => {
                 const blob = new Blob([svgString], { type: "image/svg+xml" });

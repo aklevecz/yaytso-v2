@@ -6,3 +6,10 @@ differentiate txs from mainnet to polygon
 
 newly created polygon NFTs will overwrite the mainnet ones in the firestore db
  - needs to be different db keys
+
+ CARTON 1 has been overrwritten by polygon
+
+ -----
+
+ some way to tag dupes as never being NFT-able
+    - where i had minted a cow NFT on one account, and it seemed like I could still do so on another account

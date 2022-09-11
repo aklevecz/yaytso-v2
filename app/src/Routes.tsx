@@ -90,7 +90,7 @@ export default function Routes() {
       <Nav />
       {/* <DotTyping /> */}
       {loading && <DotTyping />}
-      {!loading && <AppComponents />}
+      <AppComponents />
       {/* <AppComponents /> */}
       <Modal />
     </Router>
